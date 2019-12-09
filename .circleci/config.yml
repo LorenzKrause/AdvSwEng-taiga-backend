@@ -59,11 +59,11 @@
        - run: 
            name: run unit tests
            command: |
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=TEST_FLAKE8_JUNIT.xml
+             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/TEST_FLAKE8_JUNIT.xml
        - store_test_results:
-           path: TEST_FLAKE8_JUNIT.xml
+           path: test-results
        - store_artifacts:
-           path: TEST_FLAKE8_JUNIT.xml
+           path: test-results/TEST_FLAKE8_JUNIT.xml
    unit-test:
      executor: test-environment
      steps:
