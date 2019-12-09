@@ -19,7 +19,10 @@
 from contextlib import suppress
 from django.core.exceptions import ObjectDoesNotExist
 from taiga.projects.history.services import take_snapshot
-from taiga.projects.tasks.apps import connect_all_tasks_signals, disconnect_all_tasks_signals
+from taiga.projects.tasks.apps import (
+    connect_all_tasks_signals,
+    disconnect_all_tasks_signals,
+)
 
 
 # Enable tasks signals
@@ -30,6 +33,7 @@ def enable_tasks_signals(sender, instance, **kwargs):
 # Disable tasks signals
 def disable_task_signals(sender, instance, **kwargs):
     disconnect_all_tasks_signals()
+
 
 ####################################
 # Signals for cached prev US
@@ -46,6 +50,7 @@ def cached_prev_us(sender, instance, **kwargs):
 # Signals of role points
 ####################################
 
+
 def update_role_points_when_create_or_edit_us(sender, instance, **kwargs):
     if instance._importing:
         return
@@ -56,6 +61,7 @@ def update_role_points_when_create_or_edit_us(sender, instance, **kwargs):
 ####################################
 # Signals for update milestone of tasks
 ####################################
+
 
 def update_milestone_of_tasks_when_edit_us(sender, instance, created, **kwargs):
     if not created:
@@ -69,11 +75,15 @@ def update_milestone_of_tasks_when_edit_us(sender, instance, created, **kwargs):
 # Signals for close US and Milestone
 ####################################
 
-def try_to_close_or_open_us_and_milestone_when_create_or_edit_us(sender, instance, created, **kwargs):
+
+def try_to_close_or_open_us_and_milestone_when_create_or_edit_us(
+    sender, instance, created, **kwargs
+):
     if instance._importing:
         return
     _try_to_close_or_open_us_when_create_or_edit_us(instance)
     _try_to_close_or_open_milestone_when_create_or_edit_us(instance)
+
 
 def try_to_close_milestone_when_delete_us(sender, instance, **kwargs):
     if instance._importing:
@@ -108,7 +118,11 @@ def _try_to_close_or_open_milestone_when_create_or_edit_us(instance):
         else:
             milestone_service.open_milestone(instance.milestone)
 
-    if instance.prev and instance.prev.milestone_id and instance.prev.milestone_id != instance.milestone_id:
+    if (
+        instance.prev
+        and instance.prev.milestone_id
+        and instance.prev.milestone_id != instance.milestone_id
+    ):
         if milestone_service.calculate_milestone_is_closed(instance.prev.milestone):
             milestone_service.close_milestone(instance.prev.milestone)
         else:
@@ -122,5 +136,7 @@ def _try_to_close_milestone_when_delete_us(instance):
     from taiga.projects.milestones import services as milestone_service
 
     with suppress(ObjectDoesNotExist):
-        if instance.milestone_id and milestone_service.calculate_milestone_is_closed(instance.milestone):
-                milestone_service.close_milestone(instance.milestone)
+        if instance.milestone_id and milestone_service.calculate_milestone_is_closed(
+            instance.milestone
+        ):
+            milestone_service.close_milestone(instance.milestone)

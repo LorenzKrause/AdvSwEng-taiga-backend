@@ -24,14 +24,16 @@ from taiga.projects.models import Project
 
 
 class Command(BaseCommand):
-    help = 'Regenerate projects timeline iterating per project'
+    help = "Regenerate projects timeline iterating per project"
 
     @override_settings(DEBUG=False)
     def handle(self, *args, **options):
         total = Project.objects.count()
 
-        for count,project in enumerate(Project.objects.order_by("id")):
-            print("***********************************\n",
-                  " {}/{} {}\n".format(count+1, total, project.name),
-                  "***********************************")
+        for count, project in enumerate(Project.objects.order_by("id")):
+            print(
+                "***********************************\n",
+                " {}/{} {}\n".format(count + 1, total, project.name),
+                "***********************************",
+            )
             call_command("rebuild_timeline", project=project.id)

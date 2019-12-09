@@ -36,10 +36,11 @@ def as_dict(function):
     @wraps(function)
     def _decorator(*args, **kwargs):
         return dict(function(*args, **kwargs))
+
     return _decorator
 
 
-def split_by_n(seq:str, n:int):
+def split_by_n(seq: str, n: int):
     """
     A generator to divide a sequence into chunks of n units.
     """
@@ -48,7 +49,7 @@ def split_by_n(seq:str, n:int):
         seq = seq[n:]
 
 
-def iter_queryset(queryset, itersize:int=20):
+def iter_queryset(queryset, itersize: int = 20):
     """
     Util function for iterate in more efficient way
     all queryset.

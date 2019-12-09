@@ -24,9 +24,7 @@ import hashlib
 
 
 class GogsViewSet(BaseWebhookApiViewSet):
-    event_hook_classes = {
-        "push": event_hooks.PushEventHook
-    }
+    event_hook_classes = {"push": event_hooks.PushEventHook}
 
     def _validate_signature(self, project, request):
         if not hasattr(project, "modules_config"):
@@ -42,7 +40,7 @@ class GogsViewSet(BaseWebhookApiViewSet):
         signature = request.META.get("HTTP_X_GOGS_SIGNATURE", None)
         if not signature:  # Old format signature support (before 0.11 version)
             payload = self._get_payload(request)
-            return payload.get('secret', None) == secret
+            return payload.get("secret", None) == secret
 
         secret = project.modules_config.config.get("gogs", {}).get("secret", "")
         secret = bytes(secret.encode("utf-8"))

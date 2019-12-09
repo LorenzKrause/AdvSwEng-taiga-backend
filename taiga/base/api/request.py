@@ -69,8 +69,10 @@ def is_form_media_type(media_type):
     Return True if the media type is a valid form media type.
     """
     base_media_type, params = parse_header(media_type.encode(HTTP_HEADER_ENCODING))
-    return (base_media_type == "application/x-www-form-urlencoded" or
-            base_media_type == "multipart/form-data")
+    return (
+        base_media_type == "application/x-www-form-urlencoded"
+        or base_media_type == "multipart/form-data"
+    )
 
 
 class override_method(object):
@@ -83,6 +85,7 @@ class override_method(object):
         with override_method(view, request, "POST") as request:
             ... # Do stuff with `view` and `request`
     """
+
     def __init__(self, view, request, method):
         self.view = view
         self.request = request
@@ -101,6 +104,7 @@ class Empty(object):
     Placeholder for unset attributes.
     Cannot use `None`, as that may be a valid value.
     """
+
     pass
 
 
@@ -113,11 +117,13 @@ def clone_request(request, method):
     Internal helper method to clone a request, replacing with a different
     HTTP method.  Used for checking permissions against other methods.
     """
-    ret = Request(request=request._request,
-                  parsers=request.parsers,
-                  authenticators=request.authenticators,
-                  negotiator=request.negotiator,
-                  parser_context=request.parser_context)
+    ret = Request(
+        request=request._request,
+        parsers=request.parsers,
+        authenticators=request.authenticators,
+        negotiator=request.negotiator,
+        parser_context=request.parser_context,
+    )
     ret._data = request._data
     ret._files = request._files
     ret._content_type = request._content_type
@@ -162,8 +168,14 @@ class Request(object):
     _CONTENT_PARAM = api_settings.FORM_CONTENT_OVERRIDE
     _CONTENTTYPE_PARAM = api_settings.FORM_CONTENTTYPE_OVERRIDE
 
-    def __init__(self, request, parsers=None, authenticators=None,
-                 negotiator=None, parser_context=None):
+    def __init__(
+        self,
+        request,
+        parsers=None,
+        authenticators=None,
+        negotiator=None,
+        parser_context=None,
+    ):
         self._request = request
         self.parsers = parsers or ()
         self.authenticators = authenticators or ()
@@ -182,7 +194,7 @@ class Request(object):
 
         force_user = getattr(request, "_force_auth_user", None)
         force_token = getattr(request, "_force_auth_token", None)
-        if (force_user is not None or force_token is not None):
+        if force_user is not None or force_token is not None:
             forced_auth = ForcedAuthentication(force_user, force_token)
             self.authenticators = (forced_auth,)
 
@@ -316,8 +328,9 @@ class Request(object):
         Sets the method and content_type, and then check if they"ve
         been overridden.
         """
-        self._content_type = self.META.get("HTTP_CONTENT_TYPE",
-                                           self.META.get("CONTENT_TYPE", ""))
+        self._content_type = self.META.get(
+            "HTTP_CONTENT_TYPE", self.META.get("CONTENT_TYPE", "")
+        )
 
         self._perform_form_overloading()
 
@@ -325,16 +338,16 @@ class Request(object):
             self._method = self._request.method
 
             # Allow X-HTTP-METHOD-OVERRIDE header
-            self._method = self.META.get("HTTP_X_HTTP_METHOD_OVERRIDE",
-                                         self._method)
+            self._method = self.META.get("HTTP_X_HTTP_METHOD_OVERRIDE", self._method)
 
     def _load_stream(self):
         """
         Return the content body of the request, as a stream.
         """
         try:
-            content_length = int(self.META.get("CONTENT_LENGTH",
-                                    self.META.get("HTTP_CONTENT_LENGTH")))
+            content_length = int(
+                self.META.get("CONTENT_LENGTH", self.META.get("HTTP_CONTENT_LENGTH"))
+            )
         except (ValueError, TypeError):
             content_length = 0
 
@@ -352,15 +365,16 @@ class Request(object):
         form fields or not.
         """
 
-        USE_FORM_OVERLOADING = (
-            self._METHOD_PARAM or
-            (self._CONTENT_PARAM and self._CONTENTTYPE_PARAM)
+        USE_FORM_OVERLOADING = self._METHOD_PARAM or (
+            self._CONTENT_PARAM and self._CONTENTTYPE_PARAM
         )
 
         # We only need to use form overloading on form POST requests.
-        if (not USE_FORM_OVERLOADING
+        if (
+            not USE_FORM_OVERLOADING
             or self._request.method != "POST"
-            or not is_form_media_type(self._content_type)):
+            or not is_form_media_type(self._content_type)
+        ):
             return
 
         # At this point we"re committed to parsing the request as form data.
@@ -368,17 +382,20 @@ class Request(object):
         self._files = self._request.FILES
 
         # Method overloading - change the method and remove the param from the content.
-        if (self._METHOD_PARAM and
-            self._METHOD_PARAM in self._data):
+        if self._METHOD_PARAM and self._METHOD_PARAM in self._data:
             self._method = self._data[self._METHOD_PARAM].upper()
 
         # Content overloading - modify the content type, and force re-parse.
-        if (self._CONTENT_PARAM and
-            self._CONTENTTYPE_PARAM and
-            self._CONTENT_PARAM in self._data and
-            self._CONTENTTYPE_PARAM in self._data):
+        if (
+            self._CONTENT_PARAM
+            and self._CONTENTTYPE_PARAM
+            and self._CONTENT_PARAM in self._data
+            and self._CONTENTTYPE_PARAM in self._data
+        ):
             self._content_type = self._data[self._CONTENTTYPE_PARAM]
-            self._stream = BytesIO(self._data[self._CONTENT_PARAM].encode(self.parser_context["encoding"]))
+            self._stream = BytesIO(
+                self._data[self._CONTENT_PARAM].encode(self.parser_context["encoding"])
+            )
             self._data, self._files = (Empty, Empty)
 
     def _parse(self):

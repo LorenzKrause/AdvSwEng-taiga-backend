@@ -69,8 +69,7 @@ class CustomPage(Page):
             return 0
         elif self.number == 1:
             return 1
-        return (
-            (self.number - 2) * paginator.per_page + paginator.first_page + 1)
+        return (self.number - 2) * paginator.per_page + paginator.first_page + 1
 
     def end_index(self):
         """Return the 1-based index of the last item on this page."""
@@ -85,8 +84,8 @@ class LazyPaginator(Paginator):
     """Implement lazy pagination."""
 
     def __init__(self, object_list, per_page, **kwargs):
-        if 'first_page' in kwargs:
-            self.first_page = kwargs.pop('first_page')
+        if "first_page" in kwargs:
+            self.first_page = kwargs.pop("first_page")
         else:
             self.first_page = per_page
         super(LazyPaginator, self).__init__(object_list, per_page, **kwargs)
@@ -98,9 +97,9 @@ class LazyPaginator(Paginator):
         try:
             number = int(number)
         except ValueError:
-            raise PageNotAnInteger('That page number is not an integer')
+            raise PageNotAnInteger("That page number is not an integer")
         if number < 1:
-            raise EmptyPage('That page number is less than 1')
+            raise EmptyPage("That page number is less than 1")
         return number
 
     def page(self, number):
@@ -109,10 +108,10 @@ class LazyPaginator(Paginator):
         if number == 1:
             bottom = 0
         else:
-            bottom = ((number - 2) * self.per_page + self.first_page)
+            bottom = (number - 2) * self.per_page + self.first_page
         top = bottom + current_per_page
         # Retrieve more objects to check if there is a next page.
-        objects = list(self.object_list[bottom:top + self.orphans + 1])
+        objects = list(self.object_list[bottom : top + self.orphans + 1])
         objects_count = len(objects)
         if objects_count > (current_per_page + self.orphans):
             # If another page is found, increase the total number of pages.
@@ -120,7 +119,7 @@ class LazyPaginator(Paginator):
             # In any case,  return only objects for this page.
             objects = objects[:current_per_page]
         elif (number != 1) and (objects_count <= self.orphans):
-            raise EmptyPage('That page contains no results')
+            raise EmptyPage("That page contains no results")
         else:
             # This is the last page.
             self._num_pages = number
@@ -147,7 +146,7 @@ class PaginationMixin(object):
     paginate_by = api_settings.PAGINATE_BY
     paginate_by_param = api_settings.PAGINATE_BY_PARAM
     max_paginate_by = api_settings.MAX_PAGINATE_BY
-    page_kwarg = 'page'
+    page_kwarg = "page"
     paginator_class = Paginator
 
     def get_paginate_by(self, queryset=None, **kwargs):
@@ -163,15 +162,18 @@ class PaginationMixin(object):
             return None
 
         if queryset is not None:
-            warnings.warn('The `queryset` parameter to `get_paginate_by()` '
-                          'is due to be deprecated.',
-                          PendingDeprecationWarning, stacklevel=2)
+            warnings.warn(
+                "The `queryset` parameter to `get_paginate_by()` "
+                "is due to be deprecated.",
+                PendingDeprecationWarning,
+                stacklevel=2,
+            )
 
         if self.paginate_by_param:
             try:
                 return strict_positive_int(
                     self.request.QUERY_PARAMS[self.paginate_by_param],
-                    cutoff=self.max_paginate_by
+                    cutoff=self.max_paginate_by,
                 )
             except (KeyError, ValueError):
                 pass
@@ -191,12 +193,15 @@ class PaginationMixin(object):
 
         deprecated_style = False
         if page_size is not None:
-            warnings.warn('The `page_size` parameter to `paginate_queryset()` '
-                          'is due to be deprecated. '
-                          'Note that the return style of this method is also '
-                          'changed, and will simply return a page object '
-                          'when called without a `page_size` argument.',
-                          PendingDeprecationWarning, stacklevel=2)
+            warnings.warn(
+                "The `page_size` parameter to `paginate_queryset()` "
+                "is due to be deprecated. "
+                "Note that the return style of this method is also "
+                "changed, and will simply return a page object "
+                "when called without a `page_size` argument.",
+                PendingDeprecationWarning,
+                stacklevel=2,
+            )
             deprecated_style = True
         else:
             # Determine the required page size.
@@ -207,14 +212,16 @@ class PaginationMixin(object):
 
         if not self.allow_empty:
             warnings.warn(
-                'The `allow_empty` parameter is due to be deprecated. '
-                'To use `allow_empty=False` style behavior, You should override '
-                '`get_queryset()` and explicitly raise a 404 on empty querysets.',
-                PendingDeprecationWarning, stacklevel=2
+                "The `allow_empty` parameter is due to be deprecated. "
+                "To use `allow_empty=False` style behavior, You should override "
+                "`get_queryset()` and explicitly raise a 404 on empty querysets.",
+                PendingDeprecationWarning,
+                stacklevel=2,
             )
 
-        paginator = self.paginator_class(queryset, page_size,
-                                         allow_empty_first_page=self.allow_empty)
+        paginator = self.paginator_class(
+            queryset, page_size, allow_empty_first_page=self.allow_empty
+        )
 
         page_kwarg = self.kwargs.get(self.page_kwarg)
         page_query_param = self.request.QUERY_PARAMS.get(self.page_kwarg)
@@ -222,17 +229,19 @@ class PaginationMixin(object):
         try:
             page_number = paginator.validate_number(page)
         except InvalidPage:
-            if page == 'last':
+            if page == "last":
                 page_number = paginator.num_pages
             else:
-                raise Http404(_("Page is not 'last', nor can it be converted to an int."))
+                raise Http404(
+                    _("Page is not 'last', nor can it be converted to an int.")
+                )
         try:
             page = paginator.page(page_number)
         except InvalidPage as e:
-            raise Http404(_('Invalid page (%(page_number)s): %(message)s') % {
-                                'page_number': page_number,
-                                'message': str(e)
-            })
+            raise Http404(
+                _("Invalid page (%(page_number)s): %(message)s")
+                % {"page_number": page_number, "message": str(e)}
+            )
 
         if page is None:
             return page

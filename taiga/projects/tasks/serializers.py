@@ -33,12 +33,19 @@ from taiga.projects.votes.mixins.serializers import VoteResourceSerializerMixin
 from taiga.projects.history.mixins import TotalCommentsSerializerMixin
 
 
-class TaskListSerializer(VoteResourceSerializerMixin, WatchedResourceSerializer,
-                         OwnerExtraInfoSerializerMixin, AssignedToExtraInfoSerializerMixin,
-                         StatusExtraInfoSerializerMixin, ProjectExtraInfoSerializerMixin,
-                         BasicAttachmentsInfoSerializerMixin, TaggedInProjectResourceSerializer,
-                         TotalCommentsSerializerMixin, DueDateSerializerMixin,
-                         serializers.LightSerializer):
+class TaskListSerializer(
+    VoteResourceSerializerMixin,
+    WatchedResourceSerializer,
+    OwnerExtraInfoSerializerMixin,
+    AssignedToExtraInfoSerializerMixin,
+    StatusExtraInfoSerializerMixin,
+    ProjectExtraInfoSerializerMixin,
+    BasicAttachmentsInfoSerializerMixin,
+    TaggedInProjectResourceSerializer,
+    TotalCommentsSerializerMixin,
+    DueDateSerializerMixin,
+    serializers.LightSerializer,
+):
 
     id = Field()
     user_story = Field(attr="user_story_id")
@@ -62,8 +69,9 @@ class TaskListSerializer(VoteResourceSerializerMixin, WatchedResourceSerializer,
     user_story_extra_info = Field()
 
     def get_generated_user_stories(self, obj):
-        assert hasattr(obj, "generated_user_stories_attr"),\
-            "instance must have a generated_user_stories_attr attribute"
+        assert hasattr(
+            obj, "generated_user_stories_attr"
+        ), "instance must have a generated_user_stories_attr attribute"
         return obj.generated_user_stories_attr
 
     def get_milestone_slug(self, obj):

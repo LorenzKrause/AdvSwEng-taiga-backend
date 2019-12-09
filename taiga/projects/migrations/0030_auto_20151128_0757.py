@@ -9,7 +9,7 @@ import datetime
 def update_totals(apps, schema_editor):
     model = apps.get_model("projects", "Project")
     type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(model)
-    sql="""
+    sql = """
         UPDATE projects_project
         SET
             totals_updated_datetime = totals.totals_updated_datetime,
@@ -100,7 +100,9 @@ def update_totals(apps, schema_editor):
             LEFT JOIN totals_activity_year ON totals_activity.project_id = totals_activity_year.project_id
         ) totals
         WHERE projects_project.id = totals.project_id
-    """.format(type_id=type.id)
+    """.format(
+        type_id=type.id
+    )
 
     cursor = connection.cursor()
     cursor.execute(sql)
@@ -109,57 +111,78 @@ def update_totals(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0029_project_is_looking_for_people'),
-        ('likes', '0001_initial'),
-        ('timeline', '0004_auto_20150603_1312'),
-        ('likes', '0001_initial'),
+        ("projects", "0029_project_is_looking_for_people"),
+        ("likes", "0001_initial"),
+        ("timeline", "0004_auto_20150603_1312"),
+        ("likes", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='total_activity',
-            field=models.PositiveIntegerField(default=0, verbose_name='count', db_index=True),
+            model_name="project",
+            name="total_activity",
+            field=models.PositiveIntegerField(
+                default=0, verbose_name="count", db_index=True
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='total_activity_last_month',
-            field=models.PositiveIntegerField(default=0, verbose_name='activity last month', db_index=True),
+            model_name="project",
+            name="total_activity_last_month",
+            field=models.PositiveIntegerField(
+                default=0, verbose_name="activity last month", db_index=True
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='total_activity_last_week',
-            field=models.PositiveIntegerField(default=0, verbose_name='activity last week', db_index=True),
+            model_name="project",
+            name="total_activity_last_week",
+            field=models.PositiveIntegerField(
+                default=0, verbose_name="activity last week", db_index=True
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='total_activity_last_year',
-            field=models.PositiveIntegerField(default=0, verbose_name='activity last year', db_index=True),
+            model_name="project",
+            name="total_activity_last_year",
+            field=models.PositiveIntegerField(
+                default=0, verbose_name="activity last year", db_index=True
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='total_fans',
-            field=models.PositiveIntegerField(default=0, verbose_name='count', db_index=True),
+            model_name="project",
+            name="total_fans",
+            field=models.PositiveIntegerField(
+                default=0, verbose_name="count", db_index=True
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='total_fans_last_month',
-            field=models.PositiveIntegerField(default=0, verbose_name='fans last month', db_index=True),
+            model_name="project",
+            name="total_fans_last_month",
+            field=models.PositiveIntegerField(
+                default=0, verbose_name="fans last month", db_index=True
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='total_fans_last_week',
-            field=models.PositiveIntegerField(default=0, verbose_name='fans last week', db_index=True),
+            model_name="project",
+            name="total_fans_last_week",
+            field=models.PositiveIntegerField(
+                default=0, verbose_name="fans last week", db_index=True
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='total_fans_last_year',
-            field=models.PositiveIntegerField(default=0, verbose_name='fans last year', db_index=True),
+            model_name="project",
+            name="total_fans_last_year",
+            field=models.PositiveIntegerField(
+                default=0, verbose_name="fans last year", db_index=True
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='totals_updated_datetime',
-            field=models.DateTimeField(default=datetime.datetime(2015, 11, 28, 7, 57, 11, 743976, tzinfo=utc), auto_now_add=True, verbose_name='updated date time', db_index=True),
+            model_name="project",
+            name="totals_updated_datetime",
+            field=models.DateTimeField(
+                default=datetime.datetime(2015, 11, 28, 7, 57, 11, 743976, tzinfo=utc),
+                auto_now_add=True,
+                verbose_name="updated date time",
+                db_index=True,
+            ),
             preserve_default=False,
         ),
         migrations.RunPython(update_totals),

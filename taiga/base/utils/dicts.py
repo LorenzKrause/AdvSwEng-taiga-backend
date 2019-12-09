@@ -28,4 +28,4 @@ def dict_sum(*args):
 
 
 def into_namedtuple(dictionary):
-    return collections.namedtuple('GenericDict', dictionary.keys())(**dictionary)
+    return collections.namedtuple("GenericDict", dictionary.keys())(**dictionary)

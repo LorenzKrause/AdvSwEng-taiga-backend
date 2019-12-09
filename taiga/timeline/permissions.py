@@ -29,4 +29,4 @@ class UserTimelinePermission(TaigaResourcePermission):
 class ProjectTimelinePermission(TaigaResourcePermission):
     enought_perms = IsProjectAdmin() | IsSuperUser()
     global_perms = None
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")

@@ -19,7 +19,11 @@
 from taiga.base import throttling
 
 
-class LoginFailRateThrottle(throttling.GlobalThrottlingMixin, throttling.ThrottleByActionMixin, throttling.SimpleRateThrottle):
+class LoginFailRateThrottle(
+    throttling.GlobalThrottlingMixin,
+    throttling.ThrottleByActionMixin,
+    throttling.SimpleRateThrottle,
+):
     scope = "login-fail"
     throttled_actions = ["create"]
 
@@ -32,7 +36,11 @@ class LoginFailRateThrottle(throttling.GlobalThrottlingMixin, throttling.Throttl
             self.cache.set(self.key, self.history, self.duration)
 
 
-class RegisterSuccessRateThrottle(throttling.GlobalThrottlingMixin, throttling.ThrottleByActionMixin, throttling.SimpleRateThrottle):
+class RegisterSuccessRateThrottle(
+    throttling.GlobalThrottlingMixin,
+    throttling.ThrottleByActionMixin,
+    throttling.SimpleRateThrottle,
+):
     scope = "register-success"
     throttled_actions = ["register"]
 
@@ -43,4 +51,3 @@ class RegisterSuccessRateThrottle(throttling.GlobalThrottlingMixin, throttling.T
         if response.status_code == 201:
             self.history.insert(0, self.now)
             self.cache.set(self.key, self.history, self.duration)
-

@@ -31,15 +31,19 @@ from taiga.projects.validators import ProjectExistsValidator
 from . import models
 
 
-class IssueValidator(AssignedToValidator, WatchersValidator, EditableWatchedResourceSerializer,
-                     validators.ModelValidator):
+class IssueValidator(
+    AssignedToValidator,
+    WatchersValidator,
+    EditableWatchedResourceSerializer,
+    validators.ModelValidator,
+):
 
     tags = TagsAndTagsColorsField(default=[], required=False)
     external_reference = PgArrayField(required=False)
 
     class Meta:
         model = models.Issue
-        read_only_fields = ('id', 'ref', 'created_date', 'modified_date', 'owner')
+        read_only_fields = ("id", "ref", "created_date", "modified_date", "owner")
 
 
 class IssuesBulkValidator(ProjectExistsValidator, validators.Validator):
@@ -49,6 +53,7 @@ class IssuesBulkValidator(ProjectExistsValidator, validators.Validator):
 
 
 # Milestone bulk validators
+
 
 class _IssueMilestoneBulkValidator(validators.Validator):
     issue_id = serializers.IntegerField()
@@ -60,10 +65,7 @@ class UpdateMilestoneBulkValidator(ProjectExistsValidator, validators.Validator)
     bulk_issues = _IssueMilestoneBulkValidator(many=True)
 
     def validate_milestone_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
         if not Milestone.objects.filter(**filters).exists():
             raise ValidationError(_("The milestone isn't valid for the project"))
         return attrs
@@ -71,7 +73,7 @@ class UpdateMilestoneBulkValidator(ProjectExistsValidator, validators.Validator)
     def validate_bulk_tasks(self, attrs, source):
         filters = {
             "project__id": attrs["project_id"],
-            "id__in": [issue["issue_id"] for issue in attrs[source]]
+            "id__in": [issue["issue_id"] for issue in attrs[source]],
         }
 
         if models.Issue.objects.filter(**filters).count() != len(filters["id__in"]):

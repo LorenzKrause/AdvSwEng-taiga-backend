@@ -41,16 +41,20 @@ class CanLeaveProject(PermissionComponent):
 
         try:
             if not services.can_user_leave_project(request.user, obj):
-                raise exc.PermissionDenied(_("You can't leave the project if you are the owner or there are "
-                                             "no more admins"))
+                raise exc.PermissionDenied(
+                    _(
+                        "You can't leave the project if you are the owner or there are "
+                        "no more admins"
+                    )
+                )
             return True
         except models.Membership.DoesNotExist:
             return False
 
 
 class ProjectPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
-    by_slug_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
+    by_slug_perms = HasProjectPerm("view_project")
     create_perms = IsAuthenticated()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -59,9 +63,9 @@ class ProjectPermission(TaigaResourcePermission):
     list_perms = AllowAny()
     change_logo_perms = IsProjectAdmin()
     remove_logo_perms = IsProjectAdmin()
-    stats_perms = HasProjectPerm('view_project')
-    member_stats_perms = HasProjectPerm('view_project')
-    issues_stats_perms = HasProjectPerm('view_project')
+    stats_perms = HasProjectPerm("view_project")
+    member_stats_perms = HasProjectPerm("view_project")
+    issues_stats_perms = HasProjectPerm("view_project")
     regenerate_epics_csv_uuid_perms = IsProjectAdmin()
     regenerate_userstories_csv_uuid_perms = IsProjectAdmin()
     regenerate_issues_csv_uuid_perms = IsProjectAdmin()
@@ -70,42 +74,42 @@ class ProjectPermission(TaigaResourcePermission):
     delete_userstories_csv_uuid_perms = IsProjectAdmin()
     delete_issues_csv_uuid_perms = IsProjectAdmin()
     delete_tasks_csv_uuid_perms = IsProjectAdmin()
-    tags_perms = HasProjectPerm('view_project')
-    tags_colors_perms = HasProjectPerm('view_project')
-    like_perms = IsAuthenticated() & HasProjectPerm('view_project')
-    unlike_perms = IsAuthenticated() & HasProjectPerm('view_project')
-    watch_perms = IsAuthenticated() & HasProjectPerm('view_project')
-    unwatch_perms = IsAuthenticated() & HasProjectPerm('view_project')
+    tags_perms = HasProjectPerm("view_project")
+    tags_colors_perms = HasProjectPerm("view_project")
+    like_perms = IsAuthenticated() & HasProjectPerm("view_project")
+    unlike_perms = IsAuthenticated() & HasProjectPerm("view_project")
+    watch_perms = IsAuthenticated() & HasProjectPerm("view_project")
+    unwatch_perms = IsAuthenticated() & HasProjectPerm("view_project")
     create_template_perms = IsSuperUser()
     leave_perms = CanLeaveProject()
-    transfer_validate_token_perms = IsAuthenticated() & HasProjectPerm('view_project')
+    transfer_validate_token_perms = IsAuthenticated() & HasProjectPerm("view_project")
     transfer_request_perms = IsProjectAdmin()
     transfer_start_perms = IsObjectOwner()
-    transfer_reject_perms = IsAuthenticated() & HasProjectPerm('view_project')
-    transfer_accept_perms = IsAuthenticated() & HasProjectPerm('view_project')
+    transfer_reject_perms = IsAuthenticated() & HasProjectPerm("view_project")
+    transfer_accept_perms = IsAuthenticated() & HasProjectPerm("view_project")
     create_tag_perms = IsProjectAdmin()
     edit_tag_perms = IsProjectAdmin()
     delete_tag_perms = IsProjectAdmin()
     mix_tags_perms = IsProjectAdmin()
-    duplicate_perms = IsAuthenticated() & HasProjectPerm('view_project')
+    duplicate_perms = IsAuthenticated() & HasProjectPerm("view_project")
 
 
 class ProjectFansPermission(TaigaResourcePermission):
     enought_perms = IsProjectAdmin() | IsSuperUser()
     global_perms = None
-    retrieve_perms = HasProjectPerm('view_project')
-    list_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
+    list_perms = HasProjectPerm("view_project")
 
 
 class ProjectWatchersPermission(TaigaResourcePermission):
     enought_perms = IsProjectAdmin() | IsSuperUser()
     global_perms = None
-    retrieve_perms = HasProjectPerm('view_project')
-    list_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
+    list_perms = HasProjectPerm("view_project")
 
 
 class MembershipPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -117,8 +121,9 @@ class MembershipPermission(TaigaResourcePermission):
 
 # Epics
 
+
 class EpicStatusPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -129,8 +134,9 @@ class EpicStatusPermission(TaigaResourcePermission):
 
 # User Stories
 
+
 class PointsPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -140,7 +146,7 @@ class PointsPermission(TaigaResourcePermission):
 
 
 class UserStoryStatusPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -150,7 +156,7 @@ class UserStoryStatusPermission(TaigaResourcePermission):
 
 
 class UserStoryDueDatePermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -161,8 +167,9 @@ class UserStoryDueDatePermission(TaigaResourcePermission):
 
 # Tasks
 
+
 class TaskStatusPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -172,7 +179,7 @@ class TaskStatusPermission(TaigaResourcePermission):
 
 
 class TaskDueDatePermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -180,10 +187,12 @@ class TaskDueDatePermission(TaigaResourcePermission):
     list_perms = AllowAny()
     bulk_update_order_perms = IsProjectAdmin()
 
+
 # Issues
 
+
 class SeverityPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -193,7 +202,7 @@ class SeverityPermission(TaigaResourcePermission):
 
 
 class PriorityPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -203,7 +212,7 @@ class PriorityPermission(TaigaResourcePermission):
 
 
 class IssueStatusPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -213,7 +222,7 @@ class IssueStatusPermission(TaigaResourcePermission):
 
 
 class IssueTypePermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -223,7 +232,7 @@ class IssueTypePermission(TaigaResourcePermission):
 
 
 class IssueDueDatePermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()
@@ -233,6 +242,7 @@ class IssueDueDatePermission(TaigaResourcePermission):
 
 
 # Project Templates
+
 
 class ProjectTemplatePermission(TaigaResourcePermission):
     retrieve_perms = AllowAny()

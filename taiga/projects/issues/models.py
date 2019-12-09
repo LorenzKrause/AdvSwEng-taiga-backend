@@ -31,49 +31,104 @@ from taiga.projects.mixins.blocked import BlockedMixin
 from taiga.projects.tagging.models import TaggedMixin
 
 
-class Issue(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, DueDateMixin, models.Model):
-    ref = models.BigIntegerField(db_index=True, null=True, blank=True, default=None,
-                                 verbose_name=_("ref"))
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, default=None,
-                              related_name="owned_issues", verbose_name=_("owner"))
-    status = models.ForeignKey("projects.IssueStatus", null=True, blank=True,
-                               related_name="issues", verbose_name=_("status"))
-    severity = models.ForeignKey("projects.Severity", null=True, blank=True,
-                                 related_name="issues", verbose_name=_("severity"))
-    priority = models.ForeignKey("projects.Priority", null=True, blank=True,
-                                 related_name="issues", verbose_name=_("priority"))
-    type = models.ForeignKey("projects.IssueType", null=True, blank=True,
-                             related_name="issues", verbose_name=_("type"))
-    milestone = models.ForeignKey("milestones.Milestone", null=True, blank=True,
-                                  default=None, related_name="issues",
-                                  verbose_name=_("milestone"))
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="issues", verbose_name=_("project"))
-    created_date = models.DateTimeField(null=False, blank=False,
-                                        verbose_name=_("created date"),
-                                        default=timezone.now)
-    modified_date = models.DateTimeField(null=False, blank=False,
-                                         verbose_name=_("modified date"))
-    finished_date = models.DateTimeField(null=True, blank=True,
-                                         verbose_name=_("finished date"))
-    subject = models.TextField(null=False, blank=False,
-                               verbose_name=_("subject"))
-    description = models.TextField(null=False, blank=True, verbose_name=_("description"))
-    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
-                                    default=None, related_name="issues_assigned_to_me",
-                                    verbose_name=_("assigned to"))
+class Issue(
+    OCCModelMixin,
+    WatchedModelMixin,
+    BlockedMixin,
+    TaggedMixin,
+    DueDateMixin,
+    models.Model,
+):
+    ref = models.BigIntegerField(
+        db_index=True, null=True, blank=True, default=None, verbose_name=_("ref")
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        default=None,
+        related_name="owned_issues",
+        verbose_name=_("owner"),
+    )
+    status = models.ForeignKey(
+        "projects.IssueStatus",
+        null=True,
+        blank=True,
+        related_name="issues",
+        verbose_name=_("status"),
+    )
+    severity = models.ForeignKey(
+        "projects.Severity",
+        null=True,
+        blank=True,
+        related_name="issues",
+        verbose_name=_("severity"),
+    )
+    priority = models.ForeignKey(
+        "projects.Priority",
+        null=True,
+        blank=True,
+        related_name="issues",
+        verbose_name=_("priority"),
+    )
+    type = models.ForeignKey(
+        "projects.IssueType",
+        null=True,
+        blank=True,
+        related_name="issues",
+        verbose_name=_("type"),
+    )
+    milestone = models.ForeignKey(
+        "milestones.Milestone",
+        null=True,
+        blank=True,
+        default=None,
+        related_name="issues",
+        verbose_name=_("milestone"),
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="issues",
+        verbose_name=_("project"),
+    )
+    created_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("created date"), default=timezone.now
+    )
+    modified_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("modified date")
+    )
+    finished_date = models.DateTimeField(
+        null=True, blank=True, verbose_name=_("finished date")
+    )
+    subject = models.TextField(null=False, blank=False, verbose_name=_("subject"))
+    description = models.TextField(
+        null=False, blank=True, verbose_name=_("description")
+    )
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        default=None,
+        related_name="issues_assigned_to_me",
+        verbose_name=_("assigned to"),
+    )
     attachments = GenericRelation("attachments.Attachment")
-    external_reference = ArrayField(models.TextField(null=False, blank=False),
-                                    null=True, blank=True, default=None, verbose_name=_("external reference"))
+    external_reference = ArrayField(
+        models.TextField(null=False, blank=False),
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name=_("external reference"),
+    )
     _importing = None
 
     class Meta:
         verbose_name = "issue"
         verbose_name_plural = "issues"
         ordering = ["project", "-id"]
-        permissions = (
-            ("view_issue", "Can view issue"),
-        )
+        permissions = (("view_issue", "Can view issue"),)
 
     def save(self, *args, **kwargs):
         if not self._importing or not self.modified_date:

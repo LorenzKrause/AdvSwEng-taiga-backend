@@ -8,13 +8,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
-        ('timeline', '0006_json_to_jsonb'),
+        ("contenttypes", "0002_remove_content_type_name"),
+        ("timeline", "0006_json_to_jsonb"),
     ]
 
     operations = [
         migrations.AlterIndexTogether(
-            name='timeline',
-            index_together=set([('content_type', 'object_id', 'namespace'), ('namespace', 'created')]),
+            name="timeline",
+            index_together=set(
+                [("content_type", "object_id", "namespace"), ("namespace", "created")]
+            ),
         ),
     ]

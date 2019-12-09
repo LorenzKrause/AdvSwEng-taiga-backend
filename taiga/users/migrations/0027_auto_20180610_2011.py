@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0026_auto_20180514_1513'),
+        ("users", "0026_auto_20180514_1513"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='read_new_terms',
-            field=models.BooleanField(default=False, verbose_name='new terms read'),
+            model_name="user",
+            name="read_new_terms",
+            field=models.BooleanField(default=False, verbose_name="new terms read"),
         ),
     ]

@@ -39,12 +39,16 @@ CREATE_INDEX = """
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0032_auto_20151202_1151'),
+        ("projects", "0032_auto_20151202_1151"),
     ]
 
     operations = [
-        migrations.RunSQL([DROP_INMUTABLE_ARRAY_TO_STRING_FUNCTION, CREATE_INMUTABLE_ARRAY_TO_STRING_FUNCTION],
-                          [DROP_INMUTABLE_ARRAY_TO_STRING_FUNCTION]),
-        migrations.RunSQL([DROP_INDEX, CREATE_INDEX],
-                          [DROP_INDEX]),
+        migrations.RunSQL(
+            [
+                DROP_INMUTABLE_ARRAY_TO_STRING_FUNCTION,
+                CREATE_INMUTABLE_ARRAY_TO_STRING_FUNCTION,
+            ],
+            [DROP_INMUTABLE_ARRAY_TO_STRING_FUNCTION],
+        ),
+        migrations.RunSQL([DROP_INDEX, CREATE_INDEX], [DROP_INDEX]),
     ]

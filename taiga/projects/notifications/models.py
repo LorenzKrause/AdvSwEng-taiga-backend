@@ -34,10 +34,13 @@ class NotifyPolicy(models.Model):
     This class represents a persistence for
     project user notifications preference.
     """
+
     project = models.ForeignKey("projects.Project", related_name="notify_policies")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="notify_policies")
     notify_level = models.SmallIntegerField(choices=NOTIFY_LEVEL_CHOICES)
-    live_notify_level = models.SmallIntegerField(choices=NOTIFY_LEVEL_CHOICES, default=NotifyLevel.involved)
+    live_notify_level = models.SmallIntegerField(
+        choices=NOTIFY_LEVEL_CHOICES, default=NotifyLevel.involved
+    )
     web_notify_level = models.BooleanField(default=True, null=False, blank=True)
 
     created_at = models.DateTimeField(default=timezone.now)
@@ -45,7 +48,10 @@ class NotifyPolicy(models.Model):
     _importing = None
 
     class Meta:
-        unique_together = ("project", "user",)
+        unique_together = (
+            "project",
+            "user",
+        )
         ordering = ["created_at"]
 
     def save(self, *args, **kwargs):
@@ -60,21 +66,34 @@ class HistoryChangeNotification(models.Model):
     This class controls the pending notifications for an object, it should be instantiated
     or updated when an object requires notifications.
     """
+
     key = models.CharField(max_length=255, unique=False, editable=False)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=False, blank=False,
-                              verbose_name=_("owner"), related_name="+")
-    created_datetime = models.DateTimeField(null=False, blank=False, auto_now_add=True,
-                                            verbose_name=_("created date time"))
-    updated_datetime = models.DateTimeField(null=False, blank=False, auto_now_add=True,
-                                            verbose_name=_("updated date time"))
-    history_entries = models.ManyToManyField("history.HistoryEntry",
-                                             verbose_name=_("history entries"),
-                                             related_name="+")
-    notify_users = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                             verbose_name=_("notify users"),
-                                             related_name="+")
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                verbose_name=_("project"),related_name="+")
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=False,
+        blank=False,
+        verbose_name=_("owner"),
+        related_name="+",
+    )
+    created_datetime = models.DateTimeField(
+        null=False, blank=False, auto_now_add=True, verbose_name=_("created date time")
+    )
+    updated_datetime = models.DateTimeField(
+        null=False, blank=False, auto_now_add=True, verbose_name=_("updated date time")
+    )
+    history_entries = models.ManyToManyField(
+        "history.HistoryEntry", verbose_name=_("history entries"), related_name="+"
+    )
+    notify_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, verbose_name=_("notify users"), related_name="+"
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        verbose_name=_("project"),
+        related_name="+",
+    )
 
     history_type = models.SmallIntegerField(choices=HISTORY_TYPE_CHOICES)
 
@@ -86,12 +105,24 @@ class Watched(models.Model):
     content_type = models.ForeignKey("contenttypes.ContentType")
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=False, null=False,
-                              related_name="watched", verbose_name=_("user"))
-    created_date = models.DateTimeField(auto_now_add=True, null=False, blank=False,
-                                        verbose_name=_("created date"))
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                verbose_name=_("project"),related_name="watched")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=False,
+        null=False,
+        related_name="watched",
+        verbose_name=_("user"),
+    )
+    created_date = models.DateTimeField(
+        auto_now_add=True, null=False, blank=False, verbose_name=_("created date")
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        verbose_name=_("project"),
+        related_name="watched",
+    )
+
     class Meta:
         verbose_name = _("Watched")
         verbose_name_plural = _("Watched")

@@ -19,7 +19,9 @@
 from taiga.base import throttling
 
 
-class MembershipsRateThrottle(throttling.ThrottleByActionMixin, throttling.UserRateThrottle):
+class MembershipsRateThrottle(
+    throttling.ThrottleByActionMixin, throttling.UserRateThrottle
+):
     scope = "create-memberships"
     throttled_actions = ["create", "resend_invitation", "bulk_create"]
 

@@ -34,8 +34,9 @@ class FeedbackViewSet(viewsets.ViewSet):
         self.check_permissions(request, "create", None)
 
         data = copy.deepcopy(request.DATA)
-        data.update({"full_name": request.user.get_full_name(),
-                     "email": request.user.email})
+        data.update(
+            {"full_name": request.user.get_full_name(), "email": request.user.email}
+        )
 
         validator = self.validator_class(data=data)
         if not validator.is_valid():
@@ -44,7 +45,7 @@ class FeedbackViewSet(viewsets.ViewSet):
         self.object = validator.save(force_insert=True)
 
         extra = {
-            "HTTP_HOST":  request.META.get("HTTP_HOST", None),
+            "HTTP_HOST": request.META.get("HTTP_HOST", None),
             "HTTP_REFERER": request.META.get("HTTP_REFERER", None),
             "HTTP_USER_AGENT": request.META.get("HTTP_USER_AGENT", None),
         }

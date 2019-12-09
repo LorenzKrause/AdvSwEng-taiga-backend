@@ -28,8 +28,8 @@ from .routers import router
 ##############################################
 
 urlpatterns = [
-    url(r'^api/v1/', include(router.urls)),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r"^api/v1/", include(router.urls)),
+    url(r"^admin/", include(admin.site.urls)),
 ]
 
 handler500 = "taiga.base.api.views.api_server_error"
@@ -47,14 +47,18 @@ if settings.FRONT_SITEMAP_ENABLED:
     from taiga.front.sitemaps import sitemaps
 
     urlpatterns += [
-        url(r"^front/sitemap\.xml$",
+        url(
+            r"^front/sitemap\.xml$",
             cache_page(settings.FRONT_SITEMAP_CACHE_TIMEOUT)(index),
-            {"sitemaps": sitemaps, 'sitemap_url_name': 'front-sitemap'},
-            name="front-sitemap-index"),
-        url(r"^front/sitemap-(?P<section>.+)\.xml$",
+            {"sitemaps": sitemaps, "sitemap_url_name": "front-sitemap"},
+            name="front-sitemap-index",
+        ),
+        url(
+            r"^front/sitemap-(?P<section>.+)\.xml$",
             cache_page(settings.FRONT_SITEMAP_CACHE_TIMEOUT)(sitemap),
             {"sitemaps": sitemaps},
-            name="front-sitemap")
+            name="front-sitemap",
+        ),
     ]
 
 
@@ -73,8 +77,11 @@ if settings.DEBUG:
         from django.views.static import serve
 
         return [
-            url(r'^%s(?P<path>.*)$' % re.escape(prefix.lstrip('/')), serve,
-                {'document_root': settings.MEDIA_ROOT})
+            url(
+                r"^%s(?P<path>.*)$" % re.escape(prefix.lstrip("/")),
+                serve,
+                {"document_root": settings.MEDIA_ROOT},
+            )
         ]
 
     # Hardcoded only for development server

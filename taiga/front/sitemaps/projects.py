@@ -31,9 +31,10 @@ class ProjectsSitemap(Sitemap):
         project_model = apps.get_model("projects", "Project")
 
         # Get public projects OR private projects if anon user can view them
-        queryset = project_model.objects.filter(Q(is_private=False) |
-                                                Q(is_private=True,
-                                                  anon_permissions__contains=["view_project"]))
+        queryset = project_model.objects.filter(
+            Q(is_private=False)
+            | Q(is_private=True, anon_permissions__contains=["view_project"])
+        )
 
         # Exclude blocked projects
         queryset = queryset.filter(blocked_code__isnull=True)
@@ -63,10 +64,10 @@ class ProjectBacklogsSitemap(Sitemap):
         project_model = apps.get_model("projects", "Project")
 
         # Get public projects OR private projects if anon user can view them and user stories
-        queryset = project_model.objects.filter(Q(is_private=False) |
-                                                Q(is_private=True,
-                                                  anon_permissions__contains=["view_project",
-                                                                              "view_us"]))
+        queryset = project_model.objects.filter(
+            Q(is_private=False)
+            | Q(is_private=True, anon_permissions__contains=["view_project", "view_us"])
+        )
 
         queryset = queryset.exclude(description="")
         queryset = queryset.exclude(description__isnull=True)
@@ -97,10 +98,10 @@ class ProjectKanbansSitemap(Sitemap):
         project_model = apps.get_model("projects", "Project")
 
         # Get public projects OR private projects if anon user can view them and user stories
-        queryset = project_model.objects.filter(Q(is_private=False) |
-                                                Q(is_private=True,
-                                                  anon_permissions__contains=["view_project",
-                                                                              "view_us"]))
+        queryset = project_model.objects.filter(
+            Q(is_private=False)
+            | Q(is_private=True, anon_permissions__contains=["view_project", "view_us"])
+        )
 
         queryset = queryset.exclude(description="")
         queryset = queryset.exclude(description__isnull=True)

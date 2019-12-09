@@ -31,9 +31,13 @@ class IssuesSitemap(Sitemap):
         issue_model = apps.get_model("issues", "Issue")
 
         # Get issues of public projects OR private projects if anon user can view them
-        queryset = issue_model.objects.filter(Q(project__is_private=False) |
-                                              Q(project__is_private=True,
-                                                project__anon_permissions__contains=["view_issues"]))
+        queryset = issue_model.objects.filter(
+            Q(project__is_private=False)
+            | Q(
+                project__is_private=True,
+                project__anon_permissions__contains=["view_issues"],
+            )
+        )
 
         # Exclude blocked projects
         queryset = queryset.filter(project__blocked_code__isnull=True)

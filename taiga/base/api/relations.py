@@ -65,8 +65,6 @@ import warnings
 from urllib import parse as urlparse
 
 
-
-
 ##### Relational fields #####
 
 
@@ -77,6 +75,7 @@ class RelatedField(WritableField):
 
     This represents a relationship using the unicode representation of the target.
     """
+
     widget = widgets.Select
     many_widget = widgets.SelectMultiple
     form_field_class = forms.ChoiceField
@@ -92,9 +91,12 @@ class RelatedField(WritableField):
 
         # "null" is to be deprecated in favor of "required"
         if "null" in kwargs:
-            warnings.warn("The `null` keyword argument is deprecated. "
-                          "Use the `required` keyword argument instead.",
-                          DeprecationWarning, stacklevel=2)
+            warnings.warn(
+                "The `null` keyword argument is deprecated. "
+                "Use the `required` keyword argument instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             kwargs["required"] = not kwargs.pop("null")
 
         queryset = kwargs.pop("queryset", None)
@@ -230,17 +232,21 @@ class RelatedField(WritableField):
                 raise ValidationError(self.error_messages["required"])
             into[(self.source or field_name)] = None
         elif self.many:
-            into[(self.source or field_name)] = [self.from_native(item) for item in value]
+            into[(self.source or field_name)] = [
+                self.from_native(item) for item in value
+            ]
         else:
             into[(self.source or field_name)] = self.from_native(value)
 
 
 ### PrimaryKey relationships
 
+
 class PrimaryKeyRelatedField(RelatedField):
     """
     Represents a relationship as a pk value.
     """
+
     read_only = False
 
     default_error_messages = {
@@ -268,7 +274,9 @@ class PrimaryKeyRelatedField(RelatedField):
 
     def from_native(self, data):
         if self.queryset is None:
-            raise Exception("Writable related fields must include a `queryset` argument")
+            raise Exception(
+                "Writable related fields must include a `queryset` argument"
+            )
 
         try:
             return self.queryset.get(pk=data)
@@ -330,6 +338,7 @@ class SlugRelatedField(RelatedField):
     """
     Represents a relationship using a unique field on the target.
     """
+
     read_only = False
 
     default_error_messages = {
@@ -347,13 +356,17 @@ class SlugRelatedField(RelatedField):
 
     def from_native(self, data):
         if self.queryset is None:
-            raise Exception("Writable related fields must include a `queryset` argument")
+            raise Exception(
+                "Writable related fields must include a `queryset` argument"
+            )
 
         try:
             return self.queryset.get(**{self.slug_field: data})
         except ObjectDoesNotExist:
-            raise ValidationError(self.error_messages["does_not_exist"] %
-                                  (self.slug_field, smart_text(data)))
+            raise ValidationError(
+                self.error_messages["does_not_exist"]
+                % (self.slug_field, smart_text(data))
+            )
         except (TypeError, ValueError):
             msg = self.error_messages["invalid"]
             raise ValidationError(msg)
@@ -361,10 +374,12 @@ class SlugRelatedField(RelatedField):
 
 ### Hyperlinked relationships
 
+
 class HyperlinkedRelatedField(RelatedField):
     """
     Represents a relationship using hyperlinking.
     """
+
     read_only = False
     lookup_field = "pk"
 
@@ -385,7 +400,7 @@ class HyperlinkedRelatedField(RelatedField):
         try:
             self.view_name = kwargs.pop("view_name")
         except KeyError:
-            raise ValueError("Hyperlinked field requires \"view_name\" kwarg")
+            raise ValueError('Hyperlinked field requires "view_name" kwarg')
 
         self.lookup_field = kwargs.pop("lookup_field", self.lookup_field)
         self.format = kwargs.pop("format", None)
@@ -442,8 +457,10 @@ class HyperlinkedRelatedField(RelatedField):
                     # If the lookup succeeds using the default slug params,
                     # then `slug_field` is being used implicitly, and we
                     # we need to warn about the pending deprecation.
-                    msg = "Implicit slug field hyperlinked fields are pending deprecation." \
-                          "You should set `lookup_field=slug` on the HyperlinkedRelatedField."
+                    msg = (
+                        "Implicit slug field hyperlinked fields are pending deprecation."
+                        "You should set `lookup_field=slug` on the HyperlinkedRelatedField."
+                    )
                     warnings.warn(msg, PendingDeprecationWarning, stacklevel=2)
                 return ret
             except NoReverseMatch:
@@ -508,7 +525,9 @@ class HyperlinkedRelatedField(RelatedField):
         # TODO: Use values_list
         queryset = self.queryset
         if queryset is None:
-            raise Exception("Writable related fields must include a `queryset` argument")
+            raise Exception(
+                "Writable related fields must include a `queryset` argument"
+            )
 
         try:
             http_prefix = value.startswith(("http:", "https:"))
@@ -521,7 +540,7 @@ class HyperlinkedRelatedField(RelatedField):
             value = urlparse.urlparse(value).path
             prefix = get_script_prefix()
             if value.startswith(prefix):
-                value = "/" + value[len(prefix):]
+                value = "/" + value[len(prefix) :]
 
         try:
             match = resolve(value)
@@ -532,8 +551,7 @@ class HyperlinkedRelatedField(RelatedField):
             raise ValidationError(self.error_messages["incorrect_match"])
 
         try:
-            return self.get_object(queryset, match.view_name,
-                                   match.args, match.kwargs)
+            return self.get_object(queryset, match.view_name, match.args, match.kwargs)
         except (ObjectDoesNotExist, TypeError, ValueError):
             raise ValidationError(self.error_messages["does_not_exist"])
 
@@ -542,6 +560,7 @@ class HyperlinkedIdentityField(Field):
     """
     Represents the instance, or a property on the instance, using hyperlinking.
     """
+
     lookup_field = "pk"
     read_only = True
 
@@ -554,7 +573,7 @@ class HyperlinkedIdentityField(Field):
         try:
             self.view_name = kwargs.pop("view_name")
         except KeyError:
-            msg = "HyperlinkedIdentityField requires \"view_name\" argument"
+            msg = 'HyperlinkedIdentityField requires "view_name" argument'
             raise ValueError(msg)
 
         self.format = kwargs.pop("format", None)
@@ -585,10 +604,13 @@ class HyperlinkedIdentityField(Field):
         view_name = self.view_name
 
         if request is None:
-            warnings.warn("Using `HyperlinkedIdentityField` without including the "
-                          "request in the serializer context is deprecated. "
-                          "Add `context={'request': request}` when instantiating the serializer.",
-                          DeprecationWarning, stacklevel=4)
+            warnings.warn(
+                "Using `HyperlinkedIdentityField` without including the "
+                "request in the serializer context is deprecated. "
+                "Add `context={'request': request}` when instantiating the serializer.",
+                DeprecationWarning,
+                stacklevel=4,
+            )
 
         # By default use whatever format is given for the current context
         # unless the target is a different type to the source.

@@ -54,6 +54,7 @@ def _get_issues_tags(project):
 
 # Public api
 
+
 def get_all_tags(project):
     """
     Given a project, return sorted list of unique

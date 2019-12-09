@@ -34,6 +34,7 @@ class JSONField(serializers.WritableField):
     """
     Json objects serializer.
     """
+
     widget = widgets.Textarea
 
     def to_native(self, obj):
@@ -47,6 +48,7 @@ class PgArrayField(serializers.WritableField):
     """
     PgArray objects serializer.
     """
+
     widget = widgets.Textarea
 
     def to_native(self, obj):
@@ -60,6 +62,7 @@ class PickledObjectField(serializers.WritableField):
     """
     PickledObjectField objects serializer.
     """
+
     widget = widgets.Textarea
 
     def to_native(self, obj):
@@ -81,6 +84,7 @@ class WatchersField(serializers.WritableField):
 # Serpy fields (NEW)
 ####################################################################
 
+
 class Field(serpy.Field):
     pass
 
@@ -99,6 +103,7 @@ class I18NJSONField(Field):
     """
     Json objects serializer.
     """
+
     def __init__(self, i18n_fields=(), *args, **kwargs):
         super(I18NJSONField, self).__init__(*args, **kwargs)
         self.i18n_fields = i18n_fields

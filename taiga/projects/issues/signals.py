@@ -36,6 +36,7 @@ def cached_prev_issue(sender, instance, **kwargs):
 # Signals for set finished date
 ####################################
 
+
 def set_finished_date_when_edit_issue(sender, instance, **kwargs):
     if instance.status is None:
         return
@@ -45,7 +46,9 @@ def set_finished_date_when_edit_issue(sender, instance, **kwargs):
         instance.finished_date = None
 
 
-def try_to_close_or_open_milestone_when_create_or_edit_issue(sender, instance, created, **kwargs):
+def try_to_close_or_open_milestone_when_create_or_edit_issue(
+    sender, instance, created, **kwargs
+):
     if instance._importing:
         return
 
@@ -72,7 +75,11 @@ def _try_to_close_or_open_milestone_when_create_or_edit_issue(instance):
         else:
             milestone_service.open_milestone(instance.milestone)
 
-    if instance.prev and instance.prev.milestone_id and instance.prev.milestone_id != instance.milestone_id:
+    if (
+        instance.prev
+        and instance.prev.milestone_id
+        and instance.prev.milestone_id != instance.milestone_id
+    ):
         if milestone_service.calculate_milestone_is_closed(instance.prev.milestone):
             milestone_service.close_milestone(instance.prev.milestone)
         else:
@@ -86,5 +93,7 @@ def _try_to_close_milestone_when_delete_issue(instance):
     from taiga.projects.milestones import services as milestone_service
 
     with suppress(ObjectDoesNotExist):
-        if instance.milestone_id and milestone_service.calculate_milestone_is_closed(instance.milestone):
-                milestone_service.close_milestone(instance.milestone)
+        if instance.milestone_id and milestone_service.calculate_milestone_is_closed(
+            instance.milestone
+        ):
+            milestone_service.close_milestone(instance.milestone)

@@ -43,6 +43,7 @@ from . import models
 # Bulk actions
 #####################################################
 
+
 def get_userstories_from_bulk(bulk_data, **additional_fields):
     """Convert `bulk_data` into a list of user stories.
 
@@ -52,12 +53,15 @@ def get_userstories_from_bulk(bulk_data, **additional_fields):
 
     :return: List of `UserStory` instances.
     """
-    return [models.UserStory(subject=line, **additional_fields)
-            for line in text.split_in_lines(bulk_data)]
+    return [
+        models.UserStory(subject=line, **additional_fields)
+        for line in text.split_in_lines(bulk_data)
+    ]
 
 
-def create_userstories_in_bulk(bulk_data, callback=None, precall=None,
-                               **additional_fields):
+def create_userstories_in_bulk(
+    bulk_data, callback=None, precall=None, **additional_fields
+):
     """Create user stories from `bulk_data`.
 
     :param bulk_data: List of user stories in bulk format.
@@ -80,10 +84,13 @@ def create_userstories_in_bulk(bulk_data, callback=None, precall=None,
     return userstories
 
 
-def update_userstories_order_in_bulk(bulk_data: list, field: str,
-                                     project: object,
-                                     status: object = None,
-                                     milestone: object = None):
+def update_userstories_order_in_bulk(
+    bulk_data: list,
+    field: str,
+    project: object,
+    status: object = None,
+    milestone: object = None,
+):
     """
     Updates the order of the userstories specified adding the extra updates
     needed to keep consistency.
@@ -103,9 +110,9 @@ def update_userstories_order_in_bulk(bulk_data: list, field: str,
     apply_order_updates(us_orders, new_us_orders, remove_equal_original=True)
 
     user_story_ids = us_orders.keys()
-    events.emit_event_for_ids(ids=user_story_ids,
-                              content_type="userstories.userstory",
-                              projectid=project.pk)
+    events.emit_event_for_ids(
+        ids=user_story_ids, content_type="userstories.userstory", projectid=project.pk
+    )
     db.update_attr_in_bulk_for_ids(us_orders, field, models.UserStory)
     return us_orders
 
@@ -131,18 +138,21 @@ def update_userstories_milestone_in_bulk(bulk_data: list, milestone: object):
     us_milestones = {e["us_id"]: milestone.id for e in bulk_data}
     user_story_ids = us_milestones.keys()
 
-    events.emit_event_for_ids(ids=user_story_ids,
-                              content_type="userstories.userstory",
-                              projectid=milestone.project.pk)
+    events.emit_event_for_ids(
+        ids=user_story_ids,
+        content_type="userstories.userstory",
+        projectid=milestone.project.pk,
+    )
 
-    db.update_attr_in_bulk_for_ids(us_milestones, "milestone_id",
-                                   model=models.UserStory)
+    db.update_attr_in_bulk_for_ids(
+        us_milestones, "milestone_id", model=models.UserStory
+    )
     db.update_attr_in_bulk_for_ids(us_orders, "sprint_order", models.UserStory)
 
     # Updating the milestone for the tasks
-    Task.objects.filter(
-        user_story_id__in=[e["us_id"] for e in bulk_data]).update(
-        milestone=milestone)
+    Task.objects.filter(user_story_id__in=[e["us_id"] for e in bulk_data]).update(
+        milestone=milestone
+    )
 
     return us_orders
 
@@ -150,7 +160,7 @@ def update_userstories_milestone_in_bulk(bulk_data: list, milestone: object):
 def snapshot_userstories_in_bulk(bulk_data, user):
     for us_data in bulk_data:
         try:
-            us = models.UserStory.objects.get(pk=us_data['us_id'])
+            us = models.UserStory.objects.get(pk=us_data["us_id"])
             take_snapshot(us, user=user)
         except models.UserStory.DoesNotExist:
             pass
@@ -160,6 +170,7 @@ def snapshot_userstories_in_bulk(bulk_data, user):
 # Open/Close calcs
 #####################################################
 
+
 def calculate_userstory_is_closed(user_story):
     if user_story.status is None:
         return False
@@ -167,8 +178,12 @@ def calculate_userstory_is_closed(user_story):
     if user_story.tasks.count() == 0:
         return user_story.status is not None and user_story.status.is_closed
 
-    if all([task.status is not None and task.status.is_closed for task in
-            user_story.tasks.all()]):
+    if all(
+        [
+            task.status is not None and task.status.is_closed
+            for task in user_story.tasks.all()
+        ]
+    ):
         return True
 
     return False
@@ -192,44 +207,76 @@ def open_userstory(us):
 # CSV
 #####################################################
 
+
 def userstories_to_csv(project, queryset):
     csv_data = io.StringIO()
-    fieldnames = ["id", "ref", "subject", "description", "sprint_id", "sprint",
-                  "sprint_estimated_start", "sprint_estimated_finish", "owner",
-                  "owner_full_name", "assigned_to", "assigned_to_full_name",
-                  "assigned_users", "assigned_users_full_name", "status",
-                  "is_closed"]
+    fieldnames = [
+        "id",
+        "ref",
+        "subject",
+        "description",
+        "sprint_id",
+        "sprint",
+        "sprint_estimated_start",
+        "sprint_estimated_finish",
+        "owner",
+        "owner_full_name",
+        "assigned_to",
+        "assigned_to_full_name",
+        "assigned_users",
+        "assigned_users_full_name",
+        "status",
+        "is_closed",
+    ]
 
-    roles = project.roles.filter(computable=True).order_by('slug')
+    roles = project.roles.filter(computable=True).order_by("slug")
     for role in roles:
         fieldnames.append("{}-points".format(role.slug))
 
     fieldnames.append("total-points")
 
-    fieldnames += ["backlog_order", "sprint_order", "kanban_order",
-                   "created_date", "modified_date", "finish_date",
-                   "client_requirement", "team_requirement", "attachments",
-                   "generated_from_issue", "generated_from_task",
-                   "external_reference", "tasks", "tags", "watchers", "voters",
-                   "due_date", "due_date_reason"]
+    fieldnames += [
+        "backlog_order",
+        "sprint_order",
+        "kanban_order",
+        "created_date",
+        "modified_date",
+        "finish_date",
+        "client_requirement",
+        "team_requirement",
+        "attachments",
+        "generated_from_issue",
+        "generated_from_task",
+        "external_reference",
+        "tasks",
+        "tags",
+        "watchers",
+        "voters",
+        "due_date",
+        "due_date_reason",
+    ]
 
     custom_attrs = project.userstorycustomattributes.all()
     for custom_attr in custom_attrs:
         fieldnames.append(custom_attr.name)
 
-    queryset = queryset.prefetch_related("role_points",
-                                         "role_points__points",
-                                         "role_points__role",
-                                         "tasks",
-                                         "attachments",
-                                         "custom_attributes_values")
-    queryset = queryset.select_related("milestone",
-                                       "project",
-                                       "status",
-                                       "owner",
-                                       "assigned_to",
-                                       "generated_from_issue",
-                                       "generated_from_task")
+    queryset = queryset.prefetch_related(
+        "role_points",
+        "role_points__points",
+        "role_points__role",
+        "tasks",
+        "attachments",
+        "custom_attributes_values",
+    )
+    queryset = queryset.select_related(
+        "milestone",
+        "project",
+        "status",
+        "owner",
+        "assigned_to",
+        "generated_from_issue",
+        "generated_from_task",
+    )
 
     queryset = attach_total_voters_to_queryset(queryset)
     queryset = attach_watchers_to_queryset(queryset)
@@ -244,21 +291,27 @@ def userstories_to_csv(project, queryset):
             "description": us.description,
             "sprint_id": us.milestone.id if us.milestone else None,
             "sprint": us.milestone.name if us.milestone else None,
-            "sprint_estimated_start": us.milestone.estimated_start if
-            us.milestone else None,
-            "sprint_estimated_finish": us.milestone.estimated_finish if
-            us.milestone else None,
+            "sprint_estimated_start": us.milestone.estimated_start
+            if us.milestone
+            else None,
+            "sprint_estimated_finish": us.milestone.estimated_finish
+            if us.milestone
+            else None,
             "owner": us.owner.username if us.owner else None,
             "owner_full_name": us.owner.get_full_name() if us.owner else None,
             "assigned_to": us.assigned_to.username if us.assigned_to else None,
-            "assigned_to_full_name": us.assigned_to.get_full_name() if
-            us.assigned_to else None,
+            "assigned_to_full_name": us.assigned_to.get_full_name()
+            if us.assigned_to
+            else None,
             "assigned_users": ",".join(
-                [assigned_user.username for assigned_user in
-                 us.assigned_users.all()]),
+                [assigned_user.username for assigned_user in us.assigned_users.all()]
+            ),
             "assigned_users_full_name": ",".join(
-                [assigned_user.get_full_name() for assigned_user in
-                 us.assigned_users.all()]),
+                [
+                    assigned_user.get_full_name()
+                    for assigned_user in us.assigned_users.all()
+                ]
+            ),
             "status": us.status.name if us.status else None,
             "is_closed": us.is_closed,
             "backlog_order": us.backlog_order,
@@ -270,10 +323,12 @@ def userstories_to_csv(project, queryset):
             "client_requirement": us.client_requirement,
             "team_requirement": us.team_requirement,
             "attachments": us.attachments.count(),
-            "generated_from_issue": us.generated_from_issue.ref if
-            us.generated_from_issue else None,
-            "generated_from_task": us.generated_from_task.ref if
-            us.generated_from_task else None,
+            "generated_from_issue": us.generated_from_issue.ref
+            if us.generated_from_issue
+            else None,
+            "generated_from_task": us.generated_from_task.ref
+            if us.generated_from_task
+            else None,
             "external_reference": us.external_reference,
             "tasks": ",".join([str(task.ref) for task in us.tasks.all()]),
             "tags": ",".join(us.tags or []),
@@ -283,19 +338,22 @@ def userstories_to_csv(project, queryset):
             "due_date_reason": us.due_date_reason,
         }
 
-        us_role_points_by_role_id = {us_rp.role.id: us_rp.points.value for
-                                     us_rp in us.role_points.all()}
+        us_role_points_by_role_id = {
+            us_rp.role.id: us_rp.points.value for us_rp in us.role_points.all()
+        }
         for role in roles:
-            row["{}-points".format(role.slug)] = \
-                us_role_points_by_role_id.get(role.id, 0)
+            row["{}-points".format(role.slug)] = us_role_points_by_role_id.get(
+                role.id, 0
+            )
 
-        row['total-points'] = us.get_total_points()
+        row["total-points"] = us.get_total_points()
 
         for custom_attr in custom_attrs:
             if not hasattr(us, "custom_attributes_values"):
                 continue
             value = us.custom_attributes_values.attributes_values.get(
-                str(custom_attr.id), None)
+                str(custom_attr.id), None
+            )
             row[custom_attr.name] = value
 
         writer.writerow(row)
@@ -307,8 +365,11 @@ def userstories_to_csv(project, queryset):
 # Api filter data
 #####################################################
 
+
 def _get_userstories_statuses(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -343,7 +404,9 @@ def _get_userstories_statuses(project, queryset):
                      ON "counters"."status_id" = "projects_userstorystatus"."id"
                   WHERE "projects_userstorystatus"."project_id" = %s
                ORDER BY "projects_userstorystatus"."order";
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -351,18 +414,16 @@ def _get_userstories_statuses(project, queryset):
 
     result = []
     for id, name, color, order, count in rows:
-        result.append({
-            "id": id,
-            "name": _(name),
-            "color": color,
-            "order": order,
-            "count": count,
-        })
+        result.append(
+            {"id": id, "name": _(name), "color": color, "order": order, "count": count,}
+        )
     return sorted(result, key=itemgetter("order"))
 
 
 def _get_userstories_assigned_to(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -419,7 +480,9 @@ def _get_userstories_assigned_to(project, queryset):
                       ON "userstories_userstory"."id" = "userstories_userstory_assigned_users"."userstory_id"
                   WHERE {where} AND "userstories_userstory"."assigned_to_id" IS NULL
                GROUP BY "assigned_to_id"
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id] + where_params)
@@ -428,28 +491,26 @@ def _get_userstories_assigned_to(project, queryset):
     result = []
     none_valued_added = False
     for id, full_name, username, count in rows:
-        result.append({
-            "id": id,
-            "full_name": full_name or username or "",
-            "count": count,
-        })
+        result.append(
+            {"id": id, "full_name": full_name or username or "", "count": count,}
+        )
 
         if id is None:
             none_valued_added = True
 
     # If there was no userstory with null assigned_to we manually add it
     if not none_valued_added:
-        result.append({
-            "id": None,
-            "full_name": "",
-            "count": 0,
-        })
+        result.append(
+            {"id": None, "full_name": "", "count": 0,}
+        )
 
     return sorted(result, key=itemgetter("full_name"))
 
 
 def _get_userstories_assigned_users(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -508,7 +569,9 @@ def _get_userstories_assigned_users(project, queryset):
                       "userstories_userstory_assigned_users"
                   ) AND "userstories_userstory"."assigned_to_id" IS NULL
                GROUP BY "username";
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id] + where_params)
@@ -517,28 +580,26 @@ def _get_userstories_assigned_users(project, queryset):
     result = []
     none_valued_added = False
     for id, full_name, username, count in rows:
-        result.append({
-            "id": id,
-            "full_name": full_name or username or "",
-            "count": count,
-        })
+        result.append(
+            {"id": id, "full_name": full_name or username or "", "count": count,}
+        )
 
         if id is None:
             none_valued_added = True
 
     # If there was no userstory with null assigned_to we manually add it
     if not none_valued_added:
-        result.append({
-            "id": None,
-            "full_name": "",
-            "count": 0,
-        })
+        result.append(
+            {"id": None, "full_name": "", "count": 0,}
+        )
 
     return sorted(result, key=itemgetter("full_name"))
 
 
 def _get_userstories_owners(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -588,7 +649,9 @@ def _get_userstories_owners(project, queryset):
         LEFT OUTER JOIN "counters"
                      ON ("users_user"."id" = "counters"."owner_id")
                   WHERE ("users_user"."is_system" IS TRUE)
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -597,16 +660,16 @@ def _get_userstories_owners(project, queryset):
     result = []
     for id, full_name, username, count in rows:
         if count > 0:
-            result.append({
-                "id": id,
-                "full_name": full_name or username or "",
-                "count": count,
-            })
+            result.append(
+                {"id": id, "full_name": full_name or username or "", "count": count,}
+            )
     return sorted(result, key=itemgetter("full_name"))
 
 
 def _get_userstories_tags(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -643,7 +706,9 @@ def _get_userstories_tags(project, queryset):
 LEFT OUTER JOIN "userstories_tags"
              ON "project_tags"."tag_color"[1] = "userstories_tags"."tag"
        ORDER BY "tag"
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -651,16 +716,16 @@ LEFT OUTER JOIN "userstories_tags"
 
     result = []
     for name, color, count in rows:
-        result.append({
-            "name": name,
-            "color": color,
-            "count": count,
-        })
+        result.append(
+            {"name": name, "color": color, "count": count,}
+        )
     return sorted(result, key=itemgetter("name"))
 
 
 def _get_userstories_epics(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -710,7 +775,9 @@ def _get_userstories_epics(project, queryset):
       LEFT OUTER JOIN "counters"
                    ON ("counters"."epic_id" = "epics_epic"."id")
                 WHERE "epics_epic"."project_id" = %s
-        """.format(where=where)
+        """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + where_params + [project.id])
@@ -718,30 +785,24 @@ def _get_userstories_epics(project, queryset):
 
     result = []
     for id, ref, subject, order, count in rows:
-        result.append({
-            "id": id,
-            "ref": ref,
-            "subject": subject,
-            "order": order,
-            "count": count,
-        })
+        result.append(
+            {"id": id, "ref": ref, "subject": subject, "order": order, "count": count,}
+        )
 
     result = sorted(result, key=lambda k: (k["order"], k["id"] or 0))
 
     # Add row when there is no user stories with no epics
     if result == [] or result[0]["id"] is not None:
-        result.insert(0, {
-            "id": None,
-            "ref": None,
-            "subject": None,
-            "order": 0,
-            "count": 0,
-        })
+        result.insert(
+            0, {"id": None, "ref": None, "subject": None, "order": 0, "count": 0,}
+        )
     return result
 
 
 def _get_userstories_roles(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -781,7 +842,9 @@ def _get_userstories_roles(project, queryset):
                      ON "counters"."role_id" = "users_role"."id"
                   WHERE "users_role"."project_id" = %s
                ORDER BY "users_role"."order";
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -789,13 +852,9 @@ def _get_userstories_roles(project, queryset):
 
     result = []
     for id, name, order, count in rows:
-        result.append({
-            "id": id,
-            "name": _(name),
-            "color": None,
-            "order": order,
-            "count": count,
-        })
+        result.append(
+            {"id": id, "name": _(name), "color": None, "order": order, "count": count,}
+        )
     return sorted(result, key=itemgetter("order"))
 
 
@@ -804,16 +863,22 @@ def get_userstories_filters_data(project, querysets):
     Given a project and an userstories queryset, return a simple data structure
     of all possible filters for the userstories in the queryset.
     """
-    data = OrderedDict([
-        ("statuses", _get_userstories_statuses(project, querysets["statuses"])),
-        ("assigned_to",
-         _get_userstories_assigned_to(project, querysets["assigned_to"])),
-        ("assigned_users",
-         _get_userstories_assigned_users(project, querysets["assigned_users"])),
-        ("owners", _get_userstories_owners(project, querysets["owners"])),
-        ("tags", _get_userstories_tags(project, querysets["tags"])),
-        ("epics", _get_userstories_epics(project, querysets["epics"])),
-        ("roles", _get_userstories_roles(project, querysets["roles"])),
-    ])
+    data = OrderedDict(
+        [
+            ("statuses", _get_userstories_statuses(project, querysets["statuses"])),
+            (
+                "assigned_to",
+                _get_userstories_assigned_to(project, querysets["assigned_to"]),
+            ),
+            (
+                "assigned_users",
+                _get_userstories_assigned_users(project, querysets["assigned_users"]),
+            ),
+            ("owners", _get_userstories_owners(project, querysets["owners"])),
+            ("tags", _get_userstories_tags(project, querysets["tags"])),
+            ("epics", _get_userstories_epics(project, querysets["epics"])),
+            ("roles", _get_userstories_roles(project, querysets["roles"])),
+        ]
+    )
 
     return data

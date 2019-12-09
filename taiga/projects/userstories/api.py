@@ -56,54 +56,67 @@ from . import services
 from . import validators
 
 
-class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
-                       VotedResourceMixin, HistoryResourceMixin,
-                       WatchedResourceMixin, ByRefMixin, TaggedResourceMixin,
-                       BlockedByProjectMixin, ModelCrudViewSet):
+class UserStoryViewSet(
+    AssignedUsersSignalMixin,
+    OCCResourceMixin,
+    VotedResourceMixin,
+    HistoryResourceMixin,
+    WatchedResourceMixin,
+    ByRefMixin,
+    TaggedResourceMixin,
+    BlockedByProjectMixin,
+    ModelCrudViewSet,
+):
     validator_class = validators.UserStoryValidator
     queryset = models.UserStory.objects.all()
     permission_classes = (permissions.UserStoryPermission,)
-    filter_backends = (base_filters.CanViewUsFilterBackend,
-                       filters.EpicFilter,
-                       base_filters.UserStoriesRoleFilter,
-                       base_filters.OwnersFilter,
-                       base_filters.AssignedToFilter,
-                       base_filters.AssignedUsersFilter,
-                       base_filters.UserStoryStatusesFilter,
-                       base_filters.TagsFilter,
-                       base_filters.WatchersFilter,
-                       base_filters.QFilter,
-                       base_filters.CreatedDateFilter,
-                       base_filters.ModifiedDateFilter,
-                       base_filters.FinishDateFilter,
-                       base_filters.MilestoneEstimatedStartFilter,
-                       base_filters.MilestoneEstimatedFinishFilter,
-                       base_filters.OrderByFilterMixin)
-    filter_fields = ["project",
-                     "project__slug",
-                     "milestone",
-                     "milestone__isnull",
-                     "is_closed",
-                     "status__is_archived",
-                     "status__is_closed"]
-    order_by_fields = ["backlog_order",
-                       "sprint_order",
-                       "kanban_order",
-                       "epic_order",
-                       "project",
-                       "milestone",
-                       "status",
-                       "created_date",
-                       "modified_date",
-                       "assigned_to",
-                       "subject",
-                       "total_voters"]
+    filter_backends = (
+        base_filters.CanViewUsFilterBackend,
+        filters.EpicFilter,
+        base_filters.UserStoriesRoleFilter,
+        base_filters.OwnersFilter,
+        base_filters.AssignedToFilter,
+        base_filters.AssignedUsersFilter,
+        base_filters.UserStoryStatusesFilter,
+        base_filters.TagsFilter,
+        base_filters.WatchersFilter,
+        base_filters.QFilter,
+        base_filters.CreatedDateFilter,
+        base_filters.ModifiedDateFilter,
+        base_filters.FinishDateFilter,
+        base_filters.MilestoneEstimatedStartFilter,
+        base_filters.MilestoneEstimatedFinishFilter,
+        base_filters.OrderByFilterMixin,
+    )
+    filter_fields = [
+        "project",
+        "project__slug",
+        "milestone",
+        "milestone__isnull",
+        "is_closed",
+        "status__is_archived",
+        "status__is_closed",
+    ]
+    order_by_fields = [
+        "backlog_order",
+        "sprint_order",
+        "kanban_order",
+        "epic_order",
+        "project",
+        "milestone",
+        "status",
+        "created_date",
+        "modified_date",
+        "assigned_to",
+        "subject",
+        "total_voters",
+    ]
 
     def get_serializer_class(self, *args, **kwargs):
         if self.action in ["retrieve", "by_ref"]:
             return serializers.UserStoryNeighborsSerializer
 
-        if self.action == "list" and self.request.QUERY_PARAMS.get('dashboard', False):
+        if self.action == "list" and self.request.QUERY_PARAMS.get("dashboard", False):
             return serializers.UserStoryLightSerializer
 
         if self.action == "list":
@@ -113,15 +126,12 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
 
     def get_queryset(self):
         qs = super().get_queryset()
-        qs = qs.select_related("project",
-                               "status",
-                               "assigned_to")
+        qs = qs.select_related("project", "status", "assigned_to")
 
-        if not self.request.QUERY_PARAMS.get('dashboard', False):
-            qs = qs.select_related("milestone",
-                                   "owner",
-                                   "generated_from_issue",
-                                   "generated_from_task")
+        if not self.request.QUERY_PARAMS.get("dashboard", False):
+            qs = qs.select_related(
+                "milestone", "owner", "generated_from_issue", "generated_from_task"
+            )
 
             qs = qs.prefetch_related("assigned_users")
             include_attachments = "include_attachments" in self.request.QUERY_PARAMS
@@ -134,22 +144,33 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
             if epic_id is not None:
                 epic_id = epic_id.split(",")[0]
 
-            qs = attach_extra_info(qs, user=self.request.user,
-                                   include_attachments=include_attachments,
-                                   include_tasks=include_tasks,
-                                   epic_id=epic_id)
+            qs = attach_extra_info(
+                qs,
+                user=self.request.user,
+                include_attachments=include_attachments,
+                include_tasks=include_tasks,
+                epic_id=epic_id,
+            )
         return qs
 
     def pre_conditions_on_save(self, obj):
         super().pre_conditions_on_save(obj)
 
         if obj.milestone and obj.milestone.project != obj.project:
-            raise exc.PermissionDenied(_("You don't have permissions to set this sprint "
-                                         "to this user story."))
+            raise exc.PermissionDenied(
+                _(
+                    "You don't have permissions to set this sprint "
+                    "to this user story."
+                )
+            )
 
         if obj.status and obj.status.project != obj.project:
-            raise exc.PermissionDenied(_("You don't have permissions to set this status "
-                                         "to this user story."))
+            raise exc.PermissionDenied(
+                _(
+                    "You don't have permissions to set this status "
+                    "to this user story."
+                )
+            )
 
     """
     Updating some attributes of the userstory can affect the ordering in the backlog, kanban or taskboard
@@ -157,6 +178,7 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
     saving
     If there is any difference it means an extra ordering update must be done
     """
+
     def _backlog_order_key(self, obj):
         return "{}-{}".format(obj.project_id, obj.backlog_order)
 
@@ -189,8 +211,16 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
         self._old_kanban_order_key = self._kanban_order_key(self.object)
         self._old_sprint_order_key = self._sprint_order_key(self.object)
 
-    def _reorder_if_needed(self, obj, old_order_key, order_key, order_attr,
-                           project, status=None, milestone=None):
+    def _reorder_if_needed(
+        self,
+        obj,
+        old_order_key,
+        order_key,
+        order_attr,
+        project,
+        status=None,
+        milestone=None,
+    ):
         # Executes the extra ordering if there is a difference in the  ordering keys
         if old_order_key != order_key:
             extra_orders = json.loads(self.request.META.get("HTTP_SET_ORDERS", "{}"))
@@ -198,36 +228,40 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
             for id, order in extra_orders.items():
                 data.append({"us_id": int(id), "order": order})
 
-            return services.update_userstories_order_in_bulk(data,
-                                                             order_attr,
-                                                             project,
-                                                             status=status,
-                                                             milestone=milestone)
+            return services.update_userstories_order_in_bulk(
+                data, order_attr, project, status=status, milestone=milestone
+            )
         return {}
 
     def post_save(self, obj, created=False):
         if not created:
             # Let's reorder the related stuff after edit the element
             orders_updated = {}
-            updated = self._reorder_if_needed(obj,
-                                              self._old_backlog_order_key,
-                                              self._backlog_order_key(obj),
-                                              "backlog_order",
-                                              obj.project)
+            updated = self._reorder_if_needed(
+                obj,
+                self._old_backlog_order_key,
+                self._backlog_order_key(obj),
+                "backlog_order",
+                obj.project,
+            )
             orders_updated.update(updated)
-            updated = self._reorder_if_needed(obj,
-                                              self._old_kanban_order_key,
-                                              self._kanban_order_key(obj),
-                                              "kanban_order",
-                                              obj.project,
-                                              status=obj.status)
+            updated = self._reorder_if_needed(
+                obj,
+                self._old_kanban_order_key,
+                self._kanban_order_key(obj),
+                "kanban_order",
+                obj.project,
+                status=obj.status,
+            )
             orders_updated.update(updated)
-            updated = self._reorder_if_needed(obj,
-                                              self._old_sprint_order_key,
-                                              self._sprint_order_key(obj),
-                                              "sprint_order",
-                                              obj.project,
-                                              milestone=obj.milestone)
+            updated = self._reorder_if_needed(
+                obj,
+                self._old_sprint_order_key,
+                self._sprint_order_key(obj),
+                "sprint_order",
+                obj.project,
+                milestone=obj.milestone,
+            )
             orders_updated.update(updated)
             self.headers["Taiga-Info-Order-Updated"] = json.dumps(orders_updated)
 
@@ -239,19 +273,30 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
 
             for role_id, points_id in self._role_points.items():
                 try:
-                    role_points = RolePoints.objects.get(role__id=role_id, user_story_id=obj.pk,
-                                                         role__computable=True)
+                    role_points = RolePoints.objects.get(
+                        role__id=role_id, user_story_id=obj.pk, role__computable=True
+                    )
                 except (ValueError, RolePoints.DoesNotExist):
-                    raise exc.BadRequest({
-                        "points": _("Invalid role id '{role_id}'").format(role_id=role_id)
-                    })
+                    raise exc.BadRequest(
+                        {
+                            "points": _("Invalid role id '{role_id}'").format(
+                                role_id=role_id
+                            )
+                        }
+                    )
 
                 try:
-                    role_points.points = Points.objects.get(id=points_id, project_id=obj.project_id)
+                    role_points.points = Points.objects.get(
+                        id=points_id, project_id=obj.project_id
+                    )
                 except (ValueError, Points.DoesNotExist):
-                    raise exc.BadRequest({
-                        "points": _("Invalid points id '{points_id}'").format(points_id=points_id)
-                    })
+                    raise exc.BadRequest(
+                        {
+                            "points": _("Invalid points id '{points_id}'").format(
+                                points_id=points_id
+                            )
+                        }
+                    )
 
                 role_points.save()
 
@@ -263,16 +308,18 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
 
         # Added comment to the origin (issue)
         if response.status_code == status.HTTP_201_CREATED:
-            for generated_from in ['generated_from_issue', 'generated_from_task']:
+            for generated_from in ["generated_from_issue", "generated_from_task"]:
                 generator = getattr(self.object, generated_from)
                 if generator:
                     generator.save()
 
                     comment = _("Generating the user story #{ref} - {subject}")
-                    comment = comment.format(ref=self.object.ref, subject=self.object.subject)
-                    history = take_snapshot(generator,
-                                            comment=comment,
-                                            user=self.request.user)
+                    comment = comment.format(
+                        ref=self.object.ref, subject=self.object.subject
+                    )
+                    history = take_snapshot(
+                        generator, comment=comment, user=self.request.user
+                    )
 
                     self.send_notifications(generator, history)
 
@@ -280,7 +327,7 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
 
     def update(self, request, *args, **kwargs):
         self.object = self.get_object_or_none()
-        project_id = request.DATA.get('project', None)
+        project_id = request.DATA.get("project", None)
 
         if project_id and self.object and self.object.project.id != project_id:
             try:
@@ -288,26 +335,29 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
                 self.check_permissions(request, "destroy", self.object)
                 self.check_permissions(request, "create", new_project)
 
-                sprint_id = request.DATA.get('milestone', None)
-                if sprint_id is not None and new_project.milestones.filter(pk=sprint_id).count() == 0:
-                    request.DATA['milestone'] = None
+                sprint_id = request.DATA.get("milestone", None)
+                if (
+                    sprint_id is not None
+                    and new_project.milestones.filter(pk=sprint_id).count() == 0
+                ):
+                    request.DATA["milestone"] = None
 
-                status_id = request.DATA.get('status', None)
+                status_id = request.DATA.get("status", None)
                 if status_id is not None:
                     try:
                         old_status = self.object.project.us_statuses.get(pk=status_id)
                         new_status = new_project.us_statuses.get(slug=old_status.slug)
-                        request.DATA['status'] = new_status.id
+                        request.DATA["status"] = new_status.id
                     except UserStoryStatus.DoesNotExist:
-                        request.DATA['status'] = new_project.default_us_status.id
+                        request.DATA["status"] = new_project.default_us_status.id
             except Project.DoesNotExist:
                 return response.BadRequest(_("The project doesn't exist"))
 
         if self.object and self.object.project_id:
             self._max_order = models.UserStory.objects.filter(
                 project_id=self.object.project_id,
-                status_id=request.DATA.get('status', None)
-            ).aggregate(Max('kanban_order'))['kanban_order__max']
+                status_id=request.DATA.get("status", None),
+            ).aggregate(Max("kanban_order"))["kanban_order__max"]
 
         return super().update(request, *args, **kwargs)
 
@@ -317,23 +367,49 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
         project = get_object_or_404(Project, id=project_id)
 
         filter_backends = self.get_filter_backends()
-        statuses_filter_backends = (f for f in filter_backends if f != base_filters.UserStoryStatusesFilter)
-        assigned_to_filter_backends = (f for f in filter_backends if f != base_filters.AssignedToFilter)
-        assigned_users_filter_backends = (f for f in filter_backends if f != base_filters.AssignedUsersFilter)
-        owners_filter_backends = (f for f in filter_backends if f != base_filters.OwnersFilter)
+        statuses_filter_backends = (
+            f for f in filter_backends if f != base_filters.UserStoryStatusesFilter
+        )
+        assigned_to_filter_backends = (
+            f for f in filter_backends if f != base_filters.AssignedToFilter
+        )
+        assigned_users_filter_backends = (
+            f for f in filter_backends if f != base_filters.AssignedUsersFilter
+        )
+        owners_filter_backends = (
+            f for f in filter_backends if f != base_filters.OwnersFilter
+        )
         epics_filter_backends = (f for f in filter_backends if f != filters.EpicFilter)
-        roles_filter_backends = (f for f in filter_backends if f != base_filters.RoleFilter)
-        tags_filter_backends = (f for f in filter_backends if f != base_filters.TagsFilter)
+        roles_filter_backends = (
+            f for f in filter_backends if f != base_filters.RoleFilter
+        )
+        tags_filter_backends = (
+            f for f in filter_backends if f != base_filters.TagsFilter
+        )
 
         queryset = self.get_queryset()
         querysets = {
-            "statuses": self.filter_queryset(queryset, filter_backends=statuses_filter_backends),
-            "assigned_to": self.filter_queryset(queryset, filter_backends=assigned_to_filter_backends),
-            "assigned_users": self.filter_queryset(queryset, filter_backends=assigned_users_filter_backends),
-            "owners": self.filter_queryset(queryset, filter_backends=owners_filter_backends),
-            "tags": self.filter_queryset(queryset, filter_backends=tags_filter_backends),
-            "epics": self.filter_queryset(queryset, filter_backends=epics_filter_backends),
-            "roles": self.filter_queryset(queryset, filter_backends=roles_filter_backends)
+            "statuses": self.filter_queryset(
+                queryset, filter_backends=statuses_filter_backends
+            ),
+            "assigned_to": self.filter_queryset(
+                queryset, filter_backends=assigned_to_filter_backends
+            ),
+            "assigned_users": self.filter_queryset(
+                queryset, filter_backends=assigned_users_filter_backends
+            ),
+            "owners": self.filter_queryset(
+                queryset, filter_backends=owners_filter_backends
+            ),
+            "tags": self.filter_queryset(
+                queryset, filter_backends=tags_filter_backends
+            ),
+            "epics": self.filter_queryset(
+                queryset, filter_backends=epics_filter_backends
+            ),
+            "roles": self.filter_queryset(
+                queryset, filter_backends=roles_filter_backends
+            ),
         }
 
         return response.Ok(services.get_userstories_filters_data(project, querysets))
@@ -345,10 +421,12 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
             return response.NotFound()
 
         project = get_object_or_404(Project, userstories_csv_uuid=uuid)
-        queryset = project.user_stories.all().order_by('ref')
+        queryset = project.user_stories.all().order_by("ref")
         data = services.userstories_to_csv(project, queryset)
-        csv_response = HttpResponse(data.getvalue(), content_type='application/csv; charset=utf-8')
-        csv_response['Content-Disposition'] = 'attachment; filename="userstories.csv"'
+        csv_response = HttpResponse(
+            data.getvalue(), content_type="application/csv; charset=utf-8"
+        )
+        csv_response["Content-Disposition"] = 'attachment; filename="userstories.csv"'
         return csv_response
 
     @list_route(methods=["POST"])
@@ -357,20 +435,28 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
         if validator.is_valid():
             data = validator.data
             project = Project.objects.get(id=data["project_id"])
-            self.check_permissions(request, 'bulk_create', project)
+            self.check_permissions(request, "bulk_create", project)
             if project.blocked_code is not None:
                 raise exc.Blocked(_("Blocked element"))
 
             user_stories = services.create_userstories_in_bulk(
-                data["bulk_stories"], project=project, owner=request.user,
+                data["bulk_stories"],
+                project=project,
+                owner=request.user,
                 status_id=data.get("status_id") or project.default_us_status_id,
-                callback=self.post_save, precall=self.pre_save)
+                callback=self.post_save,
+                precall=self.pre_save,
+            )
 
-            user_stories = self.get_queryset().filter(id__in=[i.id for i in user_stories])
+            user_stories = self.get_queryset().filter(
+                id__in=[i.id for i in user_stories]
+            )
             for user_story in user_stories:
                 self.persist_history_snapshot(obj=user_story)
 
-            user_stories_serialized = self.get_serializer_class()(user_stories, many=True)
+            user_stories_serialized = self.get_serializer_class()(
+                user_stories, many=True
+            )
 
             return response.Ok(user_stories_serialized.data)
         return response.BadRequest(validator.errors)
@@ -413,11 +499,13 @@ class UserStoryViewSet(AssignedUsersSignalMixin, OCCResourceMixin,
         if project.blocked_code is not None:
             raise exc.Blocked(_("Blocked element"))
 
-        ret = services.update_userstories_order_in_bulk(data["bulk_stories"],
-                                                        order_field,
-                                                        project,
-                                                        status=status,
-                                                        milestone=milestone)
+        ret = services.update_userstories_order_in_bulk(
+            data["bulk_stories"],
+            order_field,
+            project,
+            status=status,
+            milestone=milestone,
+        )
         return response.Ok(ret)
 
     @list_route(methods=["POST"])

@@ -46,6 +46,24 @@
            paths:
              - "/usr/local/lib/python3.6/site-packages"
              - "/usr/local/bin"
+   code-quality:
+     executor: test-environment
+     steps:
+       - checkout
+       - run:
+           command: |
+             sudo chown -R circleci:circleci /usr/local/bin
+             sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+       - restore_cache:
+           key: taiga-back-{{ checksum "requirements.txt" }}
+       - run: 
+           name: run unit tests
+           command: |
+             flake8 --config setup.cfg --format junit-xml --tee --output-file=TEST_FLAKE8_JUNIT.xml
+       - store_test_results:
+           path: TEST_FLAKE8_JUNIT.xml
+       - store_artifacts:
+           path: TEST_FLAKE8_JUNIT.xml
    unit-test:
      executor: test-environment
      steps:
@@ -94,9 +112,12 @@
    build-deploy:
      jobs:
        - prepare-environment
-       - unit-test:
+       - code-quality:
            requires:
              - prepare-environment
+       - unit-test:
+           requires:
+             - code-quality
        - integration-test:
            requires:
              - unit-test

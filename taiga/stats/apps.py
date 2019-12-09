@@ -26,4 +26,5 @@ class StatsAppConfig(AppConfig):
 
     def ready(self):
         from taiga.urls import urlpatterns
-        urlpatterns.append(url(r'^api/v1/', include(router.urls)))
+
+        urlpatterns.append(url(r"^api/v1/", include(router.urls)))

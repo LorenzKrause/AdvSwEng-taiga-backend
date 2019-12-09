@@ -27,7 +27,7 @@ def on_save_any_model(sender, instance, created, **kwargs):
     content_type = get_typename_for_model_instance(instance)
 
     # Ignore any other events
-    app_config = apps.get_app_config('events')
+    app_config = apps.get_app_config("events")
     if content_type not in app_config.events_watched_types:
         return
 
@@ -45,7 +45,7 @@ def on_delete_any_model(sender, instance, **kwargs):
     content_type = get_typename_for_model_instance(instance)
 
     # Ignore any other changes
-    app_config = apps.get_app_config('events')
+    app_config = apps.get_app_config("events")
     if content_type not in app_config.events_watched_types:
         return
 

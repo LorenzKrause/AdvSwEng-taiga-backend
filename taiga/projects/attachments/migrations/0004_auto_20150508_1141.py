@@ -8,14 +8,20 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('attachments', '0003_auto_20150114_0954'),
+        ("attachments", "0003_auto_20150114_0954"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='attachment',
-            name='owner',
-            field=models.ForeignKey(verbose_name='owner', blank=True, related_name='change_attachments', to=settings.AUTH_USER_MODEL, null=True),
+            model_name="attachment",
+            name="owner",
+            field=models.ForeignKey(
+                verbose_name="owner",
+                blank=True,
+                related_name="change_attachments",
+                to=settings.AUTH_USER_MODEL,
+                null=True,
+            ),
             preserve_default=True,
         ),
     ]

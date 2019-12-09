@@ -31,6 +31,7 @@ from taiga.projects.models import Project
 # ViewSets
 #############################################
 
+
 class BulkUpdateOrderMixin:
     """
     This mixin need three fields in the child class:
@@ -46,17 +47,23 @@ class BulkUpdateOrderMixin:
         bulk_data = request.DATA.get(self.bulk_update_param, None)
 
         if bulk_data is None:
-            raise exc.BadRequest(_("'{param}' parameter is mandatory".format(param=self.bulk_update_param)))
+            raise exc.BadRequest(
+                _(
+                    "'{param}' parameter is mandatory".format(
+                        param=self.bulk_update_param
+                    )
+                )
+            )
 
-        project_id = request.DATA.get('project', None)
+        project_id = request.DATA.get("project", None)
         if project_id is None:
             raise exc.BadRequest(_("'project' parameter is mandatory"))
 
         project = get_object_or_404(Project, id=project_id)
 
-        self.check_permissions(request, 'bulk_update_order', project)
+        self.check_permissions(request, "bulk_update_order", project)
         if project.blocked_code is not None:
             raise exc.Blocked(_("Blocked element"))
-            
+
         self.__class__.bulk_update_order_action(project, request.user, bulk_data)
         return response.NoContent(data=None)

@@ -34,14 +34,18 @@ from taiga.projects.validators import ProjectExistsValidator
 from . import models
 
 
-class TaskValidator(AssignedToValidator, WatchersValidator, EditableWatchedResourceSerializer,
-                    validators.ModelValidator):
+class TaskValidator(
+    AssignedToValidator,
+    WatchersValidator,
+    EditableWatchedResourceSerializer,
+    validators.ModelValidator,
+):
     tags = TagsAndTagsColorsField(default=[], required=False)
     external_reference = PgArrayField(required=False)
 
     class Meta:
         model = models.Task
-        read_only_fields = ('id', 'ref', 'created_date', 'modified_date', 'owner')
+        read_only_fields = ("id", "ref", "created_date", "modified_date", "owner")
 
 
 class TasksBulkValidator(ProjectExistsValidator, validators.Validator):
@@ -52,10 +56,7 @@ class TasksBulkValidator(ProjectExistsValidator, validators.Validator):
     bulk_tasks = serializers.CharField()
 
     def validate_milestone_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
 
         if not Milestone.objects.filter(**filters).exists():
             raise ValidationError(_("Invalid milestone id."))
@@ -63,10 +64,7 @@ class TasksBulkValidator(ProjectExistsValidator, validators.Validator):
         return attrs
 
     def validate_status_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
 
         if not TaskStatus.objects.filter(**filters).exists():
             raise ValidationError(_("Invalid task status id."))
@@ -89,6 +87,7 @@ class TasksBulkValidator(ProjectExistsValidator, validators.Validator):
 
 # Order bulk validators
 
+
 class _TaskOrderBulkValidator(validators.Validator):
     task_id = serializers.IntegerField()
     order = serializers.IntegerField()
@@ -106,8 +105,12 @@ class UpdateTasksOrderBulkValidator(ProjectExistsValidator, validators.Validator
         filters["id"] = attrs[source]
 
         if not TaskStatus.objects.filter(**filters).exists():
-            raise ValidationError(_("Invalid task status id. The status must belong to "
-                                    "the same project."))
+            raise ValidationError(
+                _(
+                    "Invalid task status id. The status must belong to "
+                    "the same project."
+                )
+            )
 
         return attrs
 
@@ -120,20 +123,25 @@ class UpdateTasksOrderBulkValidator(ProjectExistsValidator, validators.Validator
         filters["id"] = attrs[source]
 
         if not UserStory.objects.filter(**filters).exists():
-            raise ValidationError(_("Invalid user story id. The user story must belong to "
-                                    "the same project."))
+            raise ValidationError(
+                _(
+                    "Invalid user story id. The user story must belong to "
+                    "the same project."
+                )
+            )
 
         return attrs
 
     def validate_milestone_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
 
         if not Milestone.objects.filter(**filters).exists():
-            raise ValidationError(_("Invalid milestone id. The milestone must belong to "
-                                    "the same project."))
+            raise ValidationError(
+                _(
+                    "Invalid milestone id. The milestone must belong to "
+                    "the same project."
+                )
+            )
 
         return attrs
 
@@ -149,13 +157,18 @@ class UpdateTasksOrderBulkValidator(ProjectExistsValidator, validators.Validator
         filters["id__in"] = [t["task_id"] for t in attrs[source]]
 
         if models.Task.objects.filter(**filters).count() != len(filters["id__in"]):
-            raise ValidationError(_("Invalid task ids. All tasks must belong to the same project and, "
-                                    "if it exists, to the same status, user story and/or milestone."))
+            raise ValidationError(
+                _(
+                    "Invalid task ids. All tasks must belong to the same project and, "
+                    "if it exists, to the same status, user story and/or milestone."
+                )
+            )
 
         return attrs
 
 
 # Milestone bulk validators
+
 
 class _TaskMilestoneBulkValidator(validators.Validator):
     task_id = serializers.IntegerField()
@@ -168,10 +181,7 @@ class UpdateMilestoneBulkValidator(ProjectExistsValidator, validators.Validator)
     bulk_tasks = _TaskMilestoneBulkValidator(many=True)
 
     def validate_milestone_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
         if not Milestone.objects.filter(**filters).exists():
             raise ValidationError(_("The milestone isn't valid for the project"))
         return attrs
@@ -179,7 +189,7 @@ class UpdateMilestoneBulkValidator(ProjectExistsValidator, validators.Validator)
     def validate_bulk_tasks(self, attrs, source):
         filters = {
             "project__id": attrs["project_id"],
-            "id__in": [task["task_id"] for task in attrs[source]]
+            "id__in": [task["task_id"] for task in attrs[source]],
         }
 
         if models.Task.objects.filter(**filters).count() != len(filters["id__in"]):

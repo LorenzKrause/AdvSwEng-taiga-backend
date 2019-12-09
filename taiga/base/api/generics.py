@@ -52,8 +52,7 @@ from .settings import api_settings
 from .utils import get_object_or_404
 
 
-class GenericAPIView(pagination.PaginationMixin,
-                     views.APIView):
+class GenericAPIView(pagination.PaginationMixin, views.APIView):
     """
     Base class for all other generic views.
     """
@@ -71,7 +70,7 @@ class GenericAPIView(pagination.PaginationMixin,
 
     # If you want to use object lookups other than pk, set this attribute.
     # For more complex lookup requirements override `get_object()`.
-    lookup_field = 'pk'
+    lookup_field = "pk"
     lookup_url_kwarg = None
 
     # The filter backend classes to use for queryset filtering
@@ -85,42 +84,52 @@ class GenericAPIView(pagination.PaginationMixin,
     ######################################
     # These are pending deprecation...
 
-    pk_url_kwarg = 'pk'
-    slug_url_kwarg = 'slug'
-    slug_field = 'slug'
+    pk_url_kwarg = "pk"
+    slug_url_kwarg = "slug"
+    slug_field = "slug"
     allow_empty = True
 
     def get_extra_context(self):
         """
         Extra context provided to the serializer class.
         """
-        return {
-            'request': self.request,
-            'format': self.format_kwarg,
-            'view': self
-        }
+        return {"request": self.request, "format": self.format_kwarg, "view": self}
 
-    def get_serializer(self, instance=None, data=None,
-                       files=None, many=False, partial=False):
+    def get_serializer(
+        self, instance=None, data=None, files=None, many=False, partial=False
+    ):
         """
         Return the serializer instance that should be used for deserializing
         input, and for serializing output.
         """
         serializer_class = self.get_serializer_class()
         context = self.get_extra_context()
-        return serializer_class(instance, data=data, files=files,
-                                many=many, partial=partial, context=context)
+        return serializer_class(
+            instance,
+            data=data,
+            files=files,
+            many=many,
+            partial=partial,
+            context=context,
+        )
 
-    def get_validator(self, instance=None, data=None,
-                      files=None, many=False, partial=False):
+    def get_validator(
+        self, instance=None, data=None, files=None, many=False, partial=False
+    ):
         """
         Return the validator instance that should be used for validating the
         input, and for serializing output.
         """
         validator_class = self.get_validator_class()
         context = self.get_extra_context()
-        return validator_class(instance, data=data, files=files,
-                               many=many, partial=partial, context=context)
+        return validator_class(
+            instance,
+            data=data,
+            files=files,
+            many=many,
+            partial=partial,
+            context=context,
+        )
 
     def filter_queryset(self, queryset, filter_backends=None):
         """
@@ -143,11 +152,13 @@ class GenericAPIView(pagination.PaginationMixin,
         Returns the list of filter backends that this view requires.
         """
         filter_backends = self.filter_backends or []
-        if not filter_backends and hasattr(self, 'filter_backend'):
-            raise RuntimeError('The `filter_backend` attribute and `FILTER_BACKEND` setting '
-                               'are due to be deprecated in favor of a `filter_backends` '
-                               'attribute and `DEFAULT_FILTER_BACKENDS` setting, that take '
-                               'a *list* of filter backend classes.')
+        if not filter_backends and hasattr(self, "filter_backend"):
+            raise RuntimeError(
+                "The `filter_backend` attribute and `FILTER_BACKEND` setting "
+                "are due to be deprecated in favor of a `filter_backends` "
+                "attribute and `DEFAULT_FILTER_BACKENDS` setting, that take "
+                "a *list* of filter backend classes."
+            )
         return filter_backends
 
     ###########################################################
@@ -163,13 +174,16 @@ class GenericAPIView(pagination.PaginationMixin,
         if serializer_class is not None:
             return serializer_class
 
-        assert self.model is not None, ("'%s' should either include a 'serializer_class' attribute, "
-                                        "or use the 'model' attribute as a shortcut for "
-                                        "automatically generating a serializer class." % self.__class__.__name__)
+        assert self.model is not None, (
+            "'%s' should either include a 'serializer_class' attribute, "
+            "or use the 'model' attribute as a shortcut for "
+            "automatically generating a serializer class." % self.__class__.__name__
+        )
 
         class DefaultSerializer(self.model_serializer_class):
             class Meta:
                 model = self.model
+
         return DefaultSerializer
 
     def get_validator_class(self):
@@ -186,6 +200,7 @@ class GenericAPIView(pagination.PaginationMixin,
         class DefaultValidator(self.model_validator_class):
             class Meta:
                 model = self.model
+
         return DefaultValidator
 
     def get_queryset(self):
@@ -205,7 +220,9 @@ class GenericAPIView(pagination.PaginationMixin,
         if self.model is not None:
             return self.model._default_manager.all()
 
-        raise ImproperlyConfigured(("'%s' must define 'queryset' or 'model'" % self.__class__.__name__))
+        raise ImproperlyConfigured(
+            ("'%s' must define 'queryset' or 'model'" % self.__class__.__name__)
+        )
 
     def get_object(self, queryset=None):
         """
@@ -232,17 +249,29 @@ class GenericAPIView(pagination.PaginationMixin,
 
         if lookup is not None:
             filter_kwargs = {self.lookup_field: lookup}
-        elif pk is not None and self.lookup_field == 'pk':
-            raise RuntimeError(('The `pk_url_kwarg` attribute is due to be deprecated. '
-                                'Use the `lookup_field` attribute instead'))
-        elif slug is not None and self.lookup_field == 'pk':
-            raise RuntimeError(('The `slug_url_kwarg` attribute is due to be deprecated. '
-                                'Use the `lookup_field` attribute instead'))
+        elif pk is not None and self.lookup_field == "pk":
+            raise RuntimeError(
+                (
+                    "The `pk_url_kwarg` attribute is due to be deprecated. "
+                    "Use the `lookup_field` attribute instead"
+                )
+            )
+        elif slug is not None and self.lookup_field == "pk":
+            raise RuntimeError(
+                (
+                    "The `slug_url_kwarg` attribute is due to be deprecated. "
+                    "Use the `lookup_field` attribute instead"
+                )
+            )
         else:
-            raise ImproperlyConfigured(('Expected view %s to be called with a URL keyword argument '
-                                        'named "%s". Fix your URL conf, or set the `.lookup_field` '
-                                        'attribute on the view correctly.' %
-                                        (self.__class__.__name__, self.lookup_field)))
+            raise ImproperlyConfigured(
+                (
+                    "Expected view %s to be called with a URL keyword argument "
+                    'named "%s". Fix your URL conf, or set the `.lookup_field` '
+                    "attribute on the view correctly."
+                    % (self.__class__.__name__, self.lookup_field)
+                )
+            )
 
         obj = get_object_or_404(queryset, **filter_kwargs)
         return obj
@@ -309,50 +338,51 @@ class GenericAPIView(pagination.PaginationMixin,
 # NOTE: not used by taiga.                           #
 ######################################################
 
-class CreateAPIView(mixins.CreateModelMixin,
-                    GenericAPIView):
+
+class CreateAPIView(mixins.CreateModelMixin, GenericAPIView):
 
     """
     Concrete view for creating a model instance.
     """
+
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
 
-class ListAPIView(mixins.ListModelMixin,
-                  GenericAPIView):
+class ListAPIView(mixins.ListModelMixin, GenericAPIView):
     """
     Concrete view for listing a queryset.
     """
+
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
 
-class RetrieveAPIView(mixins.RetrieveModelMixin,
-                      GenericAPIView):
+class RetrieveAPIView(mixins.RetrieveModelMixin, GenericAPIView):
     """
     Concrete view for retrieving a model instance.
     """
+
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
 
-class DestroyAPIView(mixins.DestroyModelMixin,
-                     GenericAPIView):
+class DestroyAPIView(mixins.DestroyModelMixin, GenericAPIView):
 
     """
     Concrete view for deleting a model instance.
     """
+
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
 
-class UpdateAPIView(mixins.UpdateModelMixin,
-                    GenericAPIView):
+class UpdateAPIView(mixins.UpdateModelMixin, GenericAPIView):
 
     """
     Concrete view for updating a model instance.
     """
+
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
@@ -360,12 +390,11 @@ class UpdateAPIView(mixins.UpdateModelMixin,
         return self.partial_update(request, *args, **kwargs)
 
 
-class ListCreateAPIView(mixins.ListModelMixin,
-                        mixins.CreateModelMixin,
-                        GenericAPIView):
+class ListCreateAPIView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericAPIView):
     """
     Concrete view for listing a queryset or creating a model instance.
     """
+
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
@@ -373,12 +402,13 @@ class ListCreateAPIView(mixins.ListModelMixin,
         return self.create(request, *args, **kwargs)
 
 
-class RetrieveUpdateAPIView(mixins.RetrieveModelMixin,
-                            mixins.UpdateModelMixin,
-                            GenericAPIView):
+class RetrieveUpdateAPIView(
+    mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPIView
+):
     """
     Concrete view for retrieving, updating a model instance.
     """
+
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
@@ -389,12 +419,13 @@ class RetrieveUpdateAPIView(mixins.RetrieveModelMixin,
         return self.partial_update(request, *args, **kwargs)
 
 
-class RetrieveDestroyAPIView(mixins.RetrieveModelMixin,
-                             mixins.DestroyModelMixin,
-                             GenericAPIView):
+class RetrieveDestroyAPIView(
+    mixins.RetrieveModelMixin, mixins.DestroyModelMixin, GenericAPIView
+):
     """
     Concrete view for retrieving or deleting a model instance.
     """
+
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
@@ -402,13 +433,16 @@ class RetrieveDestroyAPIView(mixins.RetrieveModelMixin,
         return self.destroy(request, *args, **kwargs)
 
 
-class RetrieveUpdateDestroyAPIView(mixins.RetrieveModelMixin,
-                                   mixins.UpdateModelMixin,
-                                   mixins.DestroyModelMixin,
-                                   GenericAPIView):
+class RetrieveUpdateDestroyAPIView(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericAPIView,
+):
     """
     Concrete view for retrieving, updating or deleting a model instance.
     """
+
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 

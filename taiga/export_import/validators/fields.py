@@ -40,11 +40,11 @@ class FileField(serializers.WritableField):
         if not data:
             return None
 
-        decoded_data = b''
+        decoded_data = b""
         # The original file was encoded by chunks but we don't really know its
         # length or if it was multiple of 3 so we must iterate over all those chunks
         # decoding them one by one
-        for decoding_chunk in data['data'].split("="):
+        for decoding_chunk in data["data"].split("="):
             # When encoding to base64 3 bytes are transformed into 4 bytes and
             # the extra space of the block is filled with =
             # We must ensure that the decoding chunk has a length multiple of 4 so
@@ -53,7 +53,7 @@ class FileField(serializers.WritableField):
             decoding_chunk += "=" * (-len(decoding_chunk) % 4)
             decoded_data += base64.b64decode(decoding_chunk + "=")
 
-        return ContentFile(decoded_data, name=data['name'])
+        return ContentFile(decoded_data, name=data["name"])
 
 
 class ContentTypeField(serializers.RelatedField):
@@ -76,7 +76,7 @@ class RelatedNoneSafeField(serializers.RelatedField):
                 try:
                     # Form data
                     value = data.getlist(field_name)
-                    if value == [''] or value == []:
+                    if value == [""] or value == []:
                         raise KeyError
                 except AttributeError:
                     # Non-form data
@@ -91,10 +91,14 @@ class RelatedNoneSafeField(serializers.RelatedField):
         key = self.source or field_name
         if value in self.null_values:
             if self.required:
-                raise ValidationError(self.error_messages['required'])
+                raise ValidationError(self.error_messages["required"])
             into[key] = None
         elif self.many:
-            into[key] = [self.from_native(item) for item in value if self.from_native(item) is not None]
+            into[key] = [
+                self.from_native(item)
+                for item in value
+                if self.from_native(item) is not None
+            ]
         else:
             into[key] = self.from_native(value)
 
@@ -125,7 +129,9 @@ class CommentField(serializers.WritableField):
 
     def field_from_native(self, data, files, field_name, into):
         super().field_from_native(data, files, field_name, into)
-        into["comment_html"] = mdrender(self.context['project'], data.get("comment", ""))
+        into["comment_html"] = mdrender(
+            self.context["project"], data.get("comment", "")
+        )
 
 
 class ProjectRelatedField(serializers.RelatedField):
@@ -138,10 +144,12 @@ class ProjectRelatedField(serializers.RelatedField):
 
     def from_native(self, data):
         try:
-            kwargs = {self.slug_field: data, "project": self.context['project']}
+            kwargs = {self.slug_field: data, "project": self.context["project"]}
             return self.queryset.get(**kwargs)
         except ObjectDoesNotExist:
-            raise ValidationError(_("{}=\"{}\" not found in this project".format(self.slug_field, data)))
+            raise ValidationError(
+                _('{}="{}" not found in this project'.format(self.slug_field, data))
+            )
 
 
 class HistorySnapshotField(JSONField):
@@ -183,7 +191,7 @@ class HistoryValuesField(JSONField):
         if data is None:
             return []
         if "users" in data:
-            data['users'] = list(map(UserPkField().from_native, data['users']))
+            data["users"] = list(map(UserPkField().from_native, data["users"]))
         return data
 
 
@@ -193,7 +201,9 @@ class HistoryDiffField(JSONField):
             return []
 
         if "assigned_to" in data:
-            data['assigned_to'] = list(map(UserPkField().from_native, data['assigned_to']))
+            data["assigned_to"] = list(
+                map(UserPkField().from_native, data["assigned_to"])
+            )
         return data
 
 

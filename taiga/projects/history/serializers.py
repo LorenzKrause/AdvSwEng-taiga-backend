@@ -45,7 +45,13 @@ class HistoryEntrySerializer(serializers.LightSerializer):
     is_snapshot = Field()
 
     def get_user(self, entry):
-        user = {"pk": None, "username": None, "name": None, "photo": None, "is_active": False}
+        user = {
+            "pk": None,
+            "username": None,
+            "name": None,
+            "photo": None,
+            "is_active": False,
+        }
         user.update(entry.user)
         user["photo"] = get_user_photo_url(entry.owner)
         user["gravatar_id"] = get_user_gravatar_id(entry.owner)

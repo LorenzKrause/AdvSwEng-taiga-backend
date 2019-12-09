@@ -20,8 +20,10 @@ from urllib.parse import parse_qs, urldefrag
 import markdown
 from markdown.treeprocessors import Treeprocessor
 
-from taiga.projects.attachments.services import (get_attachment_by_id,
-                                                 url_is_an_attachment)
+from taiga.projects.attachments.services import (
+    get_attachment_by_id,
+    url_is_an_attachment,
+)
 
 REFRESH_PARAM = "_taiga-refresh"
 
@@ -47,20 +49,23 @@ def extract_refresh_id(url):
 
 def generate_refresh_fragment(attachment, type_=""):
     if not attachment:
-        return ''
+        return ""
     return "{}={}:{}".format(REFRESH_PARAM, type_, attachment.id)
 
 
 class RefreshAttachmentExtension(markdown.Extension):
     """An extension that refresh attachment URL."""
+
     def __init__(self, *args, **kwargs):
         self.project = kwargs.pop("project", None)
         super().__init__(*args, **kwargs)
 
     def extendMarkdown(self, md):
-        md.treeprocessors.add("refresh_attachment",
-                              RefreshAttachmentTreeprocessor(md, project=self.project),
-                              "<prettify")
+        md.treeprocessors.add(
+            "refresh_attachment",
+            RefreshAttachmentTreeprocessor(md, project=self.project),
+            "<prettify",
+        )
 
 
 class RefreshAttachmentTreeprocessor(Treeprocessor):

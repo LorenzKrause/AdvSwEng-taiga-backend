@@ -26,13 +26,14 @@ from html5lib.serializer import HTMLSerializer
 
 
 def _serialize(domtree):
-    walker = html5lib.treewalkers.getTreeWalker('etree')
+    walker = html5lib.treewalkers.getTreeWalker("etree")
     stream = walker(domtree)
-    serializer = HTMLSerializer(quote_attr_values=True,
-                                omit_optional_tags=False,
-                                alphabetical_attributes=True)
+    serializer = HTMLSerializer(
+        quote_attr_values=True, omit_optional_tags=False, alphabetical_attributes=True
+    )
 
     return serializer.render(stream)
+
 
 bleach._serialize = _serialize
 # END PATCH
@@ -54,10 +55,33 @@ from .extensions.target_link import TargetBlankLinkExtension
 from .extensions.refresh_attachment import RefreshAttachmentExtension
 
 # Bleach configuration
-bleach.ALLOWED_TAGS += ["p", "table", "thead", "tbody", "th", "tr", "td", "h1",
-                        "h2", "h3", "h4", "h5", "h6", "div", "pre", "span",
-                        "hr", "dl", "dt", "dd", "sup", "img", "del", "br",
-                        "ins"]
+bleach.ALLOWED_TAGS += [
+    "p",
+    "table",
+    "thead",
+    "tbody",
+    "th",
+    "tr",
+    "td",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "div",
+    "pre",
+    "span",
+    "hr",
+    "dl",
+    "dt",
+    "dd",
+    "sup",
+    "img",
+    "del",
+    "br",
+    "ins",
+]
 
 bleach.ALLOWED_STYLES.append("background")
 
@@ -67,21 +91,23 @@ bleach.ALLOWED_ATTRIBUTES["*"] = ["class", "style", "id"]
 
 
 def _make_extensions_list(project=None):
-    return [AutolinkExtension(),
-            AutomailExtension(),
-            SemiSaneListExtension(),
-            StrikethroughExtension(),
-            WikiLinkExtension(project),
-            EmojifyExtension(),
-            MentionsExtension(),
-            TaigaReferencesExtension(project),
-            TargetBlankLinkExtension(),
-            RefreshAttachmentExtension(project=project),
-            "markdown.extensions.extra",
-            "markdown.extensions.codehilite",
-            "markdown.extensions.sane_lists",
-            "markdown.extensions.toc",
-            "markdown.extensions.nl2br"]
+    return [
+        AutolinkExtension(),
+        AutomailExtension(),
+        SemiSaneListExtension(),
+        StrikethroughExtension(),
+        WikiLinkExtension(project),
+        EmojifyExtension(),
+        MentionsExtension(),
+        TaigaReferencesExtension(project),
+        TargetBlankLinkExtension(),
+        RefreshAttachmentExtension(project=project),
+        "markdown.extensions.extra",
+        "markdown.extensions.codehilite",
+        "markdown.extensions.sane_lists",
+        "markdown.extensions.toc",
+        "markdown.extensions.nl2br",
+    ]
 
 
 import diff_match_patch
@@ -127,8 +153,12 @@ def render_and_extract(project, text):
 class DiffMatchPatch(diff_match_patch.diff_match_patch):
     def diff_pretty_html(self, diffs):
         def _sanitize_text(text):
-            return (text.replace("&", "&amp;").replace("<", "&lt;")
-                        .replace(">", "&gt;").replace("\n", "<br />"))
+            return (
+                text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\n", "<br />")
+            )
 
         def _split_long_text(text, idx, size):
             splited_text = text.split()
@@ -154,10 +184,10 @@ class DiffMatchPatch(diff_match_patch.diff_match_patch):
         for idx, (op, data) in enumerate(diffs):
             if op == self.DIFF_INSERT:
                 text = _sanitize_text(data)
-                html.append("<ins style=\"background:#e6ffe6;\">{}</ins>".format(text))
+                html.append('<ins style="background:#e6ffe6;">{}</ins>'.format(text))
             elif op == self.DIFF_DELETE:
                 text = _sanitize_text(data)
-                html.append("<del style=\"background:#ffe6e6;\">{}</del>".format(text))
+                html.append('<del style="background:#ffe6e6;">{}</del>'.format(text))
             elif op == self.DIFF_EQUAL:
                 text = _split_long_text(_sanitize_text(data), idx, size)
                 html.append("<span>{}</span>".format(text))

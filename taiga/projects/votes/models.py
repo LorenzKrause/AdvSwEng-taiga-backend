@@ -27,7 +27,9 @@ class Votes(models.Model):
     content_type = models.ForeignKey("contenttypes.ContentType")
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
-    count = models.PositiveIntegerField(null=False, blank=False, default=0, verbose_name=_("count"))
+    count = models.PositiveIntegerField(
+        null=False, blank=False, default=0, verbose_name=_("count")
+    )
 
     class Meta:
         verbose_name = _("Votes")
@@ -36,7 +38,7 @@ class Votes(models.Model):
 
     @property
     def project(self):
-        if hasattr(self.content_object, 'project'):
+        if hasattr(self.content_object, "project"):
             return self.content_object.project
         return None
 
@@ -48,10 +50,16 @@ class Vote(models.Model):
     content_type = models.ForeignKey("contenttypes.ContentType")
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=False, blank=False,
-                             related_name="votes", verbose_name=_("user"))
-    created_date = models.DateTimeField(null=False, blank=False, auto_now_add=True,
-                                        verbose_name=_("created date"))
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=False,
+        blank=False,
+        related_name="votes",
+        verbose_name=_("user"),
+    )
+    created_date = models.DateTimeField(
+        null=False, blank=False, auto_now_add=True, verbose_name=_("created date")
+    )
 
     class Meta:
         verbose_name = _("Vote")
@@ -60,7 +68,7 @@ class Vote(models.Model):
 
     @property
     def project(self):
-        if hasattr(self.content_object, 'project'):
+        if hasattr(self.content_object, "project"):
             return self.content_object.project
         return None
 

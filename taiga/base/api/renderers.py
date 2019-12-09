@@ -119,8 +119,9 @@ class JSONRenderer(BaseRenderer):
 
         indent = self._get_indent(accepted_media_type, renderer_context)
 
-        ret = json.dumps(data, cls=self.encoder_class,
-            indent=indent, ensure_ascii=self.ensure_ascii)
+        ret = json.dumps(
+            data, cls=self.encoder_class, indent=indent, ensure_ascii=self.ensure_ascii
+        )
 
         # On python 2.x json.dumps() returns bytestrings if ensure_ascii=True,
         # but if ensure_ascii=False, the return type is underspecified,
@@ -130,7 +131,9 @@ class JSONRenderer(BaseRenderer):
             return bytes(ret.encode("utf-8"))
         return ret
 
-    def render_to_file(self, data, outputfile, accepted_media_type=None, renderer_context=None):
+    def render_to_file(
+        self, data, outputfile, accepted_media_type=None, renderer_context=None
+    ):
         """
         Render `data` into a file with JSON format.
         """
@@ -139,8 +142,13 @@ class JSONRenderer(BaseRenderer):
 
         indent = self._get_indent(accepted_media_type, renderer_context)
 
-        ret = json.dump(data, outputfile, cls=self.encoder_class,
-            indent=indent, ensure_ascii=self.ensure_ascii)
+        ret = json.dump(
+            data,
+            outputfile,
+            cls=self.encoder_class,
+            indent=indent,
+            ensure_ascii=self.ensure_ascii,
+        )
 
 
 class UnicodeJSONRenderer(JSONRenderer):
@@ -180,8 +188,9 @@ class JSONPRenderer(JSONRenderer):
         """
         renderer_context = renderer_context or {}
         callback = self.get_callback(renderer_context)
-        json = super(JSONPRenderer, self).render(data, accepted_media_type,
-                                                 renderer_context)
+        json = super(JSONPRenderer, self).render(
+            data, accepted_media_type, renderer_context
+        )
         return callback.encode(self.charset) + b"(" + json + b");"
 
 
@@ -208,10 +217,7 @@ class TemplateHTMLRenderer(BaseRenderer):
     media_type = "text/html"
     format = "html"
     template_name = None
-    exception_template_names = [
-        "%(status_code)s.html",
-        "api_exception.html"
-    ]
+    exception_template_names = ["%(status_code)s.html", "api_exception.html"]
     charset = "utf-8"
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
@@ -255,19 +261,24 @@ class TemplateHTMLRenderer(BaseRenderer):
             return view.get_template_names()
         elif hasattr(view, "template_name"):
             return [view.template_name]
-        raise ImproperlyConfigured("Returned a template response with no `template_name` attribute set on either the view or response")
+        raise ImproperlyConfigured(
+            "Returned a template response with no `template_name` attribute set on either the view or response"
+        )
 
     def get_exception_template(self, response):
-        template_names = [name % {"status_code": response.status_code}
-                          for name in self.exception_template_names]
+        template_names = [
+            name % {"status_code": response.status_code}
+            for name in self.exception_template_names
+        ]
 
         try:
             # Try to find an appropriate error template
             return self.resolve_template(template_names)
         except Exception:
             # Fall back to using eg "404 Not Found"
-            return Template("%d %s" % (response.status_code,
-                                       response.status_text.title()))
+            return Template(
+                "%d %s" % (response.status_code, response.status_text.title())
+            )
 
 
 # Note, subclass TemplateHTMLRenderer simply for the exception behavior
@@ -284,6 +295,7 @@ class StaticHTMLRenderer(TemplateHTMLRenderer):
 
     For template rendered HTML, see TemplateHTMLRenderer.
     """
+
     media_type = "text/html"
     format = "html"
     charset = "utf-8"

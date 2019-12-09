@@ -27,8 +27,13 @@ from taiga.projects.attachments import models as attachments_models
 from taiga.projects.history import services as history_service
 
 from .cache import cached_get_user_by_email, cached_get_user_by_pk
-from .fields import (UserRelatedField, HistoryUserField,
-                     HistoryDiffField, HistoryValuesField, FileField)
+from .fields import (
+    UserRelatedField,
+    HistoryUserField,
+    HistoryDiffField,
+    HistoryValuesField,
+    FileField,
+)
 
 
 class HistoryExportSerializer(serializers.LightSerializer):
@@ -95,10 +100,14 @@ class HistoryExportSerializerMixin(serializers.LightSerializer):
     def get_history(self, obj):
         history_qs = history_service.get_history_queryset_by_model_instance(
             obj,
-            types=(history_models.HistoryType.change, history_models.HistoryType.create,)
+            types=(
+                history_models.HistoryType.change,
+                history_models.HistoryType.create,
+            ),
         )
-        return HistoryExportSerializer(history_qs, many=True,
-                                       statuses_queryset=self.statuses_queryset(obj.project)).data
+        return HistoryExportSerializer(
+            history_qs, many=True, statuses_queryset=self.statuses_queryset(obj.project)
+        ).data
 
 
 class AttachmentExportSerializer(serializers.LightSerializer):
@@ -119,8 +128,9 @@ class AttachmentExportSerializerMixin(serializers.LightSerializer):
 
     def get_attachments(self, obj):
         content_type = ContentType.objects.get_for_model(obj.__class__)
-        attachments_qs = attachments_models.Attachment.objects.filter(object_id=obj.pk,
-                                                                      content_type=content_type)
+        attachments_qs = attachments_models.Attachment.objects.filter(
+            object_id=obj.pk, content_type=content_type
+        )
         return AttachmentExportSerializer(attachments_qs, many=True).data
 
 
@@ -131,7 +141,9 @@ class CustomAttributesValuesExportSerializerMixin(serializers.LightSerializer):
         raise NotImplementedError()
 
     def get_custom_attributes_values(self, obj):
-        def _use_name_instead_id_as_key_in_custom_attributes_values(custom_attributes, values):
+        def _use_name_instead_id_as_key_in_custom_attributes_values(
+            custom_attributes, values
+        ):
             ret = {}
             for attr in custom_attributes:
                 value = values.get(str(attr["id"]), None)
@@ -144,7 +156,9 @@ class CustomAttributesValuesExportSerializerMixin(serializers.LightSerializer):
             values = obj.custom_attributes_values.attributes_values
             custom_attributes = self.custom_attributes_queryset(obj.project)
 
-            return _use_name_instead_id_as_key_in_custom_attributes_values(custom_attributes, values)
+            return _use_name_instead_id_as_key_in_custom_attributes_values(
+                custom_attributes, values
+            )
         except ObjectDoesNotExist:
             return None
 

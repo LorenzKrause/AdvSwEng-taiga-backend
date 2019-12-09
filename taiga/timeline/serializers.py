@@ -66,31 +66,35 @@ class TimelineSerializer(serializers.LightSerializer):
                 "gravatar_id": get_user_gravatar_id(user),
                 "username": user.username,
                 "is_profile_visible": user.is_active and not user.is_system,
-                "date_joined": user.date_joined
+                "date_joined": user.date_joined,
             }
 
         if "values_diff" in obj.data and "attachments" in obj.data["values_diff"]:
-            [[self.parse_url(item) for item in value] for key, value in
-             obj.data["values_diff"]["attachments"].items() if value]
+            [
+                [self.parse_url(item) for item in value]
+                for key, value in obj.data["values_diff"]["attachments"].items()
+                if value
+            ]
 
         return obj.data
 
     def parse_url(self, item):
-        if 'attached_file' in item:
-            attached_file = item['attached_file']
+        if "attached_file" in item:
+            attached_file = item["attached_file"]
         else:
             # This is the case for old timeline entries
-            file_path = urlparse(item['url']).path
-            index = file_path.find('/attachments')
-            attached_file = file_path[index+1:]
+            file_path = urlparse(item["url"]).path
+            index = file_path.find("/attachments")
+            attached_file = file_path[index + 1 :]
 
-        item['url'] = default_storage.url(attached_file)
+        item["url"] = default_storage.url(attached_file)
 
-        if 'thumbnail_file' in item:
-            thumb_file = item['thumbnail_file']
+        if "thumbnail_file" in item:
+            thumb_file = item["thumbnail_file"]
             thumb_url = default_storage.url(thumb_file) if thumb_file else None
         else:
-            thumb_url = get_thumbnail_url(attached_file,
-                                          settings.THN_ATTACHMENT_TIMELINE)
+            thumb_url = get_thumbnail_url(
+                attached_file, settings.THN_ATTACHMENT_TIMELINE
+            )
 
-        item['thumb_url'] = thumb_url
+        item["thumb_url"] = thumb_url

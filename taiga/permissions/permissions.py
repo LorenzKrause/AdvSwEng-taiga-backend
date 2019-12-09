@@ -28,6 +28,7 @@ from . import services
 # Generic perms
 ######################################################################
 
+
 class HasProjectPerm(PermissionComponent):
     def __init__(self, perm, *components):
         self.project_perm = perm
@@ -49,6 +50,7 @@ class IsObjectOwner(PermissionComponent):
 # Project Perms
 ######################################################################
 
+
 class IsProjectAdmin(PermissionComponent):
     def check_permissions(self, request, view, obj=None):
         return services.is_project_admin(request.user, obj)
@@ -57,6 +59,7 @@ class IsProjectAdmin(PermissionComponent):
 ######################################################################
 # Common perms for stories, tasks and issues
 ######################################################################
+
 
 class CommentAndOrUpdatePerm(PermissionComponent):
     def __init__(self, update_perm, comment_perm, *components):
@@ -68,7 +71,7 @@ class CommentAndOrUpdatePerm(PermissionComponent):
         if not obj:
             return False
 
-        project_id = request.DATA.get('project', None)
+        project_id = request.DATA.get("project", None)
         if project_id and obj.project_id != project_id:
             project = apps.get_model("projects", "Project").objects.get(pk=project_id)
         else:
@@ -77,7 +80,9 @@ class CommentAndOrUpdatePerm(PermissionComponent):
         data_keys = set(request.DATA.keys()) - {"version"}
         just_a_comment = data_keys == {"comment"}
 
-        if (just_a_comment and services.user_has_perm(request.user, self.comment_perm, project)):
-                return True
+        if just_a_comment and services.user_has_perm(
+            request.user, self.comment_perm, project
+        ):
+            return True
 
         return services.user_has_perm(request.user, self.update_perm, project)

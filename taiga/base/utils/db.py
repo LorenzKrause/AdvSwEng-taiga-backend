@@ -143,18 +143,22 @@ def update_attr_in_bulk_for_ids(values, attr, model):
             {values}
         ) AS update_values
         WHERE "{tbl}"."id"=update_values.column1;
-    """.format(tbl=model._meta.db_table,
-               values=', '.join(values),
-               attr=attr)
+    """.format(
+        tbl=model._meta.db_table, values=", ".join(values), attr=attr
+    )
 
     cursor = connection.cursor()
 
     # We can have deadlocks with multiple updates over the same object
     # In that situation we just retry
     import time
+
     ts = time.time()
+
     def trace_info(retries):
-        return '/* query=update_attr_in_bulk id={ts} retries={retries} */'.format(retries=retries, ts=ts)
+        return "/* query=update_attr_in_bulk id={ts} retries={retries} */".format(
+            retries=retries, ts=ts
+        )
 
     def _run_sql(retries=0, max_retries=3):
         try:
@@ -203,8 +207,7 @@ def to_tsquery(term):
         if not bit:
             continue
         split_bits = (
-            [bit] if bit.startswith('"') and bit.endswith('"') else
-            bit.strip().split()
+            [bit] if bit.startswith('"') and bit.endswith('"') else bit.strip().split()
         )
         for bit in split_bits:
             if not bit:
@@ -249,7 +252,7 @@ def to_tsquery(term):
             if bit.startswith('"') and bit.endswith('"') and len(bit) > 2:
                 res.append(bit.replace('"', "'"))
             else:
-                res.append("'%s':*" % (bit.replace("'", ""), ))
+                res.append("'%s':*" % (bit.replace("'", ""),))
 
             res.append("&")
 

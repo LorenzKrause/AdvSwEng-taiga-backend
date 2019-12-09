@@ -9,7 +9,7 @@ from django.contrib.postgres.fields import JSONField
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('webhooks', '0005_auto_20150505_1639'),
+        ("webhooks", "0005_auto_20150505_1639"),
     ]
 
     operations = [
@@ -28,6 +28,6 @@ class Migration(migrations.Migration):
                            TYPE jsonb
                           USING regexp_replace("response_headers"::text, '[\\\\]+u0000', '\\\\\\\\u0000', 'g')::jsonb;
             """,
-            reverse_sql=migrations.RunSQL.noop
+            reverse_sql=migrations.RunSQL.noop,
         ),
     ]

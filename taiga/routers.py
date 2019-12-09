@@ -48,14 +48,28 @@ from taiga.projects.notifications.api import NotifyPolicyViewSet
 from taiga.projects.notifications.api import WebNotificationsViewSet
 
 router.register(r"notify-policies", NotifyPolicyViewSet, base_name="notifications")
-router.register(r"web-notifications", WebNotificationsViewSet, base_name="web-notifications")
-router.register(r"web-notifications/set-as-read", WebNotificationsViewSet, base_name="web-notifications")
-router.register(r"web-notifications/(?P<resource_id>\d+)/set-as-read", WebNotificationsViewSet, base_name="web-notifications")
+router.register(
+    r"web-notifications", WebNotificationsViewSet, base_name="web-notifications"
+)
+router.register(
+    r"web-notifications/set-as-read",
+    WebNotificationsViewSet,
+    base_name="web-notifications",
+)
+router.register(
+    r"web-notifications/(?P<resource_id>\d+)/set-as-read",
+    WebNotificationsViewSet,
+    base_name="web-notifications",
+)
 
 # Project settings
 from taiga.projects.settings.api import UserProjectSettingsViewSet, SectionsViewSet
 
-router.register(r"user-project-settings", UserProjectSettingsViewSet, base_name="user-project-settings")
+router.register(
+    r"user-project-settings",
+    UserProjectSettingsViewSet,
+    base_name="user-project-settings",
+)
 router.register(r"sections", SectionsViewSet, base_name="sections")
 
 
@@ -79,22 +93,34 @@ from taiga.projects.api import SeverityViewSet
 from taiga.projects.api import ProjectTemplateViewSet
 
 router.register(r"projects", ProjectViewSet, base_name="projects")
-router.register(r"projects/(?P<resource_id>\d+)/fans", ProjectFansViewSet, base_name="project-fans")
-router.register(r"projects/(?P<resource_id>\d+)/watchers", ProjectWatchersViewSet, base_name="project-watchers")
-router.register(r"project-templates", ProjectTemplateViewSet, base_name="project-templates")
+router.register(
+    r"projects/(?P<resource_id>\d+)/fans", ProjectFansViewSet, base_name="project-fans"
+)
+router.register(
+    r"projects/(?P<resource_id>\d+)/watchers",
+    ProjectWatchersViewSet,
+    base_name="project-watchers",
+)
+router.register(
+    r"project-templates", ProjectTemplateViewSet, base_name="project-templates"
+)
 router.register(r"memberships", MembershipViewSet, base_name="memberships")
 router.register(r"invitations", InvitationViewSet, base_name="invitations")
 router.register(r"epic-statuses", EpicStatusViewSet, base_name="epic-statuses")
-router.register(r"userstory-statuses", UserStoryStatusViewSet, base_name="userstory-statuses")
+router.register(
+    r"userstory-statuses", UserStoryStatusViewSet, base_name="userstory-statuses"
+)
 router.register(r"points", PointsViewSet, base_name="points")
-router.register(r"userstory-due-dates", UserStoryDueDateViewSet, base_name="userstory-due-dates")
+router.register(
+    r"userstory-due-dates", UserStoryDueDateViewSet, base_name="userstory-due-dates"
+)
 router.register(r"task-statuses", TaskStatusViewSet, base_name="task-statuses")
 router.register(r"task-due-dates", TaskDueDateViewSet, base_name="task-due-dates")
 router.register(r"issue-statuses", IssueStatusViewSet, base_name="issue-statuses")
 router.register(r"issue-types", IssueTypeViewSet, base_name="issue-types")
 router.register(r"issue-due-dates", IssueDueDateViewSet, base_name="issue-due-dates")
 router.register(r"priorities", PriorityViewSet, base_name="priorities")
-router.register(r"severities",SeverityViewSet , base_name="severities")
+router.register(r"severities", SeverityViewSet, base_name="severities")
 
 
 # Custom Attributes
@@ -108,23 +134,47 @@ from taiga.projects.custom_attributes.api import UserStoryCustomAttributesValues
 from taiga.projects.custom_attributes.api import TaskCustomAttributesValuesViewSet
 from taiga.projects.custom_attributes.api import IssueCustomAttributesValuesViewSet
 
-router.register(r"epic-custom-attributes", EpicCustomAttributeViewSet,
-                base_name="epic-custom-attributes")
-router.register(r"userstory-custom-attributes", UserStoryCustomAttributeViewSet,
-                base_name="userstory-custom-attributes")
-router.register(r"task-custom-attributes", TaskCustomAttributeViewSet,
-                base_name="task-custom-attributes")
-router.register(r"issue-custom-attributes", IssueCustomAttributeViewSet,
-                base_name="issue-custom-attributes")
+router.register(
+    r"epic-custom-attributes",
+    EpicCustomAttributeViewSet,
+    base_name="epic-custom-attributes",
+)
+router.register(
+    r"userstory-custom-attributes",
+    UserStoryCustomAttributeViewSet,
+    base_name="userstory-custom-attributes",
+)
+router.register(
+    r"task-custom-attributes",
+    TaskCustomAttributeViewSet,
+    base_name="task-custom-attributes",
+)
+router.register(
+    r"issue-custom-attributes",
+    IssueCustomAttributeViewSet,
+    base_name="issue-custom-attributes",
+)
 
-router.register(r"epics/custom-attributes-values", EpicCustomAttributesValuesViewSet,
-                base_name="epic-custom-attributes-values")
-router.register(r"userstories/custom-attributes-values", UserStoryCustomAttributesValuesViewSet,
-                base_name="userstory-custom-attributes-values")
-router.register(r"tasks/custom-attributes-values", TaskCustomAttributesValuesViewSet,
-                base_name="task-custom-attributes-values")
-router.register(r"issues/custom-attributes-values", IssueCustomAttributesValuesViewSet,
-                base_name="issue-custom-attributes-values")
+router.register(
+    r"epics/custom-attributes-values",
+    EpicCustomAttributesValuesViewSet,
+    base_name="epic-custom-attributes-values",
+)
+router.register(
+    r"userstories/custom-attributes-values",
+    UserStoryCustomAttributesValuesViewSet,
+    base_name="userstory-custom-attributes-values",
+)
+router.register(
+    r"tasks/custom-attributes-values",
+    TaskCustomAttributesValuesViewSet,
+    base_name="task-custom-attributes-values",
+)
+router.register(
+    r"issues/custom-attributes-values",
+    IssueCustomAttributesValuesViewSet,
+    base_name="issue-custom-attributes-values",
+)
 
 
 # Search
@@ -146,16 +196,23 @@ from taiga.projects.attachments.api import IssueAttachmentViewSet
 from taiga.projects.attachments.api import TaskAttachmentViewSet
 from taiga.projects.attachments.api import WikiAttachmentViewSet
 
-router.register(r"epics/attachments", EpicAttachmentViewSet,
-                base_name="epic-attachments")
-router.register(r"userstories/attachments", UserStoryAttachmentViewSet,
-                base_name="userstory-attachments")
-router.register(r"tasks/attachments", TaskAttachmentViewSet,
-                base_name="task-attachments")
-router.register(r"issues/attachments", IssueAttachmentViewSet,
-                base_name="issue-attachments")
-router.register(r"wiki/attachments", WikiAttachmentViewSet,
-                base_name="wiki-attachments")
+router.register(
+    r"epics/attachments", EpicAttachmentViewSet, base_name="epic-attachments"
+)
+router.register(
+    r"userstories/attachments",
+    UserStoryAttachmentViewSet,
+    base_name="userstory-attachments",
+)
+router.register(
+    r"tasks/attachments", TaskAttachmentViewSet, base_name="task-attachments"
+)
+router.register(
+    r"issues/attachments", IssueAttachmentViewSet, base_name="issue-attachments"
+)
+router.register(
+    r"wiki/attachments", WikiAttachmentViewSet, base_name="wiki-attachments"
+)
 
 
 # Project components
@@ -183,55 +240,78 @@ from taiga.projects.wiki.api import WikiViewSet
 from taiga.projects.wiki.api import WikiLinkViewSet
 from taiga.projects.wiki.api import WikiWatchersViewSet
 
-router.register(r"milestones", MilestoneViewSet,
-                base_name="milestones")
-router.register(r"milestones/(?P<resource_id>\d+)/watchers", MilestoneWatchersViewSet,
-                base_name="milestone-watchers")
+router.register(r"milestones", MilestoneViewSet, base_name="milestones")
+router.register(
+    r"milestones/(?P<resource_id>\d+)/watchers",
+    MilestoneWatchersViewSet,
+    base_name="milestone-watchers",
+)
 
-router.register(r"epics", EpicViewSet, base_name="epics")\
-      .register(r"related_userstories", EpicRelatedUserStoryViewSet,
-                base_name="epics-related-userstories",
-                parents_query_lookups=["epic"])
+router.register(r"epics", EpicViewSet, base_name="epics").register(
+    r"related_userstories",
+    EpicRelatedUserStoryViewSet,
+    base_name="epics-related-userstories",
+    parents_query_lookups=["epic"],
+)
 
-router.register(r"epics/(?P<resource_id>\d+)/voters", EpicVotersViewSet,
-                base_name="epic-voters")
-router.register(r"epics/(?P<resource_id>\d+)/watchers", EpicWatchersViewSet,
-                base_name="epic-watchers")
+router.register(
+    r"epics/(?P<resource_id>\d+)/voters", EpicVotersViewSet, base_name="epic-voters"
+)
+router.register(
+    r"epics/(?P<resource_id>\d+)/watchers",
+    EpicWatchersViewSet,
+    base_name="epic-watchers",
+)
 
-router.register(r"userstories", UserStoryViewSet,
-                base_name="userstories")
-router.register(r"userstories/(?P<resource_id>\d+)/voters", UserStoryVotersViewSet,
-                base_name="userstory-voters")
-router.register(r"userstories/(?P<resource_id>\d+)/watchers", UserStoryWatchersViewSet,
-                base_name="userstory-watchers")
+router.register(r"userstories", UserStoryViewSet, base_name="userstories")
+router.register(
+    r"userstories/(?P<resource_id>\d+)/voters",
+    UserStoryVotersViewSet,
+    base_name="userstory-voters",
+)
+router.register(
+    r"userstories/(?P<resource_id>\d+)/watchers",
+    UserStoryWatchersViewSet,
+    base_name="userstory-watchers",
+)
 
-router.register(r"tasks", TaskViewSet,
-                base_name="tasks")
-router.register(r"tasks/(?P<resource_id>\d+)/voters", TaskVotersViewSet,
-                base_name="task-voters")
-router.register(r"tasks/(?P<resource_id>\d+)/watchers", TaskWatchersViewSet,
-                base_name="task-watchers")
+router.register(r"tasks", TaskViewSet, base_name="tasks")
+router.register(
+    r"tasks/(?P<resource_id>\d+)/voters", TaskVotersViewSet, base_name="task-voters"
+)
+router.register(
+    r"tasks/(?P<resource_id>\d+)/watchers",
+    TaskWatchersViewSet,
+    base_name="task-watchers",
+)
 
-router.register(r"issues", IssueViewSet,
-                base_name="issues")
-router.register(r"issues/(?P<resource_id>\d+)/voters", IssueVotersViewSet,
-                base_name="issue-voters")
-router.register(r"issues/(?P<resource_id>\d+)/watchers", IssueWatchersViewSet,
-                base_name="issue-watchers")
+router.register(r"issues", IssueViewSet, base_name="issues")
+router.register(
+    r"issues/(?P<resource_id>\d+)/voters", IssueVotersViewSet, base_name="issue-voters"
+)
+router.register(
+    r"issues/(?P<resource_id>\d+)/watchers",
+    IssueWatchersViewSet,
+    base_name="issue-watchers",
+)
 
-router.register(r"wiki", WikiViewSet,
-                base_name="wiki")
-router.register(r"wiki/(?P<resource_id>\d+)/watchers", WikiWatchersViewSet,
-                base_name="wiki-watchers")
-router.register(r"wiki-links", WikiLinkViewSet,
-                base_name="wiki-links")
+router.register(r"wiki", WikiViewSet, base_name="wiki")
+router.register(
+    r"wiki/(?P<resource_id>\d+)/watchers",
+    WikiWatchersViewSet,
+    base_name="wiki-watchers",
+)
+router.register(r"wiki-links", WikiLinkViewSet, base_name="wiki-links")
 
 
 # Delete owned projects
 from taiga.projects.api import DeleteOwnProjectsViewSet
 
-router.register(r"delete-owned-projects", DeleteOwnProjectsViewSet,
-                base_name="delete-owned-projects")
+router.register(
+    r"delete-owned-projects",
+    DeleteOwnProjectsViewSet,
+    base_name="delete-owned-projects",
+)
 
 
 # History & Components
@@ -249,6 +329,7 @@ router.register(r"history/wiki", WikiHistory, base_name="wiki-history")
 
 # Contact
 from taiga.projects.contact.api import ContactViewSet
+
 router.register(r"contact", ContactViewSet, base_name="contact")
 
 
@@ -308,21 +389,31 @@ router.register(r"applications", Application, base_name="applications")
 router.register(r"application-tokens", ApplicationToken, base_name="application-tokens")
 
 # Third party importers
-if settings.IMPORTERS.get('trello', {}).get('active', False):
+if settings.IMPORTERS.get("trello", {}).get("active", False):
     from taiga.importers.trello.api import TrelloImporterViewSet
-    router.register(r"importers/trello", TrelloImporterViewSet, base_name="importers-trello")
 
-if settings.IMPORTERS.get('jira', {}).get('active', False):
+    router.register(
+        r"importers/trello", TrelloImporterViewSet, base_name="importers-trello"
+    )
+
+if settings.IMPORTERS.get("jira", {}).get("active", False):
     from taiga.importers.jira.api import JiraImporterViewSet
+
     router.register(r"importers/jira", JiraImporterViewSet, base_name="importers-jira")
 
-if settings.IMPORTERS.get('github', {}).get('active', False):
+if settings.IMPORTERS.get("github", {}).get("active", False):
     from taiga.importers.github.api import GithubImporterViewSet
-    router.register(r"importers/github", GithubImporterViewSet, base_name="importers-github")
 
-if settings.IMPORTERS.get('asana', {}).get('active', False):
+    router.register(
+        r"importers/github", GithubImporterViewSet, base_name="importers-github"
+    )
+
+if settings.IMPORTERS.get("asana", {}).get("active", False):
     from taiga.importers.asana.api import AsanaImporterViewSet
-    router.register(r"importers/asana", AsanaImporterViewSet, base_name="importers-asana")
+
+    router.register(
+        r"importers/asana", AsanaImporterViewSet, base_name="importers-asana"
+    )
 
 
 # Stats

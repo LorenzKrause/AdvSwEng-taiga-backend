@@ -29,23 +29,29 @@ class Command(BaseCommand):
     help = "Export projects to a json file"
 
     def add_arguments(self, parser):
-        parser.add_argument("project_slugs",
-                            nargs="+",
-                            help="<project_slug project_slug ...>")
+        parser.add_argument(
+            "project_slugs", nargs="+", help="<project_slug project_slug ...>"
+        )
 
-        parser.add_argument("-d", "--dst_dir",
-                            action="store",
-                            dest="dst_dir",
-                            default="./",
-                            metavar="DIR",
-                            help="Directory to save the json files. ('./' by default)")
+        parser.add_argument(
+            "-d",
+            "--dst_dir",
+            action="store",
+            dest="dst_dir",
+            default="./",
+            metavar="DIR",
+            help="Directory to save the json files. ('./' by default)",
+        )
 
-        parser.add_argument("-f", "--format",
-                            action="store",
-                            dest="format",
-                            default="plain",
-                            metavar="[plain|gzip]",
-                            help="Format to the output file plain json or gzipped json. ('plain' by default)")
+        parser.add_argument(
+            "-f",
+            "--format",
+            action="store",
+            dest="format",
+            default="plain",
+            metavar="[plain|gzip]",
+            help="Format to the output file plain json or gzipped json. ('plain' by default)",
+        )
 
     def handle(self, *args, **options):
         dst_dir = options["dst_dir"]
@@ -73,4 +79,8 @@ class Command(BaseCommand):
                 with open(dst_file, "wb") as f:
                     render_project(project, f)
 
-            print("-> Generate dump of project '{}' in '{}'".format(project.name, dst_file))
+            print(
+                "-> Generate dump of project '{}' in '{}'".format(
+                    project.name, dst_file
+                )
+            )

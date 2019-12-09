@@ -6,7 +6,7 @@ from django.db import migrations
 
 
 def create_postgres_search_dictionary(apps, schema_editor):
-    sql="""
+    sql = """
 CREATE TEXT SEARCH DICTIONARY english_stem_nostop (
     Template = snowball,
     Language = english
@@ -18,10 +18,11 @@ ALTER MAPPING FOR asciiword, asciihword, hword_asciipart, hword, hword_part, wor
     cursor = connection.cursor()
     cursor.execute(sql)
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0025_auto_20150901_1600'),
+        ("projects", "0025_auto_20150901_1600"),
     ]
 
     operations = [

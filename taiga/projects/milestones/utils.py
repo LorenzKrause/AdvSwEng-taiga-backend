@@ -66,10 +66,9 @@ def attach_closed_points(queryset, as_field="closed_points_attr"):
 def attach_extra_info(queryset, user=None):
     # Userstories prefetching
     UserStory = apps.get_model("userstories", "UserStory")
-    us_queryset = UserStory.objects.select_related("milestone",
-                                                   "project",
-                                                   "status",
-                                                   "owner")
+    us_queryset = UserStory.objects.select_related(
+        "milestone", "project", "status", "owner"
+    )
 
     us_queryset = userstories_utils.attach_total_points(us_queryset)
     us_queryset = userstories_utils.attach_role_points(us_queryset)

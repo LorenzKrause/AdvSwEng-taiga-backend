@@ -31,11 +31,17 @@ from taiga.projects.tagging.serializers import TaggedInProjectResourceSerializer
 from taiga.projects.votes.mixins.serializers import VoteResourceSerializerMixin
 
 
-class EpicListSerializer(VoteResourceSerializerMixin, WatchedResourceSerializer,
-                         OwnerExtraInfoSerializerMixin, AssignedToExtraInfoSerializerMixin,
-                         StatusExtraInfoSerializerMixin, ProjectExtraInfoSerializerMixin,
-                         BasicAttachmentsInfoSerializerMixin,
-                         TaggedInProjectResourceSerializer, serializers.LightSerializer):
+class EpicListSerializer(
+    VoteResourceSerializerMixin,
+    WatchedResourceSerializer,
+    OwnerExtraInfoSerializerMixin,
+    AssignedToExtraInfoSerializerMixin,
+    StatusExtraInfoSerializerMixin,
+    ProjectExtraInfoSerializerMixin,
+    BasicAttachmentsInfoSerializerMixin,
+    TaggedInProjectResourceSerializer,
+    serializers.LightSerializer,
+):
 
     id = Field()
     ref = Field()
@@ -58,7 +64,9 @@ class EpicListSerializer(VoteResourceSerializerMixin, WatchedResourceSerializer,
         return obj.status is not None and obj.status.is_closed
 
     def get_user_stories_counts(self, obj):
-        assert hasattr(obj, "user_stories_counts"), "instance must have a user_stories_counts attribute"
+        assert hasattr(
+            obj, "user_stories_counts"
+        ), "instance must have a user_stories_counts attribute"
         return obj.user_stories_counts
 
 

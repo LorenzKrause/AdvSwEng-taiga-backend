@@ -23,28 +23,37 @@ from taiga.base.db.models.fields import JSONField
 
 
 class Webhook(models.Model):
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="webhooks")
-    name = models.CharField(max_length=250, null=False, blank=False,
-                            verbose_name=_("name"))
+    project = models.ForeignKey(
+        "projects.Project", null=False, blank=False, related_name="webhooks"
+    )
+    name = models.CharField(
+        max_length=250, null=False, blank=False, verbose_name=_("name")
+    )
     url = models.URLField(null=False, blank=False, verbose_name=_("URL"))
     key = models.TextField(null=False, blank=False, verbose_name=_("secret key"))
 
     class Meta:
-        ordering = ['name', '-id']
+        ordering = ["name", "-id"]
 
 
 class WebhookLog(models.Model):
-    webhook = models.ForeignKey(Webhook, null=False, blank=False,
-                                related_name="logs")
+    webhook = models.ForeignKey(Webhook, null=False, blank=False, related_name="logs")
     url = models.URLField(null=False, blank=False, verbose_name=_("URL"))
     status = models.IntegerField(null=False, blank=False, verbose_name=_("status code"))
     request_data = JSONField(null=False, blank=False, verbose_name=_("request data"))
-    request_headers = JSONField(null=False, blank=False, verbose_name=_("request headers"), default={})
-    response_data = models.TextField(null=False, blank=False, verbose_name=_("response data"))
-    response_headers = JSONField(null=False, blank=False, verbose_name=_("response headers"), default={})
-    duration = models.FloatField(null=False, blank=False, verbose_name=_("duration"), default=0)
+    request_headers = JSONField(
+        null=False, blank=False, verbose_name=_("request headers"), default={}
+    )
+    response_data = models.TextField(
+        null=False, blank=False, verbose_name=_("response data")
+    )
+    response_headers = JSONField(
+        null=False, blank=False, verbose_name=_("response headers"), default={}
+    )
+    duration = models.FloatField(
+        null=False, blank=False, verbose_name=_("duration"), default=0
+    )
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created', '-id']
+        ordering = ["-created", "-id"]

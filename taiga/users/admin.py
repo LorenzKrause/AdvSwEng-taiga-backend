@@ -33,39 +33,59 @@ admin.site.unregister(Group)
 
 ## Inlines
 
+
 class MembershipsInline(admin.TabularInline):
     model = apps.get_model("projects", "Membership")
     fk_name = "user"
     verbose_name = _("Project Member")
     verbose_name_plural = _("Project Members")
-    fields = ("project_id", "project_name", "project_slug", "project_is_private",
-              "project_owner", "is_admin")
-    readonly_fields = ("project_id", "project_name", "project_slug", "project_is_private",
-                       "project_owner", "is_admin")
+    fields = (
+        "project_id",
+        "project_name",
+        "project_slug",
+        "project_is_private",
+        "project_owner",
+        "is_admin",
+    )
+    readonly_fields = (
+        "project_id",
+        "project_name",
+        "project_slug",
+        "project_is_private",
+        "project_owner",
+        "is_admin",
+    )
     show_change_link = True
     extra = 0
 
     def project_id(self, obj):
         return obj.project.id if obj.project else None
+
     project_id.short_description = _("id")
 
     def project_name(self, obj):
         return obj.project.name if obj.project else None
+
     project_name.short_description = _("name")
 
     def project_slug(self, obj):
         return obj.project.slug if obj.project else None
+
     project_slug.short_description = _("slug")
 
     def project_is_private(self, obj):
         return obj.project.is_private if obj.project else None
+
     project_is_private.short_description = _("is private")
     project_is_private.boolean = True
 
     def project_owner(self, obj):
         if obj.project and obj.project.owner:
-            return "{} (@{})".format(obj.project.owner.get_full_name(), obj.project.owner.username)
+            return "{} (@{})".format(
+                obj.project.owner.get_full_name(), obj.project.owner.username
+            )
         return None
+
     project_owner.short_description = _("owner")
 
     def has_add_permission(self, *args):
@@ -99,6 +119,7 @@ class RoleInline(admin.TabularInline):
 
 ## Admin panels
 
+
 class RoleAdmin(admin.ModelAdmin):
     list_display = ["name"]
     filter_horizontal = ("permissions",)
@@ -109,19 +130,39 @@ class RoleAdmin(admin.ModelAdmin):
             # Avoid a major performance hit resolving permission names which
             # triggers a content_type load:
             kwargs["queryset"] = qs.select_related("content_type")
-        return super().formfield_for_manytomany(
-            db_field, request=request, **kwargs)
+        return super().formfield_for_manytomany(db_field, request=request, **kwargs)
 
 
 class UserAdmin(DjangoUserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": ("full_name", "email", "bio", "photo")}),
-        (_("Extra info"), {"fields": ("color", "lang", "timezone", "token", "colorize_tags",
-                                      "email_token", "new_email", "accepted_terms", "read_new_terms")}),
+        (
+            _("Extra info"),
+            {
+                "fields": (
+                    "color",
+                    "lang",
+                    "timezone",
+                    "token",
+                    "colorize_tags",
+                    "email_token",
+                    "new_email",
+                    "accepted_terms",
+                    "read_new_terms",
+                )
+            },
+        ),
         (_("Permissions"), {"fields": ("is_active", "is_superuser")}),
-        (_("Restrictions"), {"fields": (("max_private_projects", "max_memberships_private_projects"),
-                                        ("max_public_projects", "max_memberships_public_projects"))}),
+        (
+            _("Restrictions"),
+            {
+                "fields": (
+                    ("max_private_projects", "max_memberships_private_projects"),
+                    ("max_public_projects", "max_memberships_public_projects"),
+                )
+            },
+        ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
     form = UserChangeForm
@@ -131,12 +172,7 @@ class UserAdmin(DjangoUserAdmin):
     search_fields = ("username", "full_name", "email")
     ordering = ("username",)
     filter_horizontal = ()
-    inlines = [
-        OwnedProjectsInline,
-        MembershipsInline
-    ]
-
-
+    inlines = [OwnedProjectsInline, MembershipsInline]
 
 
 admin.site.register(User, UserAdmin)

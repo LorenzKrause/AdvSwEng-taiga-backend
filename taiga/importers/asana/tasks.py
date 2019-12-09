@@ -26,7 +26,7 @@ from taiga.users.models import User
 from taiga.celery import app
 from .importer import AsanaImporter
 
-logger = logging.getLogger('taiga.importers.asana')
+logger = logging.getLogger("taiga.importers.asana")
 
 
 @app.task(bind=True)
@@ -42,11 +42,16 @@ def import_project(self, user_id, token, project_id, options):
             "error_subject": _("Error importing Asana project"),
             "error_message": _("Error importing Asana project"),
             "project": project_id,
-            "exception": e
+            "exception": e,
         }
         email = mail_builder.importer_import_error(user, ctx)
         email.send()
-        logger.error('Error importing Asana project %s (by %s)', project_id, user, exc_info=sys.exc_info())
+        logger.error(
+            "Error importing Asana project %s (by %s)",
+            project_id,
+            user,
+            exc_info=sys.exc_info(),
+        )
     else:
         ctx = {
             "project": project,

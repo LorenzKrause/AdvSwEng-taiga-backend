@@ -33,6 +33,7 @@ from taiga.users.models import User
 # User
 ######################################################
 
+
 class ContactProjectDetailSerializer(serializers.LightSerializer):
     id = Field()
     slug = Field()
@@ -71,7 +72,11 @@ class UserSerializer(serializers.LightSerializer):
         if hasattr(user, "roles_attr"):
             return user.roles_attr
 
-        return user.memberships.order_by("role__name").values_list("role__name", flat=True).distinct()
+        return (
+            user.memberships.order_by("role__name")
+            .values_list("role__name", flat=True)
+            .distinct()
+        )
 
 
 class UserAdminSerializer(UserSerializer):
@@ -126,6 +131,7 @@ class UserBasicInfoSerializer(serializers.LightSerializer):
 # Role
 ######################################################
 
+
 class RoleSerializer(serializers.LightSerializer):
     id = Field()
     name = Field()
@@ -143,6 +149,7 @@ class RoleSerializer(serializers.LightSerializer):
 ######################################################
 # Like
 ######################################################
+
 
 class HighLightedContentSerializer(serializers.LightSerializer):
     type = Field()

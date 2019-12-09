@@ -50,21 +50,26 @@ class BitBucketViewSet(BaseWebhookApiViewSet):
         if project.modules_config.config is None:
             return False
 
-        project_secret = project.modules_config.config.get("bitbucket", {}).get("secret", "")
+        project_secret = project.modules_config.config.get("bitbucket", {}).get(
+            "secret", ""
+        )
         if not project_secret:
             return False
 
         bitbucket_config = project.modules_config.config.get("bitbucket", {})
-        valid_origin_ips = bitbucket_config.get("valid_origin_ips",
-                                                settings.BITBUCKET_VALID_ORIGIN_IPS)
+        valid_origin_ips = bitbucket_config.get(
+            "valid_origin_ips", settings.BITBUCKET_VALID_ORIGIN_IPS
+        )
         origin_ip = get_ip(request)
         mathching_origin_ip = True
 
         if valid_origin_ips:
             try:
-                mathching_origin_ip = len(all_matching_cidrs(origin_ip,valid_origin_ips)) > 0
+                mathching_origin_ip = (
+                    len(all_matching_cidrs(origin_ip, valid_origin_ips)) > 0
+                )
 
-            except(AddrFormatError, ValueError):
+            except (AddrFormatError, ValueError):
                 mathching_origin_ip = False
 
         if not mathching_origin_ip:
@@ -73,4 +78,4 @@ class BitBucketViewSet(BaseWebhookApiViewSet):
         return project_secret == secret_key
 
     def _get_event_name(self, request):
-        return request.META.get('HTTP_X_EVENT_KEY', None)
+        return request.META.get("HTTP_X_EVENT_KEY", None)

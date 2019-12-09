@@ -36,5 +36,5 @@ def resolve(type, *args):
 
 @library.filter(name="parse_and_format_date")
 def parse_and_format_date(value, *args):
-    date_value = dt.datetime.strptime(value, '%Y-%m-%d')
-    return date_value.strftime('%d %b %Y')
+    date_value = dt.datetime.strptime(value, "%Y-%m-%d")
+    return date_value.strftime("%d %b %Y")

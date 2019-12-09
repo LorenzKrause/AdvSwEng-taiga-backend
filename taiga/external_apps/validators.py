@@ -40,6 +40,7 @@ class ApplicationTokenValidator(validators.ModelValidator):
 
 class AuthorizationCodeValidator(validators.ModelValidator):
     next_url = serializers.CharField(source="next_url", read_only=True)
+
     class Meta:
         model = models.ApplicationToken
         fields = ("auth_code", "state", "next_url")
@@ -51,4 +52,4 @@ class AccessTokenValidator(validators.ModelValidator):
 
     class Meta:
         model = models.ApplicationToken
-        fields = ("token", )
+        fields = ("token",)

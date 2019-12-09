@@ -39,8 +39,8 @@ class TrelloImporterViewSet(viewsets.ViewSet):
     def list_users(self, request, *args, **kwargs):
         self.check_permissions(request, "list_users", None)
 
-        token = request.DATA.get('token', None)
-        project_id = request.DATA.get('project', None)
+        token = request.DATA.get("token", None)
+        project_id = request.DATA.get("project", None)
 
         if not project_id:
             raise exc.WrongArguments(_("The project param is needed"))
@@ -48,27 +48,27 @@ class TrelloImporterViewSet(viewsets.ViewSet):
         importer = TrelloImporter(request.user, token)
         users = importer.list_users(project_id)
         for user in users:
-            user['user'] = None
-            if not user['email']:
+            user["user"] = None
+            if not user["email"]:
                 continue
 
             try:
-                taiga_user = User.objects.get(email=user['email'])
+                taiga_user = User.objects.get(email=user["email"])
             except User.DoesNotExist:
                 continue
 
-            user['user'] = {
-                'id': taiga_user.id,
-                'full_name': taiga_user.get_full_name(),
-                'gravatar_id': get_user_gravatar_id(taiga_user),
-                'photo': get_user_photo_url(taiga_user),
+            user["user"] = {
+                "id": taiga_user.id,
+                "full_name": taiga_user.get_full_name(),
+                "gravatar_id": get_user_gravatar_id(taiga_user),
+                "photo": get_user_photo_url(taiga_user),
             }
         return response.Ok(users)
 
     @list_route(methods=["POST"])
     def list_projects(self, request, *args, **kwargs):
         self.check_permissions(request, "list_projects", None)
-        token = request.DATA.get('token', None)
+        token = request.DATA.get("token", None)
         importer = TrelloImporter(request.user, token)
         projects = importer.list_projects()
         return response.Ok(projects)
@@ -77,22 +77,28 @@ class TrelloImporterViewSet(viewsets.ViewSet):
     def import_project(self, request, *args, **kwargs):
         self.check_permissions(request, "import_project", None)
 
-        token = request.DATA.get('token', None)
-        project_id = request.DATA.get('project', None)
+        token = request.DATA.get("token", None)
+        project_id = request.DATA.get("project", None)
         if not project_id:
             raise exc.WrongArguments(_("The project param is needed"))
 
         options = {
-            "name": request.DATA.get('name', None),
-            "description": request.DATA.get('description', None),
-            "template": request.DATA.get('template', "kanban"),
-            "users_bindings": resolve_users_bindings(request.DATA.get("users_bindings", {})),
-            "keep_external_reference": request.DATA.get("keep_external_reference", False),
+            "name": request.DATA.get("name", None),
+            "description": request.DATA.get("description", None),
+            "template": request.DATA.get("template", "kanban"),
+            "users_bindings": resolve_users_bindings(
+                request.DATA.get("users_bindings", {})
+            ),
+            "keep_external_reference": request.DATA.get(
+                "keep_external_reference", False
+            ),
             "is_private": request.DATA.get("is_private", False),
         }
 
         if settings.CELERY_ENABLED:
-            task = tasks.import_project.delay(request.user.id, token, project_id, options)
+            task = tasks.import_project.delay(
+                request.user.id, token, project_id, options
+            )
             return response.Accepted({"task_id": task.id})
 
         importer = TrelloImporter(request.user, token)
@@ -115,10 +121,7 @@ class TrelloImporterViewSet(viewsets.ViewSet):
         (auth_data, created) = AuthData.objects.get_or_create(
             user=request.user,
             key="trello-oauth",
-            defaults={
-                "value": uuid.uuid4().hex,
-                "extra": {},
-            }
+            defaults={"value": uuid.uuid4().hex, "extra": {},},
         )
         auth_data.extra = {
             "oauth_token": oauth_token,
@@ -134,14 +137,14 @@ class TrelloImporterViewSet(viewsets.ViewSet):
 
         try:
             oauth_data = request.user.auth_data.get(key="trello-oauth")
-            oauth_token = oauth_data.extra['oauth_token']
-            oauth_secret = oauth_data.extra['oauth_secret']
-            oauth_verifier = request.DATA.get('code')
+            oauth_token = oauth_data.extra["oauth_token"]
+            oauth_secret = oauth_data.extra["oauth_secret"]
+            oauth_verifier = request.DATA.get("code")
             oauth_data.delete()
-            trello_token = TrelloImporter.get_access_token(oauth_token, oauth_secret, oauth_verifier)['oauth_token']
+            trello_token = TrelloImporter.get_access_token(
+                oauth_token, oauth_secret, oauth_verifier
+            )["oauth_token"]
         except Exception as e:
             raise exc.WrongArguments(_("Invalid or expired auth token"))
 
-        return response.Ok({
-            "token": trello_token
-        })
+        return response.Ok({"token": trello_token})

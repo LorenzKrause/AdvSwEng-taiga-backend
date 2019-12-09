@@ -61,6 +61,7 @@ class JSONEncoder(json.JSONEncoder):
     JSONEncoder subclass that knows how to encode date/time/timedelta,
     decimal types, and generators.
     """
+
     def default(self, o):
         # For Date Time string spec, see ECMA 262
         # http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.15

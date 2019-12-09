@@ -29,17 +29,26 @@ class UserProjectSettings(models.Model):
     This class represents a persistence for
     project user notifications preference.
     """
-    project = models.ForeignKey("projects.Project", related_name="user_project_settings")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="user_project_settings")
-    homepage = models.SmallIntegerField(choices=HOMEPAGE_CHOICES,
-                                        default=Section.timeline)
+
+    project = models.ForeignKey(
+        "projects.Project", related_name="user_project_settings"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="user_project_settings"
+    )
+    homepage = models.SmallIntegerField(
+        choices=HOMEPAGE_CHOICES, default=Section.timeline
+    )
 
     created_at = models.DateTimeField(default=timezone.now)
     modified_at = models.DateTimeField()
     _importing = None
 
     class Meta:
-        unique_together = ("project", "user",)
+        unique_together = (
+            "project",
+            "user",
+        )
         ordering = ["created_at"]
 
     def save(self, *args, **kwargs):

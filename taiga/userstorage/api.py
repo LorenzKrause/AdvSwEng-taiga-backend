@@ -47,10 +47,15 @@ class StorageEntriesViewSet(ModelCrudViewSet):
 
     def create(self, *args, **kwargs):
         key = self.request.DATA.get("key", None)
-        if (key and self.request.user.is_authenticated() and
-                self.request.user.storage_entries.filter(key=key).exists()):
+        if (
+            key
+            and self.request.user.is_authenticated()
+            and self.request.user.storage_entries.filter(key=key).exists()
+        ):
             raise exc.BadRequest(
-                _("Duplicate key value violates unique constraint. "
-                  "Key '{}' already exists.").format(key)
+                _(
+                    "Duplicate key value violates unique constraint. "
+                    "Key '{}' already exists."
+                ).format(key)
             )
         return super().create(*args, **kwargs)

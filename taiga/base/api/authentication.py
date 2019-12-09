@@ -61,8 +61,8 @@ def get_authorization_header(request):
 
     Hide some test client ickyness where the header can be unicode.
     """
-    auth = request.META.get('HTTP_AUTHORIZATION', b'')
-    if type(auth) == type(''):
+    auth = request.META.get("HTTP_AUTHORIZATION", b"")
+    if type(auth) == type(""):
         # Work around django test client oddness
         auth = auth.encode(HTTP_HEADER_ENCODING)
     return auth
@@ -98,7 +98,8 @@ class BasicAuthentication(BaseAuthentication):
     """
     HTTP Basic authentication against username/password.
     """
-    www_authenticate_realm = 'api'
+
+    www_authenticate_realm = "api"
 
     def authenticate(self, request):
         """
@@ -107,20 +108,22 @@ class BasicAuthentication(BaseAuthentication):
         """
         auth = get_authorization_header(request).split()
 
-        if not auth or auth[0].lower() != b'basic':
+        if not auth or auth[0].lower() != b"basic":
             return None
 
         if len(auth) == 1:
-            msg = 'Invalid basic header. No credentials provided.'
+            msg = "Invalid basic header. No credentials provided."
             raise exceptions.AuthenticationFailed(msg)
         elif len(auth) > 2:
-            msg = 'Invalid basic header. Credentials string should not contain spaces.'
+            msg = "Invalid basic header. Credentials string should not contain spaces."
             raise exceptions.AuthenticationFailed(msg)
 
         try:
-            auth_parts = base64.b64decode(auth[1]).decode(HTTP_HEADER_ENCODING).partition(':')
+            auth_parts = (
+                base64.b64decode(auth[1]).decode(HTTP_HEADER_ENCODING).partition(":")
+            )
         except (TypeError, UnicodeDecodeError):
-            msg = 'Invalid basic header. Credentials not correctly base64 encoded'
+            msg = "Invalid basic header. Credentials not correctly base64 encoded"
             raise exceptions.AuthenticationFailed(msg)
 
         userid, password = auth_parts[0], auth_parts[2]
@@ -132,7 +135,7 @@ class BasicAuthentication(BaseAuthentication):
         """
         user = authenticate(username=userid, password=password)
         if user is None or not user.is_active:
-            raise exceptions.AuthenticationFailed('Invalid username/password')
+            raise exceptions.AuthenticationFailed("Invalid username/password")
         return (user, None)
 
     def authenticate_header(self, request):
@@ -152,7 +155,7 @@ class SessionAuthentication(BaseAuthentication):
 
         # Get the underlying HttpRequest object
         request = request._request
-        user = getattr(request, 'user', None)
+        user = getattr(request, "user", None)
 
         # Unauthenticated, CSRF validation not required
         if not user or not user.is_active:
@@ -170,4 +173,4 @@ class SessionAuthentication(BaseAuthentication):
         reason = CSRFCheck().process_view(request, None, (), {})
         if reason:
             # CSRF failed, bail with explicit error message
-            raise exceptions.AuthenticationFailed('CSRF Failed: %s' % reason)
+            raise exceptions.AuthenticationFailed("CSRF Failed: %s" % reason)

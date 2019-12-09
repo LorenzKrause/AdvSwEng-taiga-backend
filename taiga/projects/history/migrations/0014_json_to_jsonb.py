@@ -9,7 +9,7 @@ from django.contrib.postgres.fields import JSONField
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('history', '0013_historyentry_values_diff_cache'),
+        ("history", "0013_historyentry_values_diff_cache"),
     ]
 
     operations = [
@@ -44,6 +44,6 @@ class Migration(migrations.Migration):
                            TYPE jsonb
                           USING regexp_replace("values"::text, '[\\\\]+u0000', '\\\\\\\\u0000', 'g')::jsonb;
             """,
-            reverse_sql=migrations.RunSQL.noop
+            reverse_sql=migrations.RunSQL.noop,
         ),
     ]

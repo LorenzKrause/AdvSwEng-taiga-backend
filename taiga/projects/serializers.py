@@ -37,6 +37,7 @@ from .notifications.choices import NotifyLevel
 # Custom values for selectors
 ######################################################
 
+
 class BaseDueDateSerializer(serializers.LightSerializer):
     id = Field()
     name = I18NField()
@@ -137,6 +138,7 @@ class IssueDueDateSerializer(BaseDueDateSerializer):
 # Members
 ######################################################
 
+
 class MembershipDictSerializer(serializers.LightDictSerializer):
     role = Field()
     role_name = Field()
@@ -153,10 +155,10 @@ class MembershipDictSerializer(serializers.LightDictSerializer):
         return obj["full_name"] or obj["username"] or obj["email"]
 
     def get_photo(self, obj):
-        return get_photo_url(obj['photo'])
+        return get_photo_url(obj["photo"])
 
     def get_gravatar_id(self, obj):
-        return get_gravatar_id(obj['email'])
+        return get_gravatar_id(obj["email"])
 
 
 class MembershipSerializer(serializers.LightSerializer):
@@ -205,8 +207,13 @@ class MembershipSerializer(serializers.LightSerializer):
         return obj.project.slug if obj and obj.project else ""
 
     def get_is_owner(self, obj):
-        return (obj and obj.user_id and obj.project_id and obj.project.owner_id and
-                obj.user_id == obj.project.owner_id)
+        return (
+            obj
+            and obj.user_id
+            and obj.project_id
+            and obj.project.owner_id
+            and obj.user_id == obj.project.owner_id
+        )
 
 
 class MembershipAdminSerializer(MembershipSerializer):
@@ -223,6 +230,7 @@ class MembershipAdminSerializer(MembershipSerializer):
 ######################################################
 # Projects
 ######################################################
+
 
 class ProjectSerializer(serializers.LightSerializer):
     id = Field()
@@ -293,14 +301,18 @@ class ProjectSerializer(serializers.LightSerializer):
     my_homepage = MethodField()
 
     def get_members(self, obj):
-        assert hasattr(obj, "members_attr"), "instance must have a members_attr attribute"
+        assert hasattr(
+            obj, "members_attr"
+        ), "instance must have a members_attr attribute"
         if obj.members_attr is None:
             return []
 
         return [m.get("id") for m in obj.members_attr if m["id"] is not None]
 
     def get_i_am_member(self, obj):
-        assert hasattr(obj, "members_attr"), "instance must have a members_attr attribute"
+        assert hasattr(
+            obj, "members_attr"
+        ), "instance must have a members_attr attribute"
         if obj.members_attr is None:
             return False
 
@@ -318,13 +330,15 @@ class ProjectSerializer(serializers.LightSerializer):
     def get_my_permissions(self, obj):
         if "request" in self.context:
             user = self.context["request"].user
-            return calculate_permissions(is_authenticated=user.is_authenticated(),
-                                         is_superuser=user.is_superuser,
-                                         is_member=self.get_i_am_member(obj),
-                                         is_admin=self.get_i_am_admin(obj),
-                                         role_permissions=obj.my_role_permissions_attr,
-                                         anon_permissions=obj.anon_permissions,
-                                         public_permissions=obj.public_permissions)
+            return calculate_permissions(
+                is_authenticated=user.is_authenticated(),
+                is_superuser=user.is_superuser,
+                is_member=self.get_i_am_member(obj),
+                is_admin=self.get_i_am_admin(obj),
+                role_permissions=obj.my_role_permissions_attr,
+                anon_permissions=obj.anon_permissions,
+                public_permissions=obj.public_permissions,
+            )
         return []
 
     def get_owner(self, obj):
@@ -341,24 +355,36 @@ class ProjectSerializer(serializers.LightSerializer):
         return False
 
     def get_total_closed_milestones(self, obj):
-        assert hasattr(obj, "closed_milestones_attr"), "instance must have a closed_milestones_attr attribute"
+        assert hasattr(
+            obj, "closed_milestones_attr"
+        ), "instance must have a closed_milestones_attr attribute"
         return obj.closed_milestones_attr
 
     def get_is_watcher(self, obj):
-        assert hasattr(obj, "notify_policies_attr"), "instance must have a notify_policies_attr attribute"
+        assert hasattr(
+            obj, "notify_policies_attr"
+        ), "instance must have a notify_policies_attr attribute"
         np = self.get_notify_level(obj)
         return np is not None and np != NotifyLevel.none
 
     def get_total_watchers(self, obj):
-        assert hasattr(obj, "notify_policies_attr"), "instance must have a notify_policies_attr attribute"
+        assert hasattr(
+            obj, "notify_policies_attr"
+        ), "instance must have a notify_policies_attr attribute"
         if obj.notify_policies_attr is None:
             return 0
 
-        valid_notify_policies = [np for np in obj.notify_policies_attr if np["notify_level"] != NotifyLevel.none]
+        valid_notify_policies = [
+            np
+            for np in obj.notify_policies_attr
+            if np["notify_level"] != NotifyLevel.none
+        ]
         return len(valid_notify_policies)
 
     def get_notify_level(self, obj):
-        assert hasattr(obj, "notify_policies_attr"), "instance must have a notify_policies_attr attribute"
+        assert hasattr(
+            obj, "notify_policies_attr"
+        ), "instance must have a notify_policies_attr attribute"
         if obj.notify_policies_attr is None:
             return None
 
@@ -377,7 +403,9 @@ class ProjectSerializer(serializers.LightSerializer):
         return services.get_logo_big_thumbnail_url(obj)
 
     def get_my_homepage(self, obj):
-        assert hasattr(obj, "my_homepage_attr"), "instance must have a my_homepage_attr attribute"
+        assert hasattr(
+            obj, "my_homepage_attr"
+        ), "instance must have a my_homepage_attr attribute"
         if obj.my_homepage_attr is None:
             return False
 
@@ -416,7 +444,9 @@ class ProjectDetailSerializer(ProjectSerializer):
     milestones = MethodField()
 
     def get_milestones(self, obj):
-        assert hasattr(obj, "milestones_attr"), "instance must have a milestones_attr attribute"
+        assert hasattr(
+            obj, "milestones_attr"
+        ), "instance must have a milestones_attr attribute"
         if obj.milestones_attr is None:
             return []
 
@@ -424,17 +454,28 @@ class ProjectDetailSerializer(ProjectSerializer):
 
     def to_value(self, instance):
         # Name attributes must be translated
-        for attr in ["epic_statuses_attr", "userstory_statuses_attr",
-                     "userstory_duedates_attr", "points_attr",
-                     "task_statuses_attr", "task_duedates_attr",
-                     "issue_statuses_attr", "issue_types_attr",
-                     "issue_duedates_attr", "priorities_attr",
-                     "severities_attr", "epic_custom_attributes_attr",
-                     "userstory_custom_attributes_attr",
-                     "task_custom_attributes_attr",
-                     "issue_custom_attributes_attr", "roles_attr"]:
+        for attr in [
+            "epic_statuses_attr",
+            "userstory_statuses_attr",
+            "userstory_duedates_attr",
+            "points_attr",
+            "task_statuses_attr",
+            "task_duedates_attr",
+            "issue_statuses_attr",
+            "issue_types_attr",
+            "issue_duedates_attr",
+            "priorities_attr",
+            "severities_attr",
+            "epic_custom_attributes_attr",
+            "userstory_custom_attributes_attr",
+            "task_custom_attributes_attr",
+            "issue_custom_attributes_attr",
+            "roles_attr",
+        ]:
 
-            assert hasattr(instance, attr), "instance must have a {} attribute".format(attr)
+            assert hasattr(instance, attr), "instance must have a {} attribute".format(
+                attr
+            )
             val = getattr(instance, attr)
             if val is None:
                 continue
@@ -445,8 +486,13 @@ class ProjectDetailSerializer(ProjectSerializer):
         ret = super().to_value(instance)
 
         admin_fields = [
-            "epics_csv_uuid", "userstories_csv_uuid", "tasks_csv_uuid", "issues_csv_uuid",
-            "is_private_extra_info", "max_memberships", "transfer_token",
+            "epics_csv_uuid",
+            "userstories_csv_uuid",
+            "tasks_csv_uuid",
+            "issues_csv_uuid",
+            "is_private_extra_info",
+            "max_memberships",
+            "transfer_token",
         ]
 
         is_admin_user = False
@@ -456,16 +502,20 @@ class ProjectDetailSerializer(ProjectSerializer):
 
         if not is_admin_user:
             for admin_field in admin_fields:
-                del(ret[admin_field])
+                del ret[admin_field]
 
         return ret
 
     def get_members(self, obj):
-        assert hasattr(obj, "members_attr"), "instance must have a members_attr attribute"
+        assert hasattr(
+            obj, "members_attr"
+        ), "instance must have a members_attr attribute"
         if obj.members_attr is None:
             return []
 
-        return MembershipDictSerializer([m for m in obj.members_attr if m['id'] is not None], many=True).data
+        return MembershipDictSerializer(
+            [m for m in obj.members_attr if m["id"] is not None], many=True
+        ).data
 
     def get_total_memberships(self, obj):
         if obj.members_attr is None:
@@ -474,27 +524,31 @@ class ProjectDetailSerializer(ProjectSerializer):
         return len(obj.members_attr)
 
     def get_is_out_of_owner_limits(self, obj):
-        assert hasattr(obj, "private_projects_same_owner_attr"), ("instance must have a private_projects_same"
-                                                                  "_owner_attr attribute")
-        assert hasattr(obj, "public_projects_same_owner_attr"), ("instance must have a public_projects_same_"
-                                                                 "owner_attr attribute")
+        assert hasattr(obj, "private_projects_same_owner_attr"), (
+            "instance must have a private_projects_same" "_owner_attr attribute"
+        )
+        assert hasattr(obj, "public_projects_same_owner_attr"), (
+            "instance must have a public_projects_same_" "owner_attr attribute"
+        )
         return services.check_if_project_is_out_of_owner_limits(
             obj,
             current_memberships=self.get_total_memberships(obj),
             current_private_projects=obj.private_projects_same_owner_attr,
-            current_public_projects=obj.public_projects_same_owner_attr
+            current_public_projects=obj.public_projects_same_owner_attr,
         )
 
     def get_is_private_extra_info(self, obj):
-        assert hasattr(obj, "private_projects_same_owner_attr"), ("instance must have a private_projects_same_"
-                                                                  "owner_attr attribute")
-        assert hasattr(obj, "public_projects_same_owner_attr"), ("instance must have a public_projects_same"
-                                                                 "_owner_attr attribute")
+        assert hasattr(obj, "private_projects_same_owner_attr"), (
+            "instance must have a private_projects_same_" "owner_attr attribute"
+        )
+        assert hasattr(obj, "public_projects_same_owner_attr"), (
+            "instance must have a public_projects_same" "_owner_attr attribute"
+        )
         return services.check_if_project_privacity_can_be_changed(
             obj,
             current_memberships=self.get_total_memberships(obj),
             current_private_projects=obj.private_projects_same_owner_attr,
-            current_public_projects=obj.public_projects_same_owner_attr
+            current_public_projects=obj.public_projects_same_owner_attr,
         )
 
     def get_max_memberships(self, obj):
@@ -566,14 +620,18 @@ class ProjectLightSerializer(serializers.LightSerializer):
     my_homepage = MethodField()
 
     def get_members(self, obj):
-        assert hasattr(obj, "members_attr"), "instance must have a members_attr attribute"
+        assert hasattr(
+            obj, "members_attr"
+        ), "instance must have a members_attr attribute"
         if obj.members_attr is None:
             return []
 
         return [m.get("id") for m in obj.members_attr if m["id"] is not None]
 
     def get_i_am_member(self, obj):
-        assert hasattr(obj, "members_attr"), "instance must have a members_attr attribute"
+        assert hasattr(
+            obj, "members_attr"
+        ), "instance must have a members_attr attribute"
         if obj.members_attr is None:
             return False
 
@@ -591,13 +649,15 @@ class ProjectLightSerializer(serializers.LightSerializer):
     def get_my_permissions(self, obj):
         if "request" in self.context:
             user = self.context["request"].user
-            return calculate_permissions(is_authenticated=user.is_authenticated(),
-                                         is_superuser=user.is_superuser,
-                                         is_member=self.get_i_am_member(obj),
-                                         is_admin=self.get_i_am_admin(obj),
-                                         role_permissions=obj.my_role_permissions_attr,
-                                         anon_permissions=obj.anon_permissions,
-                                         public_permissions=obj.public_permissions)
+            return calculate_permissions(
+                is_authenticated=user.is_authenticated(),
+                is_superuser=user.is_superuser,
+                is_member=self.get_i_am_member(obj),
+                is_admin=self.get_i_am_admin(obj),
+                role_permissions=obj.my_role_permissions_attr,
+                anon_permissions=obj.anon_permissions,
+                public_permissions=obj.public_permissions,
+            )
         return []
 
     def get_owner(self, obj):
@@ -614,20 +674,30 @@ class ProjectLightSerializer(serializers.LightSerializer):
         return False
 
     def get_is_watcher(self, obj):
-        assert hasattr(obj, "notify_policies_attr"), "instance must have a notify_policies_attr attribute"
+        assert hasattr(
+            obj, "notify_policies_attr"
+        ), "instance must have a notify_policies_attr attribute"
         np = self.get_notify_level(obj)
         return np is not None and np != NotifyLevel.none
 
     def get_total_watchers(self, obj):
-        assert hasattr(obj, "notify_policies_attr"), "instance must have a notify_policies_attr attribute"
+        assert hasattr(
+            obj, "notify_policies_attr"
+        ), "instance must have a notify_policies_attr attribute"
         if obj.notify_policies_attr is None:
             return 0
 
-        valid_notify_policies = [np for np in obj.notify_policies_attr if np["notify_level"] != NotifyLevel.none]
+        valid_notify_policies = [
+            np
+            for np in obj.notify_policies_attr
+            if np["notify_level"] != NotifyLevel.none
+        ]
         return len(valid_notify_policies)
 
     def get_notify_level(self, obj):
-        assert hasattr(obj, "notify_policies_attr"), "instance must have a notify_policies_attr attribute"
+        assert hasattr(
+            obj, "notify_policies_attr"
+        ), "instance must have a notify_policies_attr attribute"
         if obj.notify_policies_attr is None:
             return None
 
@@ -643,7 +713,9 @@ class ProjectLightSerializer(serializers.LightSerializer):
         return services.get_logo_small_thumbnail_url(obj)
 
     def get_my_homepage(self, obj):
-        assert hasattr(obj, "my_homepage_attr"), "instance must have a my_homepage_attr attribute"
+        assert hasattr(
+            obj, "my_homepage_attr"
+        ), "instance must have a my_homepage_attr attribute"
         if obj.my_homepage_attr is None:
             return False
 

@@ -29,6 +29,7 @@ class TagsAndTagsColorsField(serializers.WritableField):
     """
     Pickle objects serializer fior stories, tasks and issues tags.
     """
+
     def __init__(self, *args, **kwargs):
         def _validate_tag_field(value):
             # Valid field:
@@ -46,14 +47,24 @@ class TagsAndTagsColorsField(serializers.WritableField):
                         if color is None or color == "":
                             continue
 
-                        if isinstance(color, str) and re.match('^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', color):
+                        if isinstance(color, str) and re.match(
+                            "^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$", color
+                        ):
                             continue
 
-                        raise ValidationError(_("Invalid tag '{value}'. The color is not a "
-                                                "valid HEX color or null.").format(value=tag))
+                        raise ValidationError(
+                            _(
+                                "Invalid tag '{value}'. The color is not a "
+                                "valid HEX color or null."
+                            ).format(value=tag)
+                        )
 
-                raise ValidationError(_("Invalid tag '{value}'. it must be the name or a pair "
-                                        "'[\"name\", \"hex color/\" | null]'.").format(value=tag))
+                raise ValidationError(
+                    _(
+                        "Invalid tag '{value}'. it must be the name or a pair "
+                        '\'["name", "hex color/" | null]\'.'
+                    ).format(value=tag)
+                )
 
         super().__init__(*args, **kwargs)
         self.validators.append(_validate_tag_field)
@@ -69,12 +80,17 @@ class TagsField(serializers.WritableField):
     """
     Pickle objects serializer for tags names.
     """
+
     def __init__(self, *args, **kwargs):
         def _validate_tag_field(value):
             for tag in value:
                 if isinstance(tag, str):
                     continue
-                raise ValidationError(_("Invalid tag '{value}'. It must be the tag name.").format(value=tag))
+                raise ValidationError(
+                    _("Invalid tag '{value}'. It must be the tag name.").format(
+                        value=tag
+                    )
+                )
 
         super().__init__(*args, **kwargs)
         self.validators.append(_validate_tag_field)
@@ -90,6 +106,7 @@ class TagsColorsField(serializers.WritableField):
     """
     PgArray objects serializer.
     """
+
     widget = widgets.Textarea
 
     def to_native(self, obj):

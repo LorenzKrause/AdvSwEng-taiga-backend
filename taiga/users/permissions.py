@@ -54,7 +54,7 @@ class UserPermission(TaigaResourcePermission):
 
 
 class RolesPermission(TaigaResourcePermission):
-    retrieve_perms = HasProjectPerm('view_project')
+    retrieve_perms = HasProjectPerm("view_project")
     create_perms = IsProjectAdmin()
     update_perms = IsProjectAdmin()
     partial_update_perms = IsProjectAdmin()

@@ -28,6 +28,8 @@ class HistoryType(enum.IntEnum):
     delete = 3
 
 
-HISTORY_TYPE_CHOICES = ((HistoryType.change, _("Change")),
-                        (HistoryType.create, _("Create")),
-                        (HistoryType.delete, _("Delete")))
+HISTORY_TYPE_CHOICES = (
+    (HistoryType.change, _("Change")),
+    (HistoryType.create, _("Create")),
+    (HistoryType.delete, _("Delete")),
+)

@@ -33,28 +33,44 @@ import datetime
 
 
 class Milestone(WatchedModelMixin, models.Model):
-    name = models.CharField(max_length=200, db_index=True, null=False, blank=False,
-                            verbose_name=_("name"))
+    name = models.CharField(
+        max_length=200, db_index=True, null=False, blank=False, verbose_name=_("name")
+    )
     # TODO: Change the unique restriction to a unique together with the project id
-    slug = models.SlugField(max_length=250, db_index=True, null=False, blank=True,
-                            verbose_name=_("slug"))
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
-                              related_name="owned_milestones", verbose_name=_("owner"))
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="milestones", verbose_name=_("project"))
+    slug = models.SlugField(
+        max_length=250, db_index=True, null=False, blank=True, verbose_name=_("slug")
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="owned_milestones",
+        verbose_name=_("owner"),
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="milestones",
+        verbose_name=_("project"),
+    )
     estimated_start = models.DateField(verbose_name=_("estimated start date"))
     estimated_finish = models.DateField(verbose_name=_("estimated finish date"))
-    created_date = models.DateTimeField(null=False, blank=False,
-                                        verbose_name=_("created date"),
-                                        default=timezone.now)
-    modified_date = models.DateTimeField(null=False, blank=False,
-                                         verbose_name=_("modified date"))
-    closed = models.BooleanField(default=False, null=False, blank=True,
-                                 verbose_name=_("is closed"))
-    disponibility = models.FloatField(default=0.0, null=True, blank=True,
-                                      verbose_name=_("disponibility"))
-    order = models.PositiveSmallIntegerField(default=1, null=False, blank=False,
-                                             verbose_name=_("order"))
+    created_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("created date"), default=timezone.now
+    )
+    modified_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("modified date")
+    )
+    closed = models.BooleanField(
+        default=False, null=False, blank=True, verbose_name=_("is closed")
+    )
+    disponibility = models.FloatField(
+        default=0.0, null=True, blank=True, verbose_name=_("disponibility")
+    )
+    order = models.PositiveSmallIntegerField(
+        default=1, null=False, blank=False, verbose_name=_("order")
+    )
     _importing = None
     _total_closed_points_by_date = None
 
@@ -63,9 +79,7 @@ class Milestone(WatchedModelMixin, models.Model):
         verbose_name_plural = "milestones"
         ordering = ["project", "created_date"]
         unique_together = [("name", "project"), ("slug", "project")]
-        permissions = (
-            ("view_milestone", "Can view milestone"),
-        )
+        permissions = (("view_milestone", "Can view milestone"),)
 
     def __str__(self):
         return self.name
@@ -75,8 +89,14 @@ class Milestone(WatchedModelMixin, models.Model):
 
     def clean(self):
         # Don't allow draft entries to have a pub_date.
-        if self.estimated_start and self.estimated_finish and self.estimated_start > self.estimated_finish:
-            raise ValidationError(_('The estimated start must be previous to the estimated finish.'))
+        if (
+            self.estimated_start
+            and self.estimated_finish
+            and self.estimated_start > self.estimated_finish
+        ):
+            raise ValidationError(
+                _("The estimated start must be previous to the estimated finish.")
+            )
 
     def save(self, *args, **kwargs):
         if not self._importing or not self.modified_date:
@@ -87,20 +107,22 @@ class Milestone(WatchedModelMixin, models.Model):
 
     @cached_property
     def cached_user_stories(self):
-        return (self.user_stories.prefetch_related("role_points", "role_points__points")
-                                 .annotate(num_tasks=Count("tasks")))
+        return self.user_stories.prefetch_related(
+            "role_points", "role_points__points"
+        ).annotate(num_tasks=Count("tasks"))
 
     def _get_user_stories_points(self, user_stories):
         role_points = [us.role_points.all() for us in user_stories]
         flat_role_points = itertools.chain(*role_points)
-        flat_role_dicts = map(lambda x: {x.role_id: x.points.value if x.points.value else 0}, flat_role_points)
+        flat_role_dicts = map(
+            lambda x: {x.role_id: x.points.value if x.points.value else 0},
+            flat_role_points,
+        )
         return dict_sum(*flat_role_dicts)
 
     @property
     def total_points(self):
-        return self._get_user_stories_points(
-            [us for us in self.cached_user_stories]
-        )
+        return self._get_user_stories_points([us for us in self.cached_user_stories])
 
     @property
     def closed_points(self):
@@ -119,10 +141,11 @@ class Milestone(WatchedModelMixin, models.Model):
                 us._total_us_points = sum(self._get_user_stories_points([us]).values())
                 user_stories[us.id] = us
 
-            tasks = self.tasks.\
-                select_related("user_story").\
-                exclude(finished_date__isnull=True).\
-                exclude(user_story__isnull=True)
+            tasks = (
+                self.tasks.select_related("user_story")
+                .exclude(finished_date__isnull=True)
+                .exclude(user_story__isnull=True)
+            )
 
             # For each finished task we try to know the proporional part of points
             # it represetnts from the user story and add it to the closed points
@@ -159,7 +182,6 @@ class Milestone(WatchedModelMixin, models.Model):
                 points_by_date += us._total_us_points
                 self._total_closed_points_by_date[finished_date] = points_by_date
 
-
             # At this point self._total_closed_points_by_date keeps a dict where the
             # finished date of the task is the key and the value is the increment of points
             # We are transforming this dict of increments in an acumulation one including
@@ -168,7 +190,9 @@ class Milestone(WatchedModelMixin, models.Model):
             acumulated_date_points = 0
             current_date = self.estimated_start
             while current_date <= self.estimated_finish:
-                acumulated_date_points += self._total_closed_points_by_date.get(current_date, 0)
+                acumulated_date_points += self._total_closed_points_by_date.get(
+                    current_date, 0
+                )
                 self._total_closed_points_by_date[current_date] = acumulated_date_points
                 current_date = current_date + datetime.timedelta(days=1)
 

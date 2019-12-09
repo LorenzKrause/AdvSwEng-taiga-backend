@@ -74,7 +74,7 @@ class StatusExtraInfoSerializerMixin(serializers.LightSerializer):
             serialized_status = {
                 "name": _(obj.status.name),
                 "color": obj.status.color,
-                "is_closed": obj.status.is_closed
+                "is_closed": obj.status.is_closed,
             }
             self._serialized_status[obj.status_id] = serialized_status
 
@@ -99,7 +99,7 @@ class ProjectExtraInfoSerializerMixin(serializers.LightSerializer):
                 "name": obj.project.name,
                 "slug": obj.project.slug,
                 "logo_small_url": services.get_logo_small_thumbnail_url(obj.project),
-                "id": obj.project_id
+                "id": obj.project_id,
             }
             self._serialized_project[obj.project_id] = serialized_project
 

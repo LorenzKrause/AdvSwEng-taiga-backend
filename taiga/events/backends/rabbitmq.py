@@ -41,33 +41,40 @@ def _make_rabbitmq_connection(url):
         (user, password) = ("guest", "guest")
 
     vhost = parse_result.path
-    return AmqpConnection(host=host, userid=user,
-                          password=password, virtual_host=vhost[1:])
+    return AmqpConnection(
+        host=host, userid=user, password=password, virtual_host=vhost[1:]
+    )
 
 
 class EventsPushBackend(base.BaseEventsPushBackend):
     def __init__(self, url):
         self.url = url
 
-    def emit_event(self, message:str, *, routing_key:str, channel:str="events"):
+    def emit_event(self, message: str, *, routing_key: str, channel: str = "events"):
         connection = _make_rabbitmq_connection(self.url)
         try:
             connection.connect()
         except ConnectionRefusedError:
             err_msg = "EventsPushBackend: Unable to connect with RabbitMQ (connection refused) at {}".format(
-                                                                                                     self.url)
+                self.url
+            )
             log.error(err_msg, exc_info=True)
         except AccessRefused:
             err_msg = "EventsPushBackend: Unable to connect with RabbitMQ (access refused) at {}".format(
-                                                                                                 self.url)
+                self.url
+            )
             log.error(err_msg, exc_info=True)
         else:
             try:
                 message = AmqpMessage(message)
                 rchannel = connection.channel()
 
-                rchannel.exchange_declare(exchange=channel, type="topic", auto_delete=True)
-                rchannel.basic_publish(message, routing_key=routing_key, exchange=channel)
+                rchannel.exchange_declare(
+                    exchange=channel, type="topic", auto_delete=True
+                )
+                rchannel.basic_publish(
+                    message, routing_key=routing_key, exchange=channel
+                )
                 rchannel.close()
             except Exception:
                 log.error("EventsPushBackend: Unhandled exception", exc_info=True)

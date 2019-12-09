@@ -27,7 +27,7 @@ from taiga.celery import app
 from .normal import JiraNormalImporter
 from .agile import JiraAgileImporter
 
-logger = logging.getLogger('taiga.importers.jira')
+logger = logging.getLogger("taiga.importers.jira")
 
 
 @app.task(bind=True)
@@ -48,11 +48,16 @@ def import_project(self, user_id, url, token, project_id, options, importer_type
             "error_subject": _("Error importing Jira project"),
             "error_message": _("Error importing Jira project"),
             "project": project_id,
-            "exception": e
+            "exception": e,
         }
         email = mail_builder.importer_import_error(user, ctx)
         email.send()
-        logger.error('Error importing Jira project %s (by %s)', project_id, user, exc_info=sys.exc_info())
+        logger.error(
+            "Error importing Jira project %s (by %s)",
+            project_id,
+            user,
+            exc_info=sys.exc_info(),
+        )
     else:
         ctx = {
             "project": project,

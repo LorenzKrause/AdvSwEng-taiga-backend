@@ -11,36 +11,41 @@ def migrate_github_id(apps, schema_editor):
     User = apps.get_model("users", "User")
     for user in User.objects.all():
         if user.github_id:
-            AuthData.objects.create(user=user, key="github", value=user.github_id, extra={})
+            AuthData.objects.create(
+                user=user, key="github", value=user.github_id, extra={}
+            )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0006_auto_20141030_1132'),
+        ("users", "0006_auto_20141030_1132"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AuthData',
+            name="AuthData",
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
-                ('key', models.SlugField()),
-                ('value', models.CharField(max_length=300)),
-                ('extra', taiga.base.db.models.fields.JSONField()),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        primary_key=True,
+                        verbose_name="ID",
+                        serialize=False,
+                        auto_created=True,
+                    ),
+                ),
+                ("key", models.SlugField()),
+                ("value", models.CharField(max_length=300)),
+                ("extra", taiga.base.db.models.fields.JSONField()),
+                ("user", models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.AlterUniqueTogether(
-            name='authdata',
-            unique_together=set([('key', 'value')]),
+            name="authdata", unique_together=set([("key", "value")]),
         ),
         migrations.RunPython(migrate_github_id),
-        migrations.RemoveField(
-            model_name='user',
-            name='github_id',
-        ),
+        migrations.RemoveField(model_name="user", name="github_id",),
     ]

@@ -135,17 +135,26 @@ def check_if_project_can_have_more_memberships(project, total_new_memberships):
     if project.is_private:
         total_memberships = project.memberships.count() + total_new_memberships
         max_memberships = project.owner.max_memberships_private_projects
-        error_members_exceeded = _("You have reached your current limit of memberships for private projects")
+        error_members_exceeded = _(
+            "You have reached your current limit of memberships for private projects"
+        )
     else:
         total_memberships = project.memberships.count() + total_new_memberships
         max_memberships = project.owner.max_memberships_public_projects
-        error_members_exceeded = _("You have reached your current limit of memberships for public projects")
+        error_members_exceeded = _(
+            "You have reached your current limit of memberships for public projects"
+        )
 
     if max_memberships is not None and total_memberships > max_memberships:
         return False, error_members_exceeded
 
-    if project.memberships.filter(user=None).count() + total_new_memberships > settings.MAX_PENDING_MEMBERSHIPS:
-        error_pending_memberships_exceeded = _("You have reached the current limit of pending memberships")
+    if (
+        project.memberships.filter(user=None).count() + total_new_memberships
+        > settings.MAX_PENDING_MEMBERSHIPS
+    ):
+        error_pending_memberships_exceeded = _(
+            "You have reached the current limit of pending memberships"
+        )
         return False, error_pending_memberships_exceeded
 
     return True, None

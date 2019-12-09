@@ -21,7 +21,7 @@ import os.path
 from taiga.hooks.event_hooks import BasePushEventHook
 
 
-class BaseGogsEventHook():
+class BaseGogsEventHook:
     platform = "Gogs"
     platform_slug = "gogs"
 
@@ -40,14 +40,20 @@ class PushEventHook(BaseGogsEventHook, BasePushEventHook):
         project_url = self.payload.get("repository", {}).get("html_url", "")
 
         for commit in filter(None, commits):
-            user_name = commit.get('author', {}).get('username', "")
-            result.append({
-                "user_id": user_name,
-                "user_name": user_name,
-                "user_url": os.path.join(os.path.dirname(os.path.dirname(project_url)), user_name),
-                "commit_id": commit.get("id", None),
-                "commit_url": commit.get("url", None),
-                "commit_message": commit.get("message").strip(),
-                "commit_short_message": commit.get("message").split("\n")[0].strip(),
-            })
+            user_name = commit.get("author", {}).get("username", "")
+            result.append(
+                {
+                    "user_id": user_name,
+                    "user_name": user_name,
+                    "user_url": os.path.join(
+                        os.path.dirname(os.path.dirname(project_url)), user_name
+                    ),
+                    "commit_id": commit.get("id", None),
+                    "commit_url": commit.get("url", None),
+                    "commit_message": commit.get("message").strip(),
+                    "commit_short_message": commit.get("message")
+                    .split("\n")[0]
+                    .strip(),
+                }
+            )
         return result

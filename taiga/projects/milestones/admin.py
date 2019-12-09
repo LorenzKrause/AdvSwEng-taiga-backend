@@ -33,16 +33,23 @@ class MilestoneInline(admin.TabularInline):
         return super(MilestoneInline, self).get_formset(request, obj, **kwargs)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if (db_field.name in ["owner"]):
+        if db_field.name in ["owner"]:
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                         memberships__project=self.parent_obj)
+                memberships__project=self.parent_obj
+            )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class MilestoneAdmin(admin.ModelAdmin):
-    list_display = ["name", "project", "owner", "closed", "estimated_start",
-                    "estimated_finish"]
+    list_display = [
+        "name",
+        "project",
+        "owner",
+        "closed",
+        "estimated_start",
+        "estimated_finish",
+    ]
     list_display_links = list_display
     readonly_fields = ["owner"]
     inlines = [WatchedInline, VoteInline]

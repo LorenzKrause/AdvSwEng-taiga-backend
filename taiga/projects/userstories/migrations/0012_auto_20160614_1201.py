@@ -9,18 +9,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('userstories', '0011_userstory_tribe_gig'),
+        ("userstories", "0011_userstory_tribe_gig"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userstory',
-            name='external_reference',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(blank=False, null=False), blank=True, default=None, null=True, size=None, verbose_name='external reference'),
+            model_name="userstory",
+            name="external_reference",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(blank=False, null=False),
+                blank=True,
+                default=None,
+                null=True,
+                size=None,
+                verbose_name="external reference",
+            ),
         ),
         migrations.AlterField(
-            model_name='userstory',
-            name='tags',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(), blank=True, default=[], null=True, size=None, verbose_name='tags'),
+            model_name="userstory",
+            name="tags",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(),
+                blank=True,
+                default=[],
+                null=True,
+                size=None,
+                verbose_name="tags",
+            ),
         ),
     ]

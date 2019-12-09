@@ -72,25 +72,33 @@ def _search_items(queryset, table, text):
                               coalesce({table}.ref)), 'A') ||
         setweight(to_tsvector('simple', coalesce(inmutable_array_to_string({table}.tags))), 'B') ||
         setweight(to_tsvector('simple', coalesce({table}.description)), 'C')
-    """.format(table=table)
+    """.format(
+        table=table
+    )
     return _search_by_query(queryset, tsquery, tsvector, text)
 
 
 def _search_by_query(queryset, tsquery, tsvector, text):
     select = {
-        "rank": "ts_rank({tsvector},{tsquery})".format(tsquery=tsquery,
-                                                       tsvector=tsvector),
+        "rank": "ts_rank({tsvector},{tsquery})".format(
+            tsquery=tsquery, tsvector=tsvector
+        ),
     }
-    order_by = ["-rank", ]
-    where = ["{tsvector} @@ {tsquery}".format(tsquery=tsquery,
-                                              tsvector=tsvector), ]
+    order_by = [
+        "-rank",
+    ]
+    where = [
+        "{tsvector} @@ {tsquery}".format(tsquery=tsquery, tsvector=tsvector),
+    ]
 
     if text:
-        queryset = queryset.extra(select=select,
-                                  select_params=[to_tsquery(text)],
-                                  where=where,
-                                  params=[to_tsquery(text)],
-                                  order_by=order_by)
+        queryset = queryset.extra(
+            select=select,
+            select_params=[to_tsquery(text)],
+            where=where,
+            params=[to_tsquery(text)],
+            order_by=order_by,
+        )
 
     queryset = attach_total_points(queryset)
     return queryset[:MAX_RESULTS]

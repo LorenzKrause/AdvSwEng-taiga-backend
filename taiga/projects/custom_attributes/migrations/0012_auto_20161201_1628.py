@@ -8,28 +8,72 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custom_attributes', '0011_json_to_jsonb'),
+        ("custom_attributes", "0011_json_to_jsonb"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='epiccustomattribute',
-            name='type',
-            field=models.CharField(choices=[('text', 'Text'), ('multiline', 'Multi-Line Text'), ('richtext', 'Rich text'), ('date', 'Date'), ('url', 'Url')], default='text', max_length=16, verbose_name='type'),
+            model_name="epiccustomattribute",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("text", "Text"),
+                    ("multiline", "Multi-Line Text"),
+                    ("richtext", "Rich text"),
+                    ("date", "Date"),
+                    ("url", "Url"),
+                ],
+                default="text",
+                max_length=16,
+                verbose_name="type",
+            ),
         ),
         migrations.AlterField(
-            model_name='issuecustomattribute',
-            name='type',
-            field=models.CharField(choices=[('text', 'Text'), ('multiline', 'Multi-Line Text'), ('richtext', 'Rich text'), ('date', 'Date'), ('url', 'Url')], default='text', max_length=16, verbose_name='type'),
+            model_name="issuecustomattribute",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("text", "Text"),
+                    ("multiline", "Multi-Line Text"),
+                    ("richtext", "Rich text"),
+                    ("date", "Date"),
+                    ("url", "Url"),
+                ],
+                default="text",
+                max_length=16,
+                verbose_name="type",
+            ),
         ),
         migrations.AlterField(
-            model_name='taskcustomattribute',
-            name='type',
-            field=models.CharField(choices=[('text', 'Text'), ('multiline', 'Multi-Line Text'), ('richtext', 'Rich text'), ('date', 'Date'), ('url', 'Url')], default='text', max_length=16, verbose_name='type'),
+            model_name="taskcustomattribute",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("text", "Text"),
+                    ("multiline", "Multi-Line Text"),
+                    ("richtext", "Rich text"),
+                    ("date", "Date"),
+                    ("url", "Url"),
+                ],
+                default="text",
+                max_length=16,
+                verbose_name="type",
+            ),
         ),
         migrations.AlterField(
-            model_name='userstorycustomattribute',
-            name='type',
-            field=models.CharField(choices=[('text', 'Text'), ('multiline', 'Multi-Line Text'), ('richtext', 'Rich text'), ('date', 'Date'), ('url', 'Url')], default='text', max_length=16, verbose_name='type'),
+            model_name="userstorycustomattribute",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("text", "Text"),
+                    ("multiline", "Multi-Line Text"),
+                    ("richtext", "Rich text"),
+                    ("date", "Date"),
+                    ("url", "Url"),
+                ],
+                default="text",
+                max_length=16,
+                verbose_name="type",
+            ),
         ),
     ]

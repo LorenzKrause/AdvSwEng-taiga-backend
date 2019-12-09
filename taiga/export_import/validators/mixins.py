@@ -27,9 +27,16 @@ from taiga.projects.attachments import models as attachments_models
 from taiga.projects.notifications import services as notifications_services
 from taiga.projects.history import services as history_service
 
-from .fields import (UserRelatedField, HistoryUserField, HistoryDiffField,
-                     JSONField, HistorySnapshotField,
-                     HistoryValuesField, CommentField, FileField)
+from .fields import (
+    UserRelatedField,
+    HistoryUserField,
+    HistoryDiffField,
+    JSONField,
+    HistorySnapshotField,
+    HistoryValuesField,
+    CommentField,
+    FileField,
+)
 
 
 class HistoryExportValidator(validators.ModelValidator):
@@ -55,6 +62,7 @@ class HistoryExportValidator(validators.ModelValidator):
         instance = super(HistoryExportValidator, self).restore_object(attrs, instance)
         return instance
 
+
 class AttachmentExportValidator(validators.ModelValidator):
     owner = UserRelatedField(required=False)
     attached_file = FileField()
@@ -62,7 +70,7 @@ class AttachmentExportValidator(validators.ModelValidator):
 
     class Meta:
         model = attachments_models.Attachment
-        exclude = ('id', 'content_type', 'object_id', 'project')
+        exclude = ("id", "content_type", "object_id", "project")
 
 
 class WatcheableObjectModelValidatorMixin(validators.ModelValidator):
@@ -79,15 +87,21 @@ class WatcheableObjectModelValidatorMixin(validators.ModelValidator):
 
     def restore_object(self, attrs, instance=None):
         self.fields.pop("watchers", None)
-        instance = super(WatcheableObjectModelValidatorMixin, self).restore_object(attrs, instance)
+        instance = super(WatcheableObjectModelValidatorMixin, self).restore_object(
+            attrs, instance
+        )
         self._watchers = self.init_data.get("watchers", [])
         return instance
 
     def save_watchers(self):
         new_watcher_emails = set(self._watchers)
-        old_watcher_emails = set(self.object.get_watchers().values_list("email", flat=True))
+        old_watcher_emails = set(
+            self.object.get_watchers().values_list("email", flat=True)
+        )
         adding_watcher_emails = list(new_watcher_emails.difference(old_watcher_emails))
-        removing_watcher_emails = list(old_watcher_emails.difference(new_watcher_emails))
+        removing_watcher_emails = list(
+            old_watcher_emails.difference(new_watcher_emails)
+        )
 
         User = get_user_model()
         adding_users = User.objects.filter(email__in=adding_watcher_emails)

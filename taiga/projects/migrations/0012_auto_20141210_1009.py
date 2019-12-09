@@ -16,12 +16,13 @@ def fix_project_template_slugs(apps, schema_editor):
             issue_status["slug"] = slugify(issue_status["name"])
         pt.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0011_auto_20141028_2057'),
+        ("projects", "0011_auto_20141028_2057"),
     ]
 
     operations = [
-            migrations.RunPython(fix_project_template_slugs),
+        migrations.RunPython(fix_project_template_slugs),
     ]

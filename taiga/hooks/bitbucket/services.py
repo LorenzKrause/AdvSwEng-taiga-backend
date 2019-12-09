@@ -44,4 +44,6 @@ def get_or_generate_config(project):
 
 
 def get_bitbucket_user(user_id):
-    return get_user_model().objects.get(is_system=True, username__startswith="bitbucket")
+    return get_user_model().objects.get(
+        is_system=True, username__startswith="bitbucket"
+    )

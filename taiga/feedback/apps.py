@@ -30,4 +30,5 @@ class FeedbackAppConfig(AppConfig):
         if settings.FEEDBACK_ENABLED:
             from taiga.urls import urlpatterns
             from .routers import router
-            urlpatterns.append(url(r'^api/v1/', include(router.urls)))
+
+            urlpatterns.append(url(r"^api/v1/", include(router.urls)))

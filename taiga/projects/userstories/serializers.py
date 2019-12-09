@@ -45,12 +45,19 @@ class OriginItemSerializer(serializers.LightSerializer):
         return super().to_value(instance)
 
 
-class UserStoryListSerializer(ProjectExtraInfoSerializerMixin,
-        VoteResourceSerializerMixin, WatchedResourceSerializer,
-        OwnerExtraInfoSerializerMixin, AssignedToExtraInfoSerializerMixin,
-        StatusExtraInfoSerializerMixin, BasicAttachmentsInfoSerializerMixin,
-        TaggedInProjectResourceSerializer, TotalCommentsSerializerMixin,
-        DueDateSerializerMixin, serializers.LightSerializer):
+class UserStoryListSerializer(
+    ProjectExtraInfoSerializerMixin,
+    VoteResourceSerializerMixin,
+    WatchedResourceSerializer,
+    OwnerExtraInfoSerializerMixin,
+    AssignedToExtraInfoSerializerMixin,
+    StatusExtraInfoSerializerMixin,
+    BasicAttachmentsInfoSerializerMixin,
+    TaggedInProjectResourceSerializer,
+    TotalCommentsSerializerMixin,
+    DueDateSerializerMixin,
+    serializers.LightSerializer,
+):
 
     id = Field()
     ref = Field()
@@ -96,8 +103,9 @@ class UserStoryListSerializer(ProjectExtraInfoSerializerMixin,
         if not obj.assigned_to:
             return set([user.id for user in obj.assigned_users.all()])
 
-        assigned_users = [user.id for user in obj.assigned_users.all()] + \
-                         [obj.assigned_to.id]
+        assigned_users = [user.id for user in obj.assigned_users.all()] + [
+            obj.assigned_to.id
+        ]
 
         if not assigned_users:
             return None
@@ -108,7 +116,9 @@ class UserStoryListSerializer(ProjectExtraInfoSerializerMixin,
         include_epic_order = getattr(obj, "include_epic_order", False)
 
         if include_epic_order:
-            assert hasattr(obj, "epic_order"), "instance must have a epic_order attribute"
+            assert hasattr(
+                obj, "epic_order"
+            ), "instance must have a epic_order attribute"
 
         if not include_epic_order or obj.epic_order is None:
             return None
@@ -126,11 +136,15 @@ class UserStoryListSerializer(ProjectExtraInfoSerializerMixin,
         return obj.milestone.name if obj.milestone else None
 
     def get_total_points(self, obj):
-        assert hasattr(obj, "total_points_attr"), "instance must have a total_points_attr attribute"
+        assert hasattr(
+            obj, "total_points_attr"
+        ), "instance must have a total_points_attr attribute"
         return obj.total_points_attr
 
     def get_points(self, obj):
-        assert hasattr(obj, "role_points_attr"), "instance must have a role_points_attr attribute"
+        assert hasattr(
+            obj, "role_points_attr"
+        ), "instance must have a role_points_attr attribute"
         if obj.role_points_attr is None:
             return {}
 
@@ -143,7 +157,9 @@ class UserStoryListSerializer(ProjectExtraInfoSerializerMixin,
         include_tasks = getattr(obj, "include_tasks", False)
 
         if include_tasks:
-            assert hasattr(obj, "tasks_attr"), "instance must have a tasks_attr attribute"
+            assert hasattr(
+                obj, "tasks_attr"
+            ), "instance must have a tasks_attr attribute"
 
         if not include_tasks or obj.tasks_attr is None:
             return []
@@ -172,10 +188,13 @@ class UserStoryNeighborsSerializer(NeighborsSerializerMixin, UserStorySerializer
     pass
 
 
-class UserStoryLightSerializer(ProjectExtraInfoSerializerMixin,
-                               StatusExtraInfoSerializerMixin,
-                               AssignedToExtraInfoSerializerMixin,
-                               DueDateSerializerMixin, serializers.LightSerializer):
+class UserStoryLightSerializer(
+    ProjectExtraInfoSerializerMixin,
+    StatusExtraInfoSerializerMixin,
+    AssignedToExtraInfoSerializerMixin,
+    DueDateSerializerMixin,
+    serializers.LightSerializer,
+):
     id = Field()
     ref = Field()
     milestone = Field(attr="milestone_id")
@@ -193,10 +212,13 @@ class UserStoryLightSerializer(ProjectExtraInfoSerializerMixin,
     blocked_note = Field()
 
 
-class UserStoryNestedSerializer(ProjectExtraInfoSerializerMixin,
-                                StatusExtraInfoSerializerMixin,
-                                AssignedToExtraInfoSerializerMixin,
-                                DueDateSerializerMixin, serializers.LightSerializer):
+class UserStoryNestedSerializer(
+    ProjectExtraInfoSerializerMixin,
+    StatusExtraInfoSerializerMixin,
+    AssignedToExtraInfoSerializerMixin,
+    DueDateSerializerMixin,
+    serializers.LightSerializer,
+):
     id = Field()
     ref = Field()
     milestone = Field(attr="milestone_id")
@@ -225,12 +247,16 @@ class UserStoryNestedSerializer(ProjectExtraInfoSerializerMixin,
         return obj.epics_attr
 
     def get_points(self, obj):
-        assert hasattr(obj, "role_points_attr"), "instance must have a role_points_attr attribute"
+        assert hasattr(
+            obj, "role_points_attr"
+        ), "instance must have a role_points_attr attribute"
         if obj.role_points_attr is None:
             return {}
 
         return obj.role_points_attr
 
     def get_total_points(self, obj):
-        assert hasattr(obj, "total_points_attr"), "instance must have a total_points_attr attribute"
+        assert hasattr(
+            obj, "total_points_attr"
+        ), "instance must have a total_points_attr attribute"
         return obj.total_points_attr

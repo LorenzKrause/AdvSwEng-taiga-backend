@@ -38,8 +38,10 @@ class HistoryResourceMixin(object):
 
     def get_last_history(self):
         if not self.__object_saved:
-            message = ("get_last_history() function called before any object are saved. "
-                       "Seems you have a wrong mixing order on your resource.")
+            message = (
+                "get_last_history() function called before any object are saved. "
+                "Seems you have a wrong mixing order on your resource."
+            )
             warnings.warn(message, RuntimeWarning)
         return self.__last_history
 
@@ -52,7 +54,7 @@ class HistoryResourceMixin(object):
         """
         return obj
 
-    def persist_history_snapshot(self, obj=None, delete:bool=False):
+    def persist_history_snapshot(self, obj=None, delete: bool = False):
         """
         Shortcut for resources with special save/persist
         logic.
@@ -72,7 +74,9 @@ class HistoryResourceMixin(object):
 
         notifications_services.analize_object_for_watchers(obj, comment, user)
 
-        self.__last_history = take_snapshot(sobj, comment=comment, user=user, delete=delete)
+        self.__last_history = take_snapshot(
+            sobj, comment=comment, user=user, delete=delete
+        )
         self.__object_saved = True
 
     def post_save(self, obj, created=False):

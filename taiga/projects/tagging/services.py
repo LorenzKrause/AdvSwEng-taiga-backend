@@ -53,7 +53,9 @@ def edit_tag(project, from_tag, to_tag, color):
          WHERE project_id = %(project_id)s;
     """
     cursor = connection.cursor()
-    cursor.execute(sql, params={"from_tag": from_tag, "to_tag": to_tag, "project_id": project.id})
+    cursor.execute(
+        sql, params={"from_tag": from_tag, "to_tag": to_tag, "project_id": project.id}
+    )
 
     tags_colors = dict(project.tags_colors)
     tags_colors.pop(from_tag)
@@ -88,7 +90,9 @@ def rename_tag(project, from_tag, to_tag, **kwargs):
          WHERE project_id = %(project_id)s;
     """
     cursor = connection.cursor()
-    cursor.execute(sql, params={"from_tag": from_tag, "to_tag": to_tag, "project_id": project.id})
+    cursor.execute(
+        sql, params={"from_tag": from_tag, "to_tag": to_tag, "project_id": project.id}
+    )
 
     tags_colors = dict(project.tags_colors)
     tags_colors.pop(from_tag)

@@ -30,10 +30,11 @@ from . import models
 # Custom Attribute Validator
 #######################################################
 
+
 class BaseCustomAttributeValidator(ModelValidator):
     class Meta:
-        read_only_fields = ('id',)
-        exclude = ('created_date', 'modified_date')
+        read_only_fields = ("id",)
+        exclude = ("created_date", "modified_date")
 
     def _validate_integrity_between_project_and_name(self, attrs, source):
         """
@@ -52,8 +53,9 @@ class BaseCustomAttributeValidator(ModelValidator):
             data_project = data_project or self.object.project
 
         model = self.Meta.model
-        qs = (model.objects.filter(project=data_project, name=data_name)
-                           .exclude(id=data_id))
+        qs = model.objects.filter(project=data_project, name=data_name).exclude(
+            id=data_id
+        )
         if qs.exists():
             raise ValidationError(_("Already exists one with the same name."))
 
@@ -103,10 +105,10 @@ class BaseCustomAttributesValuesValidator(ModelValidator):
         # values must be a dict
         data_values = attrs.get("attributes_values", None)
         if self.object:
-            data_values = (data_values or self.object.attributes_values)
+            data_values = data_values or self.object.attributes_values
 
         if type(data_values) is not dict:
-            raise ValidationError(_("Invalid content. It must be {\"key\": \"value\",...}"))
+            raise ValidationError(_('Invalid content. It must be {"key": "value",...}'))
 
         # Values keys must be in the container object project
         data_container = attrs.get(self._container_field, None)
@@ -118,8 +120,9 @@ class BaseCustomAttributesValuesValidator(ModelValidator):
             project_id = None
 
         values_ids = list(data_values.keys())
-        qs = self._custom_attribute_model.objects.filter(project=project_id,
-                                                         id__in=values_ids)
+        qs = self._custom_attribute_model.objects.filter(
+            project=project_id, id__in=values_ids
+        )
         if qs.count() != len(values_ids):
             raise ValidationError(_("It contain invalid custom fields."))
 
@@ -144,7 +147,9 @@ class UserStoryCustomAttributesValuesValidator(BaseCustomAttributesValuesValidat
         model = models.UserStoryCustomAttributesValues
 
 
-class TaskCustomAttributesValuesValidator(BaseCustomAttributesValuesValidator, ModelValidator):
+class TaskCustomAttributesValuesValidator(
+    BaseCustomAttributesValuesValidator, ModelValidator
+):
     _custom_attribute_model = models.TaskCustomAttribute
     _container_field = "task"
 
@@ -152,7 +157,9 @@ class TaskCustomAttributesValuesValidator(BaseCustomAttributesValuesValidator, M
         model = models.TaskCustomAttributesValues
 
 
-class IssueCustomAttributesValuesValidator(BaseCustomAttributesValuesValidator, ModelValidator):
+class IssueCustomAttributesValuesValidator(
+    BaseCustomAttributesValuesValidator, ModelValidator
+):
     _custom_attribute_model = models.IssueCustomAttribute
     _container_field = "issue"
 

@@ -27,7 +27,20 @@ class AttachmentValidator(validators.ModelValidator):
 
     class Meta:
         model = models.Attachment
-        fields = ("id", "project", "owner", "name", "attached_file", "size",
-                  "description", "is_deprecated", "created_date",
-                  "modified_date", "object_id", "order", "sha1", "from_comment")
+        fields = (
+            "id",
+            "project",
+            "owner",
+            "name",
+            "attached_file",
+            "size",
+            "description",
+            "is_deprecated",
+            "created_date",
+            "modified_date",
+            "object_id",
+            "order",
+            "sha1",
+            "from_comment",
+        )
         read_only_fields = ("owner", "created_date", "modified_date", "sha1")

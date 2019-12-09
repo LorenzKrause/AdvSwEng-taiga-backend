@@ -31,9 +31,13 @@ class TasksSitemap(Sitemap):
         task_model = apps.get_model("tasks", "Task")
 
         # Get tasks of public projects OR private projects if anon user can view them
-        queryset = task_model.objects.filter(Q(project__is_private=False) |
-                                             Q(project__is_private=True,
-                                               project__anon_permissions__contains=["view_tasks"]))
+        queryset = task_model.objects.filter(
+            Q(project__is_private=False)
+            | Q(
+                project__is_private=True,
+                project__anon_permissions__contains=["view_tasks"],
+            )
+        )
 
         # Exclude blocked projects
         queryset = queryset.filter(project__blocked_code__isnull=True)

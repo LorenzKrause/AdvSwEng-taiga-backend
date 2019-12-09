@@ -36,7 +36,9 @@ def add_like(obj, user):
     """
     obj_type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(obj)
     with atomic():
-        like, created = Like.objects.get_or_create(content_type=obj_type, object_id=obj.id, user=user)
+        like, created = Like.objects.get_or_create(
+            content_type=obj_type, object_id=obj.id, user=user
+        )
         if like.project is not None:
             like.project.refresh_totals()
 
@@ -74,7 +76,9 @@ def get_fans(obj):
     :return: User queryset object representing the users that liked the object.
     """
     obj_type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(obj)
-    return get_user_model().objects.filter(likes__content_type=obj_type, likes__object_id=obj.id)
+    return get_user_model().objects.filter(
+        likes__content_type=obj_type, likes__object_id=obj.id
+    )
 
 
 def get_liked(user_or_id, model):
@@ -85,15 +89,20 @@ def get_liked(user_or_id, model):
 
     :return: Queryset of objects representing the likes of the user.
     """
-    obj_type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(model)
-    conditions = ('likes_like.content_type_id = %s',
-                  '%s.id = likes_like.object_id' % model._meta.db_table,
-                  'likes_like.user_id = %s')
+    obj_type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(
+        model
+    )
+    conditions = (
+        "likes_like.content_type_id = %s",
+        "%s.id = likes_like.object_id" % model._meta.db_table,
+        "likes_like.user_id = %s",
+    )
 
     if isinstance(user_or_id, get_user_model()):
         user_id = user_or_id.id
     else:
         user_id = user_or_id
 
-    return model.objects.extra(where=conditions, tables=('likes_like',),
-                               params=(obj_type.id, user_id))
+    return model.objects.extra(
+        where=conditions, tables=("likes_like",), params=(obj_type.id, user_id)
+    )

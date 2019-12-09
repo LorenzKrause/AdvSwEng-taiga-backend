@@ -37,8 +37,8 @@ class GithubImporterViewSet(viewsets.ViewSet):
     def list_users(self, request, *args, **kwargs):
         self.check_permissions(request, "list_users", None)
 
-        token = request.DATA.get('token', None)
-        project_id = request.DATA.get('project', None)
+        token = request.DATA.get("token", None)
+        project_id = request.DATA.get("project", None)
 
         if not project_id:
             raise exc.WrongArguments(_("The project param is needed"))
@@ -46,20 +46,20 @@ class GithubImporterViewSet(viewsets.ViewSet):
         importer = GithubImporter(request.user, token)
         users = importer.list_users(project_id)
         for user in users:
-            if user['detected_user']:
-                user['user'] = {
-                    'id': user['detected_user'].id,
-                    'full_name': user['detected_user'].get_full_name(),
-                    'gravatar_id': get_user_gravatar_id(user['detected_user']),
-                    'photo': get_user_photo_url(user['detected_user']),
+            if user["detected_user"]:
+                user["user"] = {
+                    "id": user["detected_user"].id,
+                    "full_name": user["detected_user"].get_full_name(),
+                    "gravatar_id": get_user_gravatar_id(user["detected_user"]),
+                    "photo": get_user_photo_url(user["detected_user"]),
                 }
-            del(user['detected_user'])
+            del user["detected_user"]
         return response.Ok(users)
 
     @list_route(methods=["POST"])
     def list_projects(self, request, *args, **kwargs):
         self.check_permissions(request, "list_projects", None)
-        token = request.DATA.get('token', None)
+        token = request.DATA.get("token", None)
         importer = GithubImporter(request.user, token)
         projects = importer.list_projects()
         return response.Ok(projects)
@@ -68,29 +68,35 @@ class GithubImporterViewSet(viewsets.ViewSet):
     def import_project(self, request, *args, **kwargs):
         self.check_permissions(request, "import_project", None)
 
-        token = request.DATA.get('token', None)
-        project_id = request.DATA.get('project', None)
+        token = request.DATA.get("token", None)
+        project_id = request.DATA.get("project", None)
         if not project_id:
             raise exc.WrongArguments(_("The project param is needed"))
 
-        template = request.DATA.get('template', "scrum")
+        template = request.DATA.get("template", "scrum")
         items_type = "user_stories"
         if template == "issues":
             items_type = "issues"
             template = "scrum"
 
         options = {
-            "name": request.DATA.get('name', None),
-            "description": request.DATA.get('description', None),
+            "name": request.DATA.get("name", None),
+            "description": request.DATA.get("description", None),
             "template": template,
             "type": items_type,
-            "users_bindings": resolve_users_bindings(request.DATA.get("users_bindings", {})),
-            "keep_external_reference": request.DATA.get("keep_external_reference", False),
+            "users_bindings": resolve_users_bindings(
+                request.DATA.get("users_bindings", {})
+            ),
+            "keep_external_reference": request.DATA.get(
+                "keep_external_reference", False
+            ),
             "is_private": request.DATA.get("is_private", False),
         }
 
         if settings.CELERY_ENABLED:
-            task = tasks.import_project.delay(request.user.id, token, project_id, options)
+            task = tasks.import_project.delay(
+                request.user.id, token, project_id, options
+            )
             return response.Accepted({"task_id": task.id})
 
         importer = GithubImporter(request.user, token)
@@ -107,10 +113,9 @@ class GithubImporterViewSet(viewsets.ViewSet):
     @list_route(methods=["GET"])
     def auth_url(self, request, *args, **kwargs):
         self.check_permissions(request, "auth_url", None)
-        callback_uri = request.QUERY_PARAMS.get('uri')
+        callback_uri = request.QUERY_PARAMS.get("uri")
         url = GithubImporter.get_auth_url(
-            settings.IMPORTERS.get('github', {}).get('client_id', None),
-            callback_uri
+            settings.IMPORTERS.get("github", {}).get("client_id", None), callback_uri
         )
         return response.Ok({"url": url})
 
@@ -118,19 +123,17 @@ class GithubImporterViewSet(viewsets.ViewSet):
     def authorize(self, request, *args, **kwargs):
         self.check_permissions(request, "authorize", None)
 
-        code = request.DATA.get('code', None)
+        code = request.DATA.get("code", None)
         if code is None:
             raise exc.BadRequest(_("Code param needed"))
 
         try:
             token = GithubImporter.get_access_token(
-                settings.IMPORTERS.get('github', {}).get('client_id', None),
-                settings.IMPORTERS.get('github', {}).get('client_secret', None),
-                code
+                settings.IMPORTERS.get("github", {}).get("client_id", None),
+                settings.IMPORTERS.get("github", {}).get("client_secret", None),
+                code,
             )
-            return response.Ok({
-                "token": token
-            })
+            return response.Ok({"token": token})
         except exceptions.InvalidAuthResult:
             raise exc.BadRequest(_("Invalid auth data"))
         except exceptions.FailedRequest:

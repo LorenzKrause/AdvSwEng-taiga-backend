@@ -41,16 +41,15 @@ DEFAULT_PREDEFINED_COLORS = (
     "#5c3566",
     "#ef2929",
     "#cc0000",
-    "#a40000"
+    "#a40000",
 )
 
 PREDEFINED_COLORS = getattr(settings, "PREDEFINED_COLORS", DEFAULT_PREDEFINED_COLORS)
 
 
 def generate_random_hex_color():
-    return "#{:06x}".format(random.randint(0,0xFFFFFF))
+    return "#{:06x}".format(random.randint(0, 0xFFFFFF))
 
 
 def generate_random_predefined_hex_color():
     return random.choice(PREDEFINED_COLORS)
-

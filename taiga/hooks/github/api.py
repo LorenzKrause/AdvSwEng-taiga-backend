@@ -36,8 +36,8 @@ class GitHubViewSet(BaseWebhookApiViewSet):
         if not x_hub_signature:
             return False
 
-        sha_name, signature = x_hub_signature.split('=')
-        if sha_name != 'sha1':
+        sha_name, signature = x_hub_signature.split("=")
+        if sha_name != "sha1":
             return False
 
         if not hasattr(project, "modules_config"):

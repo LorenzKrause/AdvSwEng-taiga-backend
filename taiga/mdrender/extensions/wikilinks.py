@@ -36,12 +36,14 @@ class WikiLinkExtension(Extension):
 
     def extendMarkdown(self, md):
         WIKILINK_RE = r"\[\[([\w0-9_ -]+)(\|[^\]]+)?\]\]"
-        md.inlinePatterns.add("wikilinks",
-                              WikiLinksPattern(md, WIKILINK_RE, self.project),
-                              "<not_strong")
-        md.treeprocessors.add("relative_to_absolute_links",
-                              RelativeLinksTreeprocessor(md, self.project),
-                              "<prettify")
+        md.inlinePatterns.add(
+            "wikilinks", WikiLinksPattern(md, WIKILINK_RE, self.project), "<not_strong"
+        )
+        md.treeprocessors.add(
+            "relative_to_absolute_links",
+            RelativeLinksTreeprocessor(md, self.project),
+            "<prettify",
+        )
 
 
 class WikiLinksPattern(Pattern):

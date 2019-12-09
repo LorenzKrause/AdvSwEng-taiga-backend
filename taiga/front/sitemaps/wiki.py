@@ -31,9 +31,13 @@ class WikiPagesSitemap(Sitemap):
         wiki_page_model = apps.get_model("wiki", "WikiPage")
 
         # Get wiki pages of public projects OR private projects if anon user can view them
-        queryset = wiki_page_model.objects.filter(Q(project__is_private=False) |
-                                                  Q(project__is_private=True,
-                                                    project__anon_permissions__contains=["view_wiki_pages"]))
+        queryset = wiki_page_model.objects.filter(
+            Q(project__is_private=False)
+            | Q(
+                project__is_private=True,
+                project__anon_permissions__contains=["view_wiki_pages"],
+            )
+        )
 
         # Exclude blocked projects
         queryset = queryset.filter(project__blocked_code__isnull=True)

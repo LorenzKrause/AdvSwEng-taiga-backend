@@ -26,10 +26,9 @@ CREATE_INDEX = """
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0056_auto_20161110_1518'),
+        ("projects", "0056_auto_20161110_1518"),
     ]
 
     operations = [
-        migrations.RunSQL([DROP_INDEX, CREATE_INDEX],
-                          [DROP_INDEX]),
+        migrations.RunSQL([DROP_INDEX, CREATE_INDEX], [DROP_INDEX]),
     ]

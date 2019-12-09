@@ -24,4 +24,3 @@ from . import render
 
 from .store import store_project_from_dict
 from . import store
-

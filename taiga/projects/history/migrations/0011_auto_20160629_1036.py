@@ -74,6 +74,7 @@ GENERATE_CORRECT_HISTORY_ENTRIES_TABLE = """
     DROP TABLE IF EXISTS project_keys;
     """
 
+
 def get_constraints_def_sql(table_name):
     cursor = connection.cursor()
     query = """
@@ -84,7 +85,9 @@ def get_constraints_def_sql(table_name):
         INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace
         WHERE relname='{}'
         ORDER BY CASE WHEN contype='f' THEN 0 ELSE 1 END DESC,contype DESC,nspname DESC,relname DESC,conname DESC;
-    """.format(table_name)
+    """.format(
+        table_name
+    )
     cursor.execute(query)
     return [row[0] for row in cursor.fetchall()]
 
@@ -100,7 +103,9 @@ def get_indexes_def_sql(table_name):
         WHERE
           tbl.relname = '{}' AND
           indisprimary=FALSE;
-    """.format(table_name)
+    """.format(
+        table_name
+    )
     cursor.execute(query)
     return [row[0] for row in cursor.fetchall()]
 
@@ -115,11 +120,13 @@ def drop_constraints(table_name):
         INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace
         WHERE relname='{}'
         ORDER BY CASE WHEN contype='f' THEN 0 ELSE 1 END DESC,contype DESC,nspname DESC,relname DESC,conname DESC;
-    """.format(table_name)
+    """.format(
+        table_name
+    )
     cursor.execute(alter_sentences_query)
     alter_sentences = [row[0] for row in cursor.fetchall()]
 
-    #Now we execute those sentences
+    # Now we execute those sentences
     for alter_sentence in alter_sentences:
         cursor.execute(alter_sentence)
 
@@ -127,35 +134,41 @@ def drop_constraints(table_name):
 def toggle_history_entries_tables(apps, schema_editor):
     history_entry_sql_def_contraints = get_constraints_def_sql("history_historyentry")
     history_entry_sql_def_indexes = get_indexes_def_sql("history_historyentry")
-    history_change_notifications_sql_def_contraints = get_constraints_def_sql("notifications_historychangenotification_history_entries")
+    history_change_notifications_sql_def_contraints = get_constraints_def_sql(
+        "notifications_historychangenotification_history_entries"
+    )
     drop_constraints("notifications_historychangenotification_history_entries")
     cursor = connection.cursor()
-    cursor.execute("""
+    cursor.execute(
+        """
         DELETE FROM notifications_historychangenotification_history_entries;
         DROP TABLE history_historyentry;
         ALTER TABLE "history_historyentry_correct" RENAME to "history_historyentry";
-    """)
+    """
+    )
 
     for history_entry_sql_def_contraint in history_entry_sql_def_contraints:
-            cursor.execute(history_entry_sql_def_contraint)
+        cursor.execute(history_entry_sql_def_contraint)
 
     for history_entry_sql_def_index in history_entry_sql_def_indexes:
-            cursor.execute(history_entry_sql_def_index)
+        cursor.execute(history_entry_sql_def_index)
 
     # Restoring the dropped constraints and indexes
-    for history_change_notifications_sql_def_contraint in history_change_notifications_sql_def_contraints:
-            cursor.execute(history_change_notifications_sql_def_contraint)
+    for (
+        history_change_notifications_sql_def_contraint
+    ) in history_change_notifications_sql_def_contraints:
+        cursor.execute(history_change_notifications_sql_def_contraint)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('history', '0010_historyentry_project'),
-        ('wiki', '0003_auto_20160615_0721'),
-        ('users', '0022_auto_20160629_1443')
+        ("history", "0010_historyentry_project"),
+        ("wiki", "0003_auto_20160615_0721"),
+        ("users", "0022_auto_20160629_1443"),
     ]
 
     operations = [
         migrations.RunSQL(GENERATE_CORRECT_HISTORY_ENTRIES_TABLE),
-        migrations.RunPython(toggle_history_entries_tables)
+        migrations.RunPython(toggle_history_entries_tables),
     ]

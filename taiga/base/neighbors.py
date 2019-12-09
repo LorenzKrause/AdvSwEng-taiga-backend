@@ -45,13 +45,13 @@ def get_neighbors(obj, results_set=None):
     # Neighbors calculation is at least at project level
     results_set = results_set.filter(project_id=obj.project.id)
 
-    compiler = results_set.query.get_compiler('default')
+    compiler = results_set.query.get_compiler("default")
     try:
         base_sql, base_params = compiler.as_sql(with_col_aliases=True)
     except EmptyResultSet:
         # Generate a not empty queryset
         results_set = type(obj).objects.get_queryset().filter(project_id=obj.project.id)
-        compiler = results_set.query.get_compiler('default')
+        compiler = results_set.query.get_compiler("default")
         base_sql, base_params = compiler.as_sql(with_col_aliases=True)
 
     query = """
@@ -62,7 +62,9 @@ def get_neighbors(obj, results_set=None):
                     LEAD("col1", 1) OVER() AS next
                 FROM (%s) as ID_AND_ROW)
         AS SELECTED_ID_AND_ROW
-        """ % (base_sql)
+        """ % (
+        base_sql
+    )
     query += " WHERE id=%s;"
     params = list(base_params) + [obj.id]
 
@@ -103,7 +105,10 @@ class NeighborsSerializerMixin(serializers.LightSerializer):
         return None
 
     def get_neighbors(self, obj):
-        view, request = self.context.get("view", None), self.context.get("request", None)
+        view, request = (
+            self.context.get("view", None),
+            self.context.get("request", None),
+        )
         if view and request:
             queryset = view.filter_queryset(view.get_queryset())
             left, right = get_neighbors(obj, results_set=queryset)
@@ -112,5 +117,5 @@ class NeighborsSerializerMixin(serializers.LightSerializer):
 
         return {
             "previous": self.serialize_neighbor(left),
-            "next": self.serialize_neighbor(right)
+            "next": self.serialize_neighbor(right),
         }

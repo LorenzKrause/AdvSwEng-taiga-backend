@@ -62,7 +62,9 @@ def epic_related_userstory_timeline(instance, extra_data={}):
     result = {
         "relateduserstory": service.extract_related_userstory_info(instance),
         "epic": service.extract_epic_info(instance.epic),
-        "userstory": service.extract_userstory_info(instance.user_story, include_project=True),
+        "userstory": service.extract_userstory_info(
+            instance.user_story, include_project=True
+        ),
         "project": service.extract_project_info(instance.project),
     }
     result.update(extra_data)
@@ -107,7 +109,9 @@ def task_timeline(instance, extra_data={}):
     }
 
     if instance.user_story:
-        result["task"]["userstory"] = service.extract_userstory_info(instance.user_story)
+        result["task"]["userstory"] = service.extract_userstory_info(
+            instance.user_story
+        )
 
     result.update(extra_data)
     return result

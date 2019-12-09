@@ -28,10 +28,10 @@ class WikiPageValidator(WatchersValidator, validators.ModelValidator):
 
     class Meta:
         model = models.WikiPage
-        read_only_fields = ('modified_date', 'created_date', 'owner')
+        read_only_fields = ("modified_date", "created_date", "owner")
 
 
 class WikiLinkValidator(validators.ModelValidator):
     class Meta:
         model = models.WikiLink
-        read_only_fields = ('href',)
+        read_only_fields = ("href",)

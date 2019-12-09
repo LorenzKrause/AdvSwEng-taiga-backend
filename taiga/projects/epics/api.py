@@ -31,7 +31,10 @@ from taiga.base.utils import json
 from taiga.projects.history.mixins import HistoryResourceMixin
 from taiga.projects.mixins.by_ref import ByRefMixin
 from taiga.projects.models import Project, EpicStatus
-from taiga.projects.notifications.mixins import WatchedResourceMixin, WatchersViewSetMixin
+from taiga.projects.notifications.mixins import (
+    WatchedResourceMixin,
+    WatchersViewSetMixin,
+)
 from taiga.projects.occ import OCCResourceMixin
 from taiga.projects.tagging.api import TaggedResourceMixin
 from taiga.projects.votes.mixins.viewsets import VotedResourceMixin, VotersViewSetMixin
@@ -46,24 +49,31 @@ from . import validators
 from . import utils as epics_utils
 
 
-class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, WatchedResourceMixin,
-                  ByRefMixin, TaggedResourceMixin, BlockedByProjectMixin, ModelCrudViewSet):
+class EpicViewSet(
+    OCCResourceMixin,
+    VotedResourceMixin,
+    HistoryResourceMixin,
+    WatchedResourceMixin,
+    ByRefMixin,
+    TaggedResourceMixin,
+    BlockedByProjectMixin,
+    ModelCrudViewSet,
+):
     validator_class = validators.EpicValidator
     queryset = models.Epic.objects.all()
     permission_classes = (permissions.EpicPermission,)
-    filter_backends = (filters.CanViewEpicsFilterBackend,
-                       filters.OwnersFilter,
-                       filters.AssignedToFilter,
-                       filters.StatusesFilter,
-                       filters.TagsFilter,
-                       filters.WatchersFilter,
-                       filters.QFilter,
-                       filters.CreatedDateFilter,
-                       filters.ModifiedDateFilter)
-    filter_fields = ["project",
-                     "project__slug",
-                     "assigned_to",
-                     "status__is_closed"]
+    filter_backends = (
+        filters.CanViewEpicsFilterBackend,
+        filters.OwnersFilter,
+        filters.AssignedToFilter,
+        filters.StatusesFilter,
+        filters.TagsFilter,
+        filters.WatchersFilter,
+        filters.QFilter,
+        filters.CreatedDateFilter,
+        filters.ModifiedDateFilter,
+    )
+    filter_fields = ["project", "project__slug", "assigned_to", "status__is_closed"]
 
     def get_serializer_class(self, *args, **kwargs):
         if self.action in ["retrieve", "by_ref"]:
@@ -76,14 +86,12 @@ class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
 
     def get_queryset(self):
         qs = super().get_queryset()
-        qs = qs.select_related("project",
-                               "status",
-                               "owner",
-                               "assigned_to")
+        qs = qs.select_related("project", "status", "owner", "assigned_to")
 
         include_attachments = "include_attachments" in self.request.QUERY_PARAMS
-        qs = epics_utils.attach_extra_info(qs, user=self.request.user,
-                                           include_attachments=include_attachments)
+        qs = epics_utils.attach_extra_info(
+            qs, user=self.request.user, include_attachments=include_attachments
+        )
 
         return qs
 
@@ -91,7 +99,9 @@ class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
         super().pre_conditions_on_save(obj)
 
         if obj.status and obj.status.project != obj.project:
-            raise exc.WrongArguments(_("You don't have permissions to set this status to this epic."))
+            raise exc.WrongArguments(
+                _("You don't have permissions to set this status to this epic.")
+            )
 
     """
     Updating the epic order attribute can affect the ordering of another epics
@@ -99,6 +109,7 @@ class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
     saving
     If there is any difference it means an extra ordering update must be done
     """
+
     def _epics_order_key(self, obj):
         return "{}-{}".format(obj.project_id, obj.epics_order)
 
@@ -120,35 +131,37 @@ class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
         for id, order in extra_orders.items():
             data.append({"epic_id": int(id), "order": order})
 
-        return services.update_epics_order_in_bulk(data, "epics_order", project=obj.project)
+        return services.update_epics_order_in_bulk(
+            data, "epics_order", project=obj.project
+        )
 
     def post_save(self, obj, created=False):
         if not created:
             # Let's reorder the related stuff after edit the element
-            orders_updated = self._reorder_if_needed(obj,
-                                                     self._old_epics_order_key,
-                                                     self._epics_order_key(obj))
+            orders_updated = self._reorder_if_needed(
+                obj, self._old_epics_order_key, self._epics_order_key(obj)
+            )
             self.headers["Taiga-Info-Order-Updated"] = json.dumps(orders_updated)
 
         super().post_save(obj, created)
 
     def update(self, request, *args, **kwargs):
         self.object = self.get_object_or_none()
-        project_id = request.DATA.get('project', None)
+        project_id = request.DATA.get("project", None)
         if project_id and self.object and self.object.project.id != project_id:
             try:
                 new_project = Project.objects.get(pk=project_id)
                 self.check_permissions(request, "destroy", self.object)
                 self.check_permissions(request, "create", new_project)
 
-                status_id = request.DATA.get('status', None)
+                status_id = request.DATA.get("status", None)
                 if status_id is not None:
                     try:
                         old_status = self.object.project.epic_statuses.get(pk=status_id)
                         new_status = new_project.epic_statuses.get(slug=old_status.slug)
-                        request.DATA['status'] = new_status.id
+                        request.DATA["status"] = new_status.id
                     except EpicStatus.DoesNotExist:
-                        request.DATA['status'] = new_project.default_epic_status.id
+                        request.DATA["status"] = new_project.default_epic_status.id
 
             except Project.DoesNotExist:
                 return response.BadRequest(_("The project doesn't exist"))
@@ -161,16 +174,28 @@ class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
         project = get_object_or_404(Project, id=project_id)
 
         filter_backends = self.get_filter_backends()
-        statuses_filter_backends = (f for f in filter_backends if f != filters.StatusesFilter)
-        assigned_to_filter_backends = (f for f in filter_backends if f != filters.AssignedToFilter)
-        owners_filter_backends = (f for f in filter_backends if f != filters.OwnersFilter)
+        statuses_filter_backends = (
+            f for f in filter_backends if f != filters.StatusesFilter
+        )
+        assigned_to_filter_backends = (
+            f for f in filter_backends if f != filters.AssignedToFilter
+        )
+        owners_filter_backends = (
+            f for f in filter_backends if f != filters.OwnersFilter
+        )
 
         queryset = self.get_queryset()
         querysets = {
-            "statuses": self.filter_queryset(queryset, filter_backends=statuses_filter_backends),
-            "assigned_to": self.filter_queryset(queryset, filter_backends=assigned_to_filter_backends),
-            "owners": self.filter_queryset(queryset, filter_backends=owners_filter_backends),
-            "tags": self.filter_queryset(queryset)
+            "statuses": self.filter_queryset(
+                queryset, filter_backends=statuses_filter_backends
+            ),
+            "assigned_to": self.filter_queryset(
+                queryset, filter_backends=assigned_to_filter_backends
+            ),
+            "owners": self.filter_queryset(
+                queryset, filter_backends=owners_filter_backends
+            ),
+            "tags": self.filter_queryset(queryset),
         }
         return response.Ok(services.get_epics_filters_data(project, querysets))
 
@@ -181,10 +206,12 @@ class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
             return response.NotFound()
 
         project = get_object_or_404(Project, epics_csv_uuid=uuid)
-        queryset = project.epics.all().order_by('ref')
+        queryset = project.epics.all().order_by("ref")
         data = services.epics_to_csv(project, queryset)
-        csv_response = HttpResponse(data.getvalue(), content_type='application/csv; charset=utf-8')
-        csv_response['Content-Disposition'] = 'attachment; filename="epics.csv"'
+        csv_response = HttpResponse(
+            data.getvalue(), content_type="application/csv; charset=utf-8"
+        )
+        csv_response["Content-Disposition"] = 'attachment; filename="epics.csv"'
         return csv_response
 
     @list_route(methods=["POST"])
@@ -204,7 +231,9 @@ class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
             status_id=data.get("status_id") or project.default_epic_status_id,
             project=project,
             owner=request.user,
-            callback=self.post_save, precall=self.pre_save)
+            callback=self.post_save,
+            precall=self.pre_save,
+        )
 
         epics = self.get_queryset().filter(id__in=[i.id for i in epics])
         for epic in epics:
@@ -215,8 +244,9 @@ class EpicViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
         return response.Ok(epics_serialized.data)
 
 
-class EpicRelatedUserStoryViewSet(NestedViewSetMixin, HistoryResourceMixin,
-                                  BlockedByProjectMixin, ModelCrudViewSet):
+class EpicRelatedUserStoryViewSet(
+    NestedViewSetMixin, HistoryResourceMixin, BlockedByProjectMixin, ModelCrudViewSet
+):
     queryset = models.RelatedUserStory.objects.all()
     serializer_class = serializers.EpicRelatedUserStorySerializer
     validator_class = validators.EpicRelatedUserStoryValidator
@@ -230,6 +260,7 @@ class EpicRelatedUserStoryViewSet(NestedViewSetMixin, HistoryResourceMixin,
     saving
     If there is any difference it means an extra ordering update must be done
     """
+
     def _order_key(self, obj):
         return "{}-{}".format(obj.user_story.project_id, obj.order)
 
@@ -251,14 +282,16 @@ class EpicRelatedUserStoryViewSet(NestedViewSetMixin, HistoryResourceMixin,
         for id, order in extra_orders.items():
             data.append({"us_id": int(id), "order": order})
 
-        return services.update_epic_related_userstories_order_in_bulk(data, epic=obj.epic)
+        return services.update_epic_related_userstories_order_in_bulk(
+            data, epic=obj.epic
+        )
 
     def post_save(self, obj, created=False):
         if not created:
             # Let's reorder the related stuff after edit the element
-            orders_updated = self._reorder_if_needed(obj,
-                                                     self._old_order_key,
-                                                     self._order_key(obj))
+            orders_updated = self._reorder_if_needed(
+                obj, self._old_order_key, self._order_key(obj)
+            )
             self.headers["Taiga-Info-Order-Updated"] = json.dumps(orders_updated)
 
         super().post_save(obj, created)
@@ -277,24 +310,23 @@ class EpicRelatedUserStoryViewSet(NestedViewSetMixin, HistoryResourceMixin,
         data = validator.data
 
         epic = get_object_or_404(models.Epic, id=kwargs["epic"])
-        project = Project.objects.get(pk=data.get('project_id'))
+        project = Project.objects.get(pk=data.get("project_id"))
 
-        self.check_permissions(request, 'bulk_create', project)
+        self.check_permissions(request, "bulk_create", project)
         if project.blocked_code is not None:
             raise exc.Blocked(_("Blocked element"))
 
         related_userstories = services.create_related_userstories_in_bulk(
-            data["bulk_userstories"],
-            epic,
-            project=project,
-            owner=request.user
+            data["bulk_userstories"], epic, project=project, owner=request.user
         )
 
         for related_userstory in related_userstories:
             self.persist_history_snapshot(obj=related_userstory)
             self.persist_history_snapshot(obj=related_userstory.user_story)
 
-        related_uss_serialized = self.get_serializer_class()(epic.relateduserstory_set.all(), many=True)
+        related_uss_serialized = self.get_serializer_class()(
+            epic.relateduserstory_set.all(), many=True
+        )
         return response.Ok(related_uss_serialized.data)
 
 

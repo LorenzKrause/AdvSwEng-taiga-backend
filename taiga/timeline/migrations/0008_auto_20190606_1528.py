@@ -8,20 +8,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('timeline', '0007_auto_20170406_0615'),
+        ("timeline", "0007_auto_20170406_0615"),
     ]
 
     operations = [
-        migrations.AlterIndexTogether(
-            name='timeline',
-            index_together=set([]),
+        migrations.AlterIndexTogether(name="timeline", index_together=set([]),),
+        migrations.AddIndex(
+            model_name="timeline",
+            index=models.Index(
+                fields=["namespace", "-created"], name="timeline_ti_namespa_89bca1_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='timeline',
-            index=models.Index(fields=['namespace', '-created'], name='timeline_ti_namespa_89bca1_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='timeline',
-            index=models.Index(fields=['content_type', 'object_id', '-created'], name='timeline_ti_content_1af26f_idx'),
+            model_name="timeline",
+            index=models.Index(
+                fields=["content_type", "object_id", "-created"],
+                name="timeline_ti_content_1af26f_idx",
+            ),
         ),
     ]

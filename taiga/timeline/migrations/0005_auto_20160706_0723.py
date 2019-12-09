@@ -9,13 +9,15 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('timeline', '0004_auto_20150603_1312'),
+        ("timeline", "0004_auto_20150603_1312"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='timeline',
-            name='created',
-            field=models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+            model_name="timeline",
+            name="created",
+            field=models.DateTimeField(
+                db_index=True, default=django.utils.timezone.now
+            ),
         ),
     ]

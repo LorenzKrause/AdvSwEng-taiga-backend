@@ -31,11 +31,17 @@ class MilestonesSitemap(Sitemap):
         milestone_model = apps.get_model("milestones", "Milestone")
 
         # Get US of public projects OR private projects if anon user can view them and us and tasks
-        queryset = milestone_model.objects.filter(Q(project__is_private=False) |
-                                                  Q(project__is_private=True,
-                                                    project__anon_permissions__contains=["view_milestones",
-                                                                                         "view_us",
-                                                                                         "view_tasks"]))
+        queryset = milestone_model.objects.filter(
+            Q(project__is_private=False)
+            | Q(
+                project__is_private=True,
+                project__anon_permissions__contains=[
+                    "view_milestones",
+                    "view_us",
+                    "view_tasks",
+                ],
+            )
+        )
 
         queryset = queryset.exclude(name="")
 

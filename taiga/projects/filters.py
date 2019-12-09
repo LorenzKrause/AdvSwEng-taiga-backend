@@ -39,11 +39,13 @@ class DiscoverModeFilterBackend(FilterBackend):
 
             if discover_mode:
                 # discover_mode enabled
-                qs = qs.filter(anon_permissions__contains=["view_project"],
-                               blocked_code__isnull=True)
+                qs = qs.filter(
+                    anon_permissions__contains=["view_project"],
+                    blocked_code__isnull=True,
+                )
 
                 # random order for featured projects
-                if request.QUERY_PARAMS.get("is_featured", None) == 'true':
+                if request.QUERY_PARAMS.get("is_featured", None) == "true":
                     qs = qs.order_by("?")
 
         return super().filter_queryset(request, qs, view)
@@ -54,19 +56,24 @@ class CanViewProjectObjFilterBackend(FilterBackend):
         project_id = None
 
         # Filter by filter_fields
-        if (hasattr(view, "filter_fields") and "project" in view.filter_fields and
-                "project" in request.QUERY_PARAMS):
+        if (
+            hasattr(view, "filter_fields")
+            and "project" in view.filter_fields
+            and "project" in request.QUERY_PARAMS
+        ):
             try:
                 project_id = int(request.QUERY_PARAMS["project"])
             except:
-                logger.error("Filtering project diferent value than an integer: {}".format(
-                    request.QUERY_PARAMS["project"]
-                ))
+                logger.error(
+                    "Filtering project diferent value than an integer: {}".format(
+                        request.QUERY_PARAMS["project"]
+                    )
+                )
                 raise exc.BadRequest(_("'project' must be an integer value."))
 
         filter_expression = get_filter_expression_can_view_projects(
-            request.user,
-            project_id)
+            request.user, project_id
+        )
 
         qs = queryset.filter(filter_expression)
 
@@ -76,7 +83,7 @@ class CanViewProjectObjFilterBackend(FilterBackend):
 class QFilterBackend(FilterBackend):
     def filter_queryset(self, request, queryset, view):
         # NOTE: See migtration 0033_text_search_indexes
-        q = request.QUERY_PARAMS.get('q', None)
+        q = request.QUERY_PARAMS.get("q", None)
         if q:
             tsquery = "to_tsquery('simple', %s)"
             tsquery_params = [to_tsquery(q)]
@@ -90,20 +97,26 @@ class QFilterBackend(FilterBackend):
             """
 
             select = {
-                "rank": "ts_rank({tsvector},{tsquery})".format(tsquery=tsquery,
-                                                               tsvector=tsvector),
+                "rank": "ts_rank({tsvector},{tsquery})".format(
+                    tsquery=tsquery, tsvector=tsvector
+                ),
             }
             select_params = tsquery_params
-            where = ["{tsvector} @@ {tsquery}".format(tsquery=tsquery,
-                                                      tsvector=tsvector), ]
+            where = [
+                "{tsvector} @@ {tsquery}".format(tsquery=tsquery, tsvector=tsvector),
+            ]
             params = tsquery_params
-            order_by = ["-rank", ]
+            order_by = [
+                "-rank",
+            ]
 
-            queryset = queryset.extra(select=select,
-                                      select_params=select_params,
-                                      where=where,
-                                      params=params,
-                                      order_by=order_by)
+            queryset = queryset.extra(
+                select=select,
+                select_params=select_params,
+                where=where,
+                params=params,
+                order_by=order_by,
+            )
         return queryset
 
 

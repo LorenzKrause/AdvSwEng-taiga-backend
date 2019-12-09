@@ -22,6 +22,7 @@ from taiga.base.api.authentication import BaseAuthentication
 
 from . import services
 
+
 class Token(BaseAuthentication):
     auth_rx = re.compile(r"^Application (.+)$")
 

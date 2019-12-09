@@ -21,25 +21,34 @@ from taiga.base.fields import Field, DateTimeField, MethodField
 
 from taiga.projects.votes import services as votes_service
 
-from .fields import (FileField, UserRelatedField, TimelineDataField,
-                     ContentTypeField, SlugRelatedField)
-from .mixins import (HistoryExportSerializerMixin,
-                     AttachmentExportSerializerMixin,
-                     CustomAttributesValuesExportSerializerMixin,
-                     WatcheableObjectLightSerializerMixin)
-from .cache import (_custom_tasks_attributes_cache,
-                    _custom_userstories_attributes_cache,
-                    _custom_epics_attributes_cache,
-                    _custom_issues_attributes_cache,
-                    _tasks_statuses_cache,
-                    _issues_statuses_cache,
-                    _userstories_statuses_cache,
-                    _epics_statuses_cache)
+from .fields import (
+    FileField,
+    UserRelatedField,
+    TimelineDataField,
+    ContentTypeField,
+    SlugRelatedField,
+)
+from .mixins import (
+    HistoryExportSerializerMixin,
+    AttachmentExportSerializerMixin,
+    CustomAttributesValuesExportSerializerMixin,
+    WatcheableObjectLightSerializerMixin,
+)
+from .cache import (
+    _custom_tasks_attributes_cache,
+    _custom_userstories_attributes_cache,
+    _custom_epics_attributes_cache,
+    _custom_issues_attributes_cache,
+    _tasks_statuses_cache,
+    _issues_statuses_cache,
+    _userstories_statuses_cache,
+    _epics_statuses_cache,
+)
 
 
 class RelatedExportSerializer(serializers.LightSerializer):
     def to_value(self, value):
-        if hasattr(value, 'all'):
+        if hasattr(value, "all"):
             return super().to_value(value.all())
         return super().to_value(value)
 
@@ -174,15 +183,21 @@ class BaseCustomAttributesValuesExportSerializer(RelatedExportSerializer):
     attributes_values = Field(required=True)
 
 
-class UserStoryCustomAttributesValuesExportSerializer(BaseCustomAttributesValuesExportSerializer):
+class UserStoryCustomAttributesValuesExportSerializer(
+    BaseCustomAttributesValuesExportSerializer
+):
     user_story = Field(attr="user_story.id")
 
 
-class TaskCustomAttributesValuesExportSerializer(BaseCustomAttributesValuesExportSerializer):
+class TaskCustomAttributesValuesExportSerializer(
+    BaseCustomAttributesValuesExportSerializer
+):
     task = Field(attr="task.id")
 
 
-class IssueCustomAttributesValuesExportSerializer(BaseCustomAttributesValuesExportSerializer):
+class IssueCustomAttributesValuesExportSerializer(
+    BaseCustomAttributesValuesExportSerializer
+):
     issue = Field(attr="issue.id")
 
 
@@ -202,7 +217,9 @@ class RolePointsExportSerializer(RelatedExportSerializer):
     points = SlugRelatedField(slug_field="name")
 
 
-class MilestoneExportSerializer(WatcheableObjectLightSerializerMixin, RelatedExportSerializer):
+class MilestoneExportSerializer(
+    WatcheableObjectLightSerializerMixin, RelatedExportSerializer
+):
     name = Field()
     owner = UserRelatedField()
     created_date = DateTimeField()
@@ -215,11 +232,13 @@ class MilestoneExportSerializer(WatcheableObjectLightSerializerMixin, RelatedExp
     order = Field()
 
 
-class TaskExportSerializer(CustomAttributesValuesExportSerializerMixin,
-                           HistoryExportSerializerMixin,
-                           AttachmentExportSerializerMixin,
-                           WatcheableObjectLightSerializerMixin,
-                           RelatedExportSerializer):
+class TaskExportSerializer(
+    CustomAttributesValuesExportSerializerMixin,
+    HistoryExportSerializerMixin,
+    AttachmentExportSerializerMixin,
+    WatcheableObjectLightSerializerMixin,
+    RelatedExportSerializer,
+):
     owner = UserRelatedField()
     status = SlugRelatedField(slug_field="name")
     user_story = SlugRelatedField(slug_field="ref")
@@ -244,20 +263,26 @@ class TaskExportSerializer(CustomAttributesValuesExportSerializerMixin,
 
     def custom_attributes_queryset(self, project):
         if project.id not in _custom_tasks_attributes_cache:
-            _custom_tasks_attributes_cache[project.id] = list(project.taskcustomattributes.all().values('id', 'name'))
+            _custom_tasks_attributes_cache[project.id] = list(
+                project.taskcustomattributes.all().values("id", "name")
+            )
         return _custom_tasks_attributes_cache[project.id]
 
     def statuses_queryset(self, project):
         if project.id not in _tasks_statuses_cache:
-            _tasks_statuses_cache[project.id] = {s.id: s.name for s in project.task_statuses.all()}
+            _tasks_statuses_cache[project.id] = {
+                s.id: s.name for s in project.task_statuses.all()
+            }
         return _tasks_statuses_cache[project.id]
 
 
-class UserStoryExportSerializer(CustomAttributesValuesExportSerializerMixin,
-                                HistoryExportSerializerMixin,
-                                AttachmentExportSerializerMixin,
-                                WatcheableObjectLightSerializerMixin,
-                                RelatedExportSerializer):
+class UserStoryExportSerializer(
+    CustomAttributesValuesExportSerializerMixin,
+    HistoryExportSerializerMixin,
+    AttachmentExportSerializerMixin,
+    WatcheableObjectLightSerializerMixin,
+    RelatedExportSerializer,
+):
     role_points = RolePointsExportSerializer(many=True)
     owner = UserRelatedField()
     assigned_to = UserRelatedField()
@@ -290,13 +315,15 @@ class UserStoryExportSerializer(CustomAttributesValuesExportSerializerMixin,
     def custom_attributes_queryset(self, project):
         if project.id not in _custom_userstories_attributes_cache:
             _custom_userstories_attributes_cache[project.id] = list(
-                project.userstorycustomattributes.all().values('id', 'name')
+                project.userstorycustomattributes.all().values("id", "name")
             )
         return _custom_userstories_attributes_cache[project.id]
 
     def statuses_queryset(self, project):
         if project.id not in _userstories_statuses_cache:
-            _userstories_statuses_cache[project.id] = {s.id: s.name for s in project.us_statuses.all()}
+            _userstories_statuses_cache[project.id] = {
+                s.id: s.name for s in project.us_statuses.all()
+            }
         return _userstories_statuses_cache[project.id]
 
     def get_assigned_users(self, obj):
@@ -308,11 +335,13 @@ class EpicRelatedUserStoryExportSerializer(RelatedExportSerializer):
     order = Field()
 
 
-class EpicExportSerializer(CustomAttributesValuesExportSerializerMixin,
-                           HistoryExportSerializerMixin,
-                           AttachmentExportSerializerMixin,
-                           WatcheableObjectLightSerializerMixin,
-                           RelatedExportSerializer):
+class EpicExportSerializer(
+    CustomAttributesValuesExportSerializerMixin,
+    HistoryExportSerializerMixin,
+    AttachmentExportSerializerMixin,
+    WatcheableObjectLightSerializerMixin,
+    RelatedExportSerializer,
+):
     ref = Field()
     owner = UserRelatedField()
     status = SlugRelatedField(slug_field="name")
@@ -332,26 +361,32 @@ class EpicExportSerializer(CustomAttributesValuesExportSerializerMixin,
     related_user_stories = MethodField()
 
     def get_related_user_stories(self, obj):
-        return EpicRelatedUserStoryExportSerializer(obj.relateduserstory_set.filter(epic__project=obj.project), many=True).data
+        return EpicRelatedUserStoryExportSerializer(
+            obj.relateduserstory_set.filter(epic__project=obj.project), many=True
+        ).data
 
     def custom_attributes_queryset(self, project):
         if project.id not in _custom_epics_attributes_cache:
             _custom_epics_attributes_cache[project.id] = list(
-                project.epiccustomattributes.all().values('id', 'name')
+                project.epiccustomattributes.all().values("id", "name")
             )
         return _custom_epics_attributes_cache[project.id]
 
     def statuses_queryset(self, project):
         if project.id not in _epics_statuses_cache:
-            _epics_statuses_cache[project.id] = {s.id: s.name for s in project.epic_statuses.all()}
+            _epics_statuses_cache[project.id] = {
+                s.id: s.name for s in project.epic_statuses.all()
+            }
         return _epics_statuses_cache[project.id]
 
 
-class IssueExportSerializer(CustomAttributesValuesExportSerializerMixin,
-                            HistoryExportSerializerMixin,
-                            AttachmentExportSerializerMixin,
-                            WatcheableObjectLightSerializerMixin,
-                            RelatedExportSerializer):
+class IssueExportSerializer(
+    CustomAttributesValuesExportSerializerMixin,
+    HistoryExportSerializerMixin,
+    AttachmentExportSerializerMixin,
+    WatcheableObjectLightSerializerMixin,
+    RelatedExportSerializer,
+):
     owner = UserRelatedField()
     status = SlugRelatedField(slug_field="name")
     assigned_to = UserRelatedField()
@@ -381,18 +416,25 @@ class IssueExportSerializer(CustomAttributesValuesExportSerializerMixin,
 
     def custom_attributes_queryset(self, project):
         if project.id not in _custom_issues_attributes_cache:
-            _custom_issues_attributes_cache[project.id] = list(project.issuecustomattributes.all().values('id', 'name'))
+            _custom_issues_attributes_cache[project.id] = list(
+                project.issuecustomattributes.all().values("id", "name")
+            )
         return _custom_issues_attributes_cache[project.id]
 
     def statuses_queryset(self, project):
         if project.id not in _issues_statuses_cache:
-            _issues_statuses_cache[project.id] = {s.id: s.name for s in project.issue_statuses.all()}
+            _issues_statuses_cache[project.id] = {
+                s.id: s.name for s in project.issue_statuses.all()
+            }
         return _issues_statuses_cache[project.id]
 
-class WikiPageExportSerializer(HistoryExportSerializerMixin,
-                               AttachmentExportSerializerMixin,
-                               WatcheableObjectLightSerializerMixin,
-                               RelatedExportSerializer):
+
+class WikiPageExportSerializer(
+    HistoryExportSerializerMixin,
+    AttachmentExportSerializerMixin,
+    WatcheableObjectLightSerializerMixin,
+    RelatedExportSerializer,
+):
     slug = Field()
     owner = UserRelatedField()
     last_modifier = UserRelatedField()
@@ -403,6 +445,7 @@ class WikiPageExportSerializer(HistoryExportSerializerMixin,
 
     def statuses_queryset(self, project):
         return {}
+
 
 class WikiLinkExportSerializer(RelatedExportSerializer):
     title = Field()

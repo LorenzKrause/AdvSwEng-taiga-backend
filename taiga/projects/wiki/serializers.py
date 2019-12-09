@@ -25,8 +25,9 @@ from taiga.mdrender.service import render as mdrender
 
 
 class WikiPageSerializer(
-    WatchedResourceSerializer, ProjectExtraInfoSerializerMixin,
-    serializers.LightSerializer
+    WatchedResourceSerializer,
+    ProjectExtraInfoSerializerMixin,
+    serializers.LightSerializer,
 ):
     id = Field()
     project = Field(attr="project_id")
@@ -46,7 +47,9 @@ class WikiPageSerializer(
         return mdrender(obj.project, obj.content)
 
     def get_editions(self, obj):
-        return history_service.get_history_queryset_by_model_instance(obj).count() + 1  # +1 for creation
+        return (
+            history_service.get_history_queryset_by_model_instance(obj).count() + 1
+        )  # +1 for creation
 
 
 class WikiLinkSerializer(serializers.LightSerializer):

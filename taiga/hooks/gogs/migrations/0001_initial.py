@@ -16,7 +16,11 @@ def create_gogs_system_user(apps, schema_editor):
     User = apps.get_model("users", "User")
     db_alias = schema_editor.connection.alias
 
-    if not User.objects.using(db_alias).filter(is_system=True, username__startswith="gogs-").exists():
+    if (
+        not User.objects.using(db_alias)
+        .filter(is_system=True, username__startswith="gogs-")
+        .exists()
+    ):
         random_hash = uuid.uuid4().hex
         user = User.objects.using(db_alias).create(
             username="gogs-{}".format(random_hash),
@@ -32,9 +36,7 @@ def create_gogs_system_user(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ('users', '0010_auto_20150414_0936')
-    ]
+    dependencies = [("users", "0010_auto_20150414_0936")]
 
     operations = [
         migrations.RunPython(create_gogs_system_user),

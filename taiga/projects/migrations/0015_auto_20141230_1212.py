@@ -9,21 +9,25 @@ def fix_project_template_us_status_archived(apps, schema_editor):
         for us_status in pt.us_statuses:
             us_status["is_archived"] = False
 
-        pt.us_statuses.append({
-            "color": "#5c3566",
-            "order": 6,
-            "is_closed": True,
-            "is_archived": True,
-            "wip_limit": None,
-            "name": "Archived",
-            "slug": "archived"})
+        pt.us_statuses.append(
+            {
+                "color": "#5c3566",
+                "order": 6,
+                "is_closed": True,
+                "is_archived": True,
+                "wip_limit": None,
+                "name": "Archived",
+                "slug": "archived",
+            }
+        )
 
         pt.save()
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0014_userstorystatus_is_archived'),
+        ("projects", "0014_userstorystatus_is_archived"),
     ]
 
     operations = [

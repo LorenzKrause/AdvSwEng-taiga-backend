@@ -28,27 +28,28 @@ from taiga.users.models import User
 
 
 class Command(BaseCommand):
-    help = 'Import a project from a json file'
+    help = "Import a project from a json file"
 
     def add_arguments(self, parser):
-        parser.add_argument("dump_file",
-                            help="The path to a dump file (.json).")
+        parser.add_argument("dump_file", help="The path to a dump file (.json).")
 
-        parser.add_argument("owner_email",
-                            help="The email of the new project owner.")
+        parser.add_argument("owner_email", help="The email of the new project owner.")
 
-        parser.add_argument("-o", '--overwrite',
-                            action='store_true',
-                            dest='overwrite',
-                            default=False,
-                            help='Overwrite the project if exists')
+        parser.add_argument(
+            "-o",
+            "--overwrite",
+            action="store_true",
+            dest="overwrite",
+            default=False,
+            help="Overwrite the project if exists",
+        )
 
     def handle(self, *args, **options):
         dump_file_path = options["dump_file"]
         owner_email = options["owner_email"]
         overwrite = options["overwrite"]
 
-        data = json.loads(open(dump_file_path, 'r').read())
+        data = json.loads(open(dump_file_path, "r").read())
         try:
             if overwrite:
                 receivers_back = signals.post_delete.receivers
@@ -65,9 +66,9 @@ class Command(BaseCommand):
                     pass
                 signals.post_delete.receivers = receivers_back
             else:
-                slug = data.get('slug', None)
+                slug = data.get("slug", None)
                 if slug is not None and Project.objects.filter(slug=slug).exists():
-                    del data['slug']
+                    del data["slug"]
 
             user = User.objects.get(email=owner_email)
             services.store_project_from_dict(data, user)

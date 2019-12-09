@@ -35,25 +35,28 @@ from taiga.front.templatetags.functions import resolve as resolve_front_url
 
 
 class Command(BaseCommand):
-    help = 'Send an example of all emails'
+    help = "Send an example of all emails"
 
     def add_arguments(self, parser):
-        parser.add_argument('--locale', '-l',
-                            default=None,
-                            dest='locale',
-                            help='Send emails in an specific language.')
-        parser.add_argument('email',
-                            help='Email address to send sample emails to.')
-
+        parser.add_argument(
+            "--locale",
+            "-l",
+            default=None,
+            dest="locale",
+            help="Send emails in an specific language.",
+        )
+        parser.add_argument("email", help="Email address to send sample emails to.")
 
     def handle(self, *args, **options):
-        locale = options.get('locale')
-        email_address = options.get('email')
+        locale = options.get("locale")
+        email_address = options.get("email")
 
         # Register email
-        context = {"lang": locale,
-                    "user": get_user_model().objects.all().order_by("?").first(),
-                    "cancel_token": "cancel-token"}
+        context = {
+            "lang": locale,
+            "user": get_user_model().objects.all().order_by("?").first(),
+            "cancel_token": "cancel-token",
+        }
 
         email = mail_builder.registered_user(email_address, context)
         email.send()
@@ -61,15 +64,21 @@ class Command(BaseCommand):
         # Membership invitation
         membership = Membership.objects.order_by("?").filter(user__isnull=True).first()
         membership.invited_by = get_user_model().objects.all().order_by("?").first()
-        membership.invitation_extra_text = "Text example, Text example,\nText example,\n\nText example"
+        membership.invitation_extra_text = (
+            "Text example, Text example,\nText example,\n\nText example"
+        )
 
         context = {"lang": locale, "membership": membership}
         email = mail_builder.membership_invitation(email_address, context)
         email.send()
 
         # Membership notification
-        context = {"lang": locale,
-                   "membership": Membership.objects.order_by("?").filter(user__isnull=False).first()}
+        context = {
+            "lang": locale,
+            "membership": Membership.objects.order_by("?")
+            .filter(user__isnull=False)
+            .first(),
+        }
         email = mail_builder.membership_notification(email_address, context)
         email.send()
 
@@ -81,21 +90,24 @@ class Command(BaseCommand):
                 "email": "test@email.com",
                 "comment": "Test comment",
             },
-            "extra": {
-                "key1": "value1",
-                "key2": "value2",
-            },
+            "extra": {"key1": "value1", "key2": "value2",},
         }
         email = mail_builder.feedback_notification(email_address, context)
         email.send()
 
         # Password recovery
-        context = {"lang": locale, "user": get_user_model().objects.all().order_by("?").first()}
+        context = {
+            "lang": locale,
+            "user": get_user_model().objects.all().order_by("?").first(),
+        }
         email = mail_builder.password_recovery(email_address, context)
         email.send()
 
         # Change email
-        context = {"lang": locale, "user": get_user_model().objects.all().order_by("?").first()}
+        context = {
+            "lang": locale,
+            "user": get_user_model().objects.all().order_by("?").first(),
+        }
         email = mail_builder.change_email(email_address, context)
         email.send()
 
@@ -118,7 +130,7 @@ class Command(BaseCommand):
         email = mail_builder.import_error(email_address, context)
         email.send()
 
-        deletion_date = timezone.now() + datetime.timedelta(seconds=60*60*24)
+        deletion_date = timezone.now() + datetime.timedelta(seconds=60 * 60 * 24)
         context = {
             "lang": locale,
             "url": "http://dummyurl.com",
@@ -170,12 +182,16 @@ class Command(BaseCommand):
                 "subject": "Tests subject",
                 "ref": 123123,
                 "name": "Tests name",
-                "slug": "test-slug"
+                "slug": "test-slug",
             }
             queryset = model.objects.all().order_by("?")
             for obj in queryset:
                 end = False
-                entries = get_history_queryset_by_model_instance(obj).filter(is_snapshot=True).order_by("?")
+                entries = (
+                    get_history_queryset_by_model_instance(obj)
+                    .filter(is_snapshot=True)
+                    .order_by("?")
+                )
 
                 for entry in entries:
                     if entry.snapshot:
@@ -186,7 +202,11 @@ class Command(BaseCommand):
                     break
             context["snapshot"] = snapshot
 
-            cls = type("InlineCSSTemplateMail", (InlineCSSTemplateMail,), {"name": notification_email[1]})
+            cls = type(
+                "InlineCSSTemplateMail",
+                (InlineCSSTemplateMail,),
+                {"name": notification_email[1]},
+            )
             email = cls()
             email.send(email_address, context)
 
@@ -202,7 +222,7 @@ class Command(BaseCommand):
             "project": Project.objects.all().order_by("?").first(),
             "receiver": get_user_model().objects.all().order_by("?").first(),
             "token": "test-token",
-            "reason": "Test reason"
+            "reason": "Test reason",
         }
         email = mail_builder.transfer_start(email_address, context)
         email.send()
@@ -211,7 +231,7 @@ class Command(BaseCommand):
             "project": Project.objects.all().order_by("?").first(),
             "old_owner": get_user_model().objects.all().order_by("?").first(),
             "new_owner": get_user_model().objects.all().order_by("?").first(),
-            "reason": "Test reason"
+            "reason": "Test reason",
         }
         email = mail_builder.transfer_accept(email_address, context)
         email.send()
@@ -219,11 +239,10 @@ class Command(BaseCommand):
         context = {
             "project": Project.objects.all().order_by("?").first(),
             "rejecter": get_user_model().objects.all().order_by("?").first(),
-            "reason": "Test reason"
+            "reason": "Test reason",
         }
         email = mail_builder.transfer_reject(email_address, context)
         email.send()
-
 
         # Contact with project admins email
         project = Project.objects.all().order_by("?").first()
@@ -234,7 +253,7 @@ class Command(BaseCommand):
             "photo_url": get_user_photo_url(user),
             "user_profile_url": resolve_front_url("user", user.username),
             "project_settings_url": resolve_front_url("project-admin", project.slug),
-            "comment": "Test comment notification."
+            "comment": "Test comment notification.",
         }
         email = mail_builder.contact_notification(email_address, context)
         email.send()
@@ -242,7 +261,7 @@ class Command(BaseCommand):
         # GitHub importer email
         context = {
             "project": Project.objects.all().order_by("?").first(),
-            "user": get_user_model().objects.all().order_by("?").first()
+            "user": get_user_model().objects.all().order_by("?").first(),
         }
         email = mail_builder.github_import_success(email_address, context)
         email.send()
@@ -250,7 +269,7 @@ class Command(BaseCommand):
         # Jira importer email
         context = {
             "project": Project.objects.all().order_by("?").first(),
-            "user": get_user_model().objects.all().order_by("?").first()
+            "user": get_user_model().objects.all().order_by("?").first(),
         }
         email = mail_builder.jira_import_success(email_address, context)
         email.send()
@@ -258,7 +277,7 @@ class Command(BaseCommand):
         # Trello importer email
         context = {
             "project": Project.objects.all().order_by("?").first(),
-            "user": get_user_model().objects.all().order_by("?").first()
+            "user": get_user_model().objects.all().order_by("?").first(),
         }
         email = mail_builder.trello_import_success(email_address, context)
         email.send()
@@ -266,7 +285,7 @@ class Command(BaseCommand):
         # Asana importer email
         context = {
             "project": Project.objects.all().order_by("?").first(),
-            "user": get_user_model().objects.all().order_by("?").first()
+            "user": get_user_model().objects.all().order_by("?").first(),
         }
         email = mail_builder.asana_import_success(email_address, context)
         email.send()
@@ -277,7 +296,7 @@ class Command(BaseCommand):
             "error_subject": "Error importing GitHub project",
             "error_message": "Error importing GitHub project",
             "project": 1234,
-            "exception": "Exception message"
+            "exception": "Exception message",
         }
         email = mail_builder.importer_import_error(email_address, context)
         email.send()

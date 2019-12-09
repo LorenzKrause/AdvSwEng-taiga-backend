@@ -21,6 +21,7 @@ from django.apps import apps
 from .choices import NotifyLevel
 from taiga.base.utils.text import strip_lines
 
+
 def attach_watchers_to_queryset(queryset, as_field="watchers"):
     """Attach watching user ids to each object of the queryset.
 
@@ -32,10 +33,10 @@ def attach_watchers_to_queryset(queryset, as_field="watchers"):
     model = queryset.model
     type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(model)
 
-    sql = ("""SELECT array(SELECT user_id
+    sql = """SELECT array(SELECT user_id
                            FROM notifications_watched
                            WHERE notifications_watched.content_type_id = {type_id}
-                           AND notifications_watched.object_id = {tbl}.id)""")
+                           AND notifications_watched.object_id = {tbl}.id)"""
     sql = sql.format(type_id=type.id, tbl=model._meta.db_table)
     qs = queryset.extra(select={as_field: sql})
 
@@ -56,14 +57,14 @@ def attach_is_watcher_to_queryset(queryset, user, as_field="is_watcher"):
     if user is None or user.is_anonymous():
         sql = """SELECT false"""
     else:
-        sql = ("""SELECT CASE WHEN (SELECT count(*)
+        sql = """SELECT CASE WHEN (SELECT count(*)
                                       FROM notifications_watched
                                      WHERE notifications_watched.content_type_id = {type_id}
                                        AND notifications_watched.object_id = {tbl}.id
                                        AND notifications_watched.user_id = {user_id}) > 0
                               THEN TRUE
                               ELSE FALSE
-                         END""")
+                         END"""
         sql = sql.format(type_id=type.id, tbl=model._meta.db_table, user_id=user.id)
     qs = queryset.extra(select={as_field: sql})
     return qs
@@ -80,10 +81,10 @@ def attach_total_watchers_to_queryset(queryset, as_field="total_watchers"):
     """
     model = queryset.model
     type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(model)
-    sql = ("""SELECT count(*)
+    sql = """SELECT count(*)
                 FROM notifications_watched
                WHERE notifications_watched.content_type_id = {type_id}
-                 AND notifications_watched.object_id = {tbl}.id""")
+                 AND notifications_watched.object_id = {tbl}.id"""
     sql = sql.format(type_id=type.id, tbl=model._meta.db_table)
     qs = queryset.extra(select={as_field: sql})
     return qs

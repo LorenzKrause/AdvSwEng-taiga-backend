@@ -23,8 +23,7 @@ from taiga.projects.userstories.serializers import UserStoryNestedSerializer
 from taiga.projects.mixins.serializers import ProjectExtraInfoSerializerMixin
 
 
-class MilestoneSerializer(ProjectExtraInfoSerializerMixin,
-                          serializers.LightSerializer):
+class MilestoneSerializer(ProjectExtraInfoSerializerMixin, serializers.LightSerializer):
     id = Field()
     name = Field()
     slug = Field()
@@ -45,9 +44,13 @@ class MilestoneSerializer(ProjectExtraInfoSerializerMixin,
         return UserStoryNestedSerializer(obj.user_stories.all(), many=True).data
 
     def get_total_points(self, obj):
-        assert hasattr(obj, "total_points_attr"), "instance must have a total_points_attr attribute"
+        assert hasattr(
+            obj, "total_points_attr"
+        ), "instance must have a total_points_attr attribute"
         return obj.total_points_attr
 
     def get_closed_points(self, obj):
-        assert hasattr(obj, "closed_points_attr"), "instance must have a closed_points_attr attribute"
+        assert hasattr(
+            obj, "closed_points_attr"
+        ), "instance must have a closed_points_attr attribute"
         return obj.closed_points_attr

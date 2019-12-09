@@ -29,8 +29,7 @@ class UsersSitemap(Sitemap):
         user_model = get_user_model()
 
         # Only active users and not system users
-        queryset = user_model.objects.filter(is_active=True,
-                                             is_system=False)
+        queryset = user_model.objects.filter(is_active=True, is_system=False)
 
         return queryset
 

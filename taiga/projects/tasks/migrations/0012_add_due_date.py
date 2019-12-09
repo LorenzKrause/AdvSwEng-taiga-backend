@@ -8,18 +8,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0011_auto_20160928_0755'),
+        ("tasks", "0011_auto_20160928_0755"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='due_date',
-            field=models.DateField(blank=True, default=None, null=True, verbose_name='due date'),
+            model_name="task",
+            name="due_date",
+            field=models.DateField(
+                blank=True, default=None, null=True, verbose_name="due date"
+            ),
         ),
         migrations.AddField(
-            model_name='task',
-            name='due_date_reason',
-            field=models.TextField(blank=True, default='', verbose_name='reason for the due date'),
+            model_name="task",
+            name="due_date_reason",
+            field=models.TextField(
+                blank=True, default="", verbose_name="reason for the due date"
+            ),
         ),
     ]

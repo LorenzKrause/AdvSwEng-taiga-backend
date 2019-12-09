@@ -78,12 +78,14 @@ class ViewSetMixin(object):
         # sanitize keyword arguments
         for key in initkwargs:
             if key in cls.http_method_names:
-                raise TypeError("You tried to pass in the %s method name as a "
-                                "keyword argument to %s(). Don't do that."
-                                % (key, cls.__name__))
+                raise TypeError(
+                    "You tried to pass in the %s method name as a "
+                    "keyword argument to %s(). Don't do that." % (key, cls.__name__)
+                )
             if not hasattr(cls, key):
-                raise TypeError("%s() received an invalid keyword %r"
-                                % (cls.__name__, key))
+                raise TypeError(
+                    "%s() received an invalid keyword %r" % (cls.__name__, key)
+                )
 
         def view(request, *args, **kwargs):
             self = cls(**initkwargs)
@@ -99,7 +101,7 @@ class ViewSetMixin(object):
                 setattr(self, method, handler)
 
             # Patch this in as it's otherwise only present from 1.5 onwards
-            if hasattr(self, 'get') and not hasattr(self, 'head'):
+            if hasattr(self, "get") and not hasattr(self, "head"):
                 self.head = self.get
 
             # And continue as usual
@@ -116,7 +118,7 @@ class ViewSetMixin(object):
         # generation can pick out these bits of information from a
         # resolved URL.
         view.cls = cls
-        view.suffix = initkwargs.get('suffix', None)
+        view.suffix = initkwargs.get("suffix", None)
         return view
 
     def initialize_request(self, request, *args, **kargs):
@@ -128,7 +130,7 @@ class ViewSetMixin(object):
         self.action = self.action_map.get(request.method.lower())
         return request
 
-    def check_permissions(self, request, action:str=None, obj:object=None):
+    def check_permissions(self, request, action: str = None, obj: object = None):
         if action is None:
             action = self.action
         return super().check_permissions(request, action=action, obj=obj)
@@ -157,6 +159,7 @@ class ViewSet(ViewSetMixin, views.APIView):
     """
     The base ViewSet class does not provide any actions by default.
     """
+
     pass
 
 
@@ -166,6 +169,7 @@ class GenericViewSet(ViewSetMixin, generics.GenericAPIView):
     but does include the base set of generic view behavior, such as
     the `get_object` and `get_queryset` methods.
     """
+
     pass
 
 
@@ -173,28 +177,33 @@ class ReadOnlyListViewSet(GenericViewSet):
     """
     A viewset that provides default `list()` action.
     """
+
     pass
 
 
-class ReadOnlyModelViewSet(mixins.RetrieveModelMixin,
-                           mixins.ListModelMixin,
-                           GenericViewSet):
+class ReadOnlyModelViewSet(
+    mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet
+):
     """
     A viewset that provides default `list()` and `retrieve()` actions.
     """
+
     pass
 
 
-class ModelViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   mixins.ListModelMixin,
-                   GenericViewSet):
+class ModelViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
     """
     A viewset that provides default `create()`, `retrieve()`, `update()`,
     `partial_update()`, `destroy()` and `list()` actions.
     """
+
     pass
 
 
@@ -202,18 +211,17 @@ class ModelCrudViewSet(ModelViewSet):
     pass
 
 
-class ModelListViewSet(mixins.RetrieveModelMixin,
-                       mixins.ListModelMixin,
-                       GenericViewSet):
+class ModelListViewSet(
+    mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet
+):
     pass
 
 
-class ModelUpdateRetrieveViewSet(mixins.UpdateModelMixin,
-                                 mixins.RetrieveModelMixin,
-                                 GenericViewSet):
+class ModelUpdateRetrieveViewSet(
+    mixins.UpdateModelMixin, mixins.RetrieveModelMixin, GenericViewSet
+):
     pass
 
 
-class ModelRetrieveViewSet(mixins.RetrieveModelMixin,
-                                 GenericViewSet):
+class ModelRetrieveViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     pass

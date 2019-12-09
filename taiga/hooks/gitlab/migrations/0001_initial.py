@@ -28,9 +28,7 @@ def create_github_system_user(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('users', '0011_user_theme')
-    ]
+    dependencies = [("users", "0011_user_theme")]
 
     operations = [
         migrations.RunPython(create_github_system_user),

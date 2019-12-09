@@ -29,7 +29,7 @@ class UserProjectSettingsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.UserProjectSettings
-        fields = ('id', 'project', 'project_name', 'homepage', 'allowed_sections')
+        fields = ("id", "project", "project_name", "homepage", "allowed_sections")
 
     def get_project_name(self, obj):
         return obj.project.name

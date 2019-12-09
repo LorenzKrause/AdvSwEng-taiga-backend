@@ -31,9 +31,13 @@ class EpicsSitemap(Sitemap):
         epic_model = apps.get_model("epics", "Epic")
 
         # Get epics of public projects OR private projects if anon user can view them
-        queryset = epic_model.objects.filter(Q(project__is_private=False) |
-                                             Q(project__is_private=True,
-                                               project__anon_permissions__contains=["view_epics"]))
+        queryset = epic_model.objects.filter(
+            Q(project__is_private=False)
+            | Q(
+                project__is_private=True,
+                project__anon_permissions__contains=["view_epics"],
+            )
+        )
 
         queryset = queryset.exclude(description="")
         queryset = queryset.exclude(description__isnull=True)

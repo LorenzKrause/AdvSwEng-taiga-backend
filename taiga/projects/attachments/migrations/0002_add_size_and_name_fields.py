@@ -21,21 +21,23 @@ def parse_filenames_and_sizes(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('attachments', '0001_initial'),
+        ("attachments", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='attachment',
-            name='name',
-            field=models.CharField(default='', blank=True, max_length=500),
+            model_name="attachment",
+            name="name",
+            field=models.CharField(default="", blank=True, max_length=500),
             preserve_default=True,
         ),
         migrations.AddField(
-            model_name='attachment',
-            name='size',
-            field=models.IntegerField(editable=False, null=True, blank=True, default=None),
+            model_name="attachment",
+            name="size",
+            field=models.IntegerField(
+                editable=False, null=True, blank=True, default=None
+            ),
             preserve_default=True,
         ),
-        migrations.RunPython(parse_filenames_and_sizes)
+        migrations.RunPython(parse_filenames_and_sizes),
     ]

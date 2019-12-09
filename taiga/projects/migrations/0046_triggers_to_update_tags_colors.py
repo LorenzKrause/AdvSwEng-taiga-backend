@@ -8,10 +8,10 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0045_merge'),
-        ('userstories', '0011_userstory_tribe_gig'),
-        ('tasks', '0009_auto_20151104_1131'),
-        ('issues', '0006_remove_issue_watchers'),
+        ("projects", "0045_merge"),
+        ("userstories", "0011_userstory_tribe_gig"),
+        ("tasks", "0009_auto_20151104_1131"),
+        ("issues", "0006_remove_issue_watchers"),
     ]
 
     operations = [
@@ -140,7 +140,6 @@ class Migration(migrations.Migration):
             LANGUAGE plpgsql;
             """
         ),
-
         # Execute trigger after user_story update
         migrations.RunSQL(
             """

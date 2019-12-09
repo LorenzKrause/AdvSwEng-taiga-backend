@@ -18,10 +18,14 @@
 
 import re
 
-from taiga.hooks.event_hooks import BaseNewIssueEventHook, BaseIssueCommentEventHook, BasePushEventHook
+from taiga.hooks.event_hooks import (
+    BaseNewIssueEventHook,
+    BaseIssueCommentEventHook,
+    BasePushEventHook,
+)
 
 
-class BaseBitBucketEventHook():
+class BaseBitBucketEventHook:
     platform = "BitBucket"
     platform_slug = "bitbucket"
 
@@ -35,51 +39,91 @@ class BaseBitBucketEventHook():
 
 class IssuesEventHook(BaseBitBucketEventHook, BaseNewIssueEventHook):
     def get_data(self):
-        description = self.payload.get('issue', {}).get('content', {}).get('raw', '')
-        project_url = self.payload.get('repository', {}).get('links', {}).get('html', {}).get('href', None)
+        description = self.payload.get("issue", {}).get("content", {}).get("raw", "")
+        project_url = (
+            self.payload.get("repository", {})
+            .get("links", {})
+            .get("html", {})
+            .get("href", None)
+        )
         return {
-            "number": self.payload.get('issue', {}).get('id', None),
-            "subject": self.payload.get('issue', {}).get('title', None),
-            "url": self.payload.get('issue', {}).get('links', {}).get('html', {}).get('href', None),
-            "user_id": self.payload.get('actor', {}).get('uuid', None),
-            "user_name": self.payload.get('actor', {}).get('nickname', None),
-            "user_url": self.payload.get('actor', {}).get('links', {}).get('html', {}).get('href'),
+            "number": self.payload.get("issue", {}).get("id", None),
+            "subject": self.payload.get("issue", {}).get("title", None),
+            "url": self.payload.get("issue", {})
+            .get("links", {})
+            .get("html", {})
+            .get("href", None),
+            "user_id": self.payload.get("actor", {}).get("uuid", None),
+            "user_name": self.payload.get("actor", {}).get("nickname", None),
+            "user_url": self.payload.get("actor", {})
+            .get("links", {})
+            .get("html", {})
+            .get("href"),
             "description": self.replace_bitbucket_references(project_url, description),
         }
 
 
 class IssueCommentEventHook(BaseBitBucketEventHook, BaseIssueCommentEventHook):
     def get_data(self):
-        comment_message = self.payload.get('comment', {}).get('content', {}).get('raw', '')
-        project_url = self.payload.get('repository', {}).get('links', {}).get('html', {}).get('href', None)
-        issue_url = self.payload.get('issue', {}).get('links', {}).get('html', {}).get('href', None)
-        comment_id = self.payload.get('comment', {}).get('id', None)
+        comment_message = (
+            self.payload.get("comment", {}).get("content", {}).get("raw", "")
+        )
+        project_url = (
+            self.payload.get("repository", {})
+            .get("links", {})
+            .get("html", {})
+            .get("href", None)
+        )
+        issue_url = (
+            self.payload.get("issue", {})
+            .get("links", {})
+            .get("html", {})
+            .get("href", None)
+        )
+        comment_id = self.payload.get("comment", {}).get("id", None)
         comment_url = "{}#comment-{}".format(issue_url, comment_id)
         return {
-            "number": self.payload.get('issue', {}).get('id', None),
-            'url': issue_url,
-            'user_id': self.payload.get('actor', {}).get('uuid', None),
-            'user_name': self.payload.get('actor', {}).get('nickname', None),
-            'user_url': self.payload.get('actor', {}).get('links', {}).get('html', {}).get('href'),
-            'comment_url': comment_url,
-            'comment_message': self.replace_bitbucket_references(project_url, comment_message)
+            "number": self.payload.get("issue", {}).get("id", None),
+            "url": issue_url,
+            "user_id": self.payload.get("actor", {}).get("uuid", None),
+            "user_name": self.payload.get("actor", {}).get("nickname", None),
+            "user_url": self.payload.get("actor", {})
+            .get("links", {})
+            .get("html", {})
+            .get("href"),
+            "comment_url": comment_url,
+            "comment_message": self.replace_bitbucket_references(
+                project_url, comment_message
+            ),
         }
 
 
 class PushEventHook(BaseBitBucketEventHook, BasePushEventHook):
     def get_data(self):
         result = []
-        changes = self.payload.get("push", {}).get('changes', [])
+        changes = self.payload.get("push", {}).get("changes", [])
         for change in filter(None, changes):
             for commit in change.get("commits", []):
                 message = commit.get("message")
-                result.append({
-                    'user_id': commit.get('author', {}).get('user', {}).get('uuid', None),
-                    "user_name": commit.get('author', {}).get('user', {}).get('nickname', None),
-                    "user_url": commit.get('author', {}).get('user', {}).get('links', {}).get('html', {}).get('href'),
-                    "commit_id": commit.get("hash", None),
-                    "commit_url": commit.get("links", {}).get('html', {}).get('href'),
-                    "commit_message": message.strip(),
-                    "commit_short_message": message.split("\n")[0].strip(),
-                })
+                result.append(
+                    {
+                        "user_id": commit.get("author", {})
+                        .get("user", {})
+                        .get("uuid", None),
+                        "user_name": commit.get("author", {})
+                        .get("user", {})
+                        .get("nickname", None),
+                        "user_url": commit.get("author", {})
+                        .get("user", {})
+                        .get("links", {})
+                        .get("html", {})
+                        .get("href"),
+                        "commit_id": commit.get("hash", None),
+                        "commit_url": commit.get("links", {})
+                        .get("html", {})
+                        .get("href"),
+                        "commit_message": message.strip(),
+                        "commit_short_message": message.split("\n")[0].strip(),
+                    }
+                )
         return result

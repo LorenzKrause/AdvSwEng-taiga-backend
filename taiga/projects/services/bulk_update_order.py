@@ -24,7 +24,9 @@ from taiga.projects import models
 from contextlib import suppress
 
 
-def apply_order_updates(base_orders: dict, new_orders: dict, *, remove_equal_original=False):
+def apply_order_updates(
+    base_orders: dict, new_orders: dict, *, remove_equal_original=False
+):
     """
     `base_orders` must be a dict containing all the elements that can be affected by
     order modifications.
@@ -36,7 +38,7 @@ def apply_order_updates(base_orders: dict, new_orders: dict, *, remove_equal_ori
     The elements where no order update is needed will be removed.
     """
     updated_order_ids = set()
-    original_orders = {k:v for k,v in base_orders.items()}
+    original_orders = {k: v for k, v in base_orders.items()}
 
     # Remove the elements from new_orders non existint in base_orders
     invalid_keys = new_orders.keys() - base_orders.keys()
@@ -52,7 +54,9 @@ def apply_order_updates(base_orders: dict, new_orders: dict, *, remove_equal_ori
         for id, order in base_orders.items():
             # When moving forward only the elements contained in the range new_order - old_order
             # positions need to be updated
-            moving_backward = new_order <= old_order and order >= new_order and order < old_order
+            moving_backward = (
+                new_order <= old_order and order >= new_order and order < old_order
+            )
             # When moving backward all the elements from the new_order position need to bee updated
             moving_forward = new_order >= old_order and order >= new_order
             if moving_backward or moving_forward:
@@ -72,7 +76,11 @@ def apply_order_updates(base_orders: dict, new_orders: dict, *, remove_equal_ori
     # Remove the elements that remains the same
     if remove_equal_original:
         common_keys = base_orders.keys() & original_orders.keys()
-        [base_orders.pop(id, None) for id in common_keys if original_orders[id] == base_orders[id]]
+        [
+            base_orders.pop(id, None)
+            for id in common_keys
+            if original_orders[id] == base_orders[id]
+        ]
 
 
 def update_projects_order_in_bulk(bulk_data: list, field: str, user):
@@ -94,6 +102,7 @@ def update_projects_order_in_bulk(bulk_data: list, field: str, user):
     apply_order_updates(memberships_orders, new_memberships_orders)
 
     from taiga.base.utils import db
+
     db.update_attr_in_bulk_for_ids(memberships_orders, field, model=models.Membership)
 
 
@@ -108,8 +117,9 @@ def bulk_update_epic_status_order(project, user, data):
     """
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -125,8 +135,9 @@ def bulk_update_userstory_status_order(project, user, data):
     """
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -143,8 +154,9 @@ def bulk_update_points_order(project, user, data):
 
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -161,8 +173,9 @@ def bulk_update_task_status_order(project, user, data):
 
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -179,8 +192,9 @@ def bulk_update_issue_status_order(project, user, data):
 
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -197,8 +211,9 @@ def bulk_update_issue_type_order(project, user, data):
 
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -215,8 +230,9 @@ def bulk_update_priority_order(project, user, data):
 
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -233,7 +249,8 @@ def bulk_update_severity_order(project, user, data):
 
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()

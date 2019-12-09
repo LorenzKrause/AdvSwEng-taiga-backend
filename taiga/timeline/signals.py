@@ -25,36 +25,46 @@ from django.db import connection
 
 from taiga.projects.history import services as history_services
 from taiga.projects.history.choices import HistoryType
-from taiga.timeline.service import (push_to_timelines,
-                                    build_user_namespace,
-                                    build_project_namespace,
-                                    extract_user_info)
+from taiga.timeline.service import (
+    push_to_timelines,
+    build_user_namespace,
+    build_project_namespace,
+    extract_user_info,
+)
 
 
-def _push_to_timelines(project, user, obj, event_type, created_datetime, extra_data={}, refresh_totals=True):
+def _push_to_timelines(
+    project, user, obj, event_type, created_datetime, extra_data={}, refresh_totals=True
+):
     project_id = None if project is None else project.id
 
     ct = ContentType.objects.get_for_model(obj)
     if settings.CELERY_ENABLED:
-        connection.on_commit(lambda: push_to_timelines.delay(project_id,
-                                                             user.id,
-                                                             ct.app_label,
-                                                             ct.model,
-                                                             obj.id,
-                                                             event_type,
-                                                             created_datetime,
-                                                             extra_data=extra_data,
-                                                             refresh_totals=refresh_totals))
+        connection.on_commit(
+            lambda: push_to_timelines.delay(
+                project_id,
+                user.id,
+                ct.app_label,
+                ct.model,
+                obj.id,
+                event_type,
+                created_datetime,
+                extra_data=extra_data,
+                refresh_totals=refresh_totals,
+            )
+        )
     else:
-        push_to_timelines(project_id,
-                          user.id,
-                          ct.app_label,
-                          ct.model,
-                          obj.id,
-                          event_type,
-                          created_datetime,
-                          extra_data=extra_data,
-                          refresh_totals=refresh_totals)
+        push_to_timelines(
+            project_id,
+            user.id,
+            ct.app_label,
+            ct.model,
+            obj.id,
+            event_type,
+            created_datetime,
+            extra_data=extra_data,
+            refresh_totals=refresh_totals,
+        )
 
 
 def _clean_description_fields(values_diff):
@@ -105,11 +115,19 @@ def on_new_history_entry(sender, instance, created, **kwargs):
         extra_data["comment_deleted"] = True
 
     # Detect edited comment
-    if instance.comment_versions is not None and len(instance.comment_versions)>0:
+    if instance.comment_versions is not None and len(instance.comment_versions) > 0:
         extra_data["comment_edited"] = True
 
     created_datetime = instance.created_at
-    _push_to_timelines(project, user, obj, event_type, created_datetime, extra_data=extra_data, refresh_totals=refresh_totals)
+    _push_to_timelines(
+        project,
+        user,
+        obj,
+        event_type,
+        created_datetime,
+        extra_data=extra_data,
+        refresh_totals=refresh_totals,
+    )
 
 
 def create_membership_push_to_timeline(sender, instance, created, **kwargs):
@@ -124,17 +142,23 @@ def create_membership_push_to_timeline(sender, instance, created, **kwargs):
     # We shown in created project timeline entry
     if created and instance.user and instance.user != instance.project.owner:
         created_datetime = instance.created_at
-        _push_to_timelines(instance.project, instance.user, instance, "create", created_datetime)
+        _push_to_timelines(
+            instance.project, instance.user, instance, "create", created_datetime
+        )
 
 
 def delete_membership_push_to_timeline(sender, instance, **kwargs):
     if instance.user:
         created_datetime = timezone.now()
-        _push_to_timelines(instance.project, instance.user, instance, "delete", created_datetime)
+        _push_to_timelines(
+            instance.project, instance.user, instance, "delete", created_datetime
+        )
 
 
 def create_user_push_to_timeline(sender, instance, created, **kwargs):
     if created:
         project = None
         user = instance
-        _push_to_timelines(project, user, user, "create", created_datetime=user.date_joined)
+        _push_to_timelines(
+            project, user, user, "create", created_datetime=user.date_joined
+        )

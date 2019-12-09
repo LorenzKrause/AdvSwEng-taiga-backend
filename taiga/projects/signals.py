@@ -29,6 +29,7 @@ from taiga.projects.notifications.services import create_notify_policy_if_not_ex
 
 ## Membership
 
+
 def membership_post_delete(sender, instance, using, **kwargs):
     instance.project.update_role_points()
 
@@ -40,11 +41,11 @@ def membership_post_save(sender, instance, using, **kwargs):
 
     # Set project on top on user projects list
     membership = apps.get_model("projects", "Membership")
-    membership.objects.filter(user=instance.user) \
-        .update(user_order=F('user_order') + 1)
+    membership.objects.filter(user=instance.user).update(user_order=F("user_order") + 1)
 
-    membership.objects.filter(user=instance.user, project=instance.project)\
-        .update(user_order=0)
+    membership.objects.filter(user=instance.user, project=instance.project).update(
+        user_order=0
+    )
 
 
 ## Project attributes
@@ -81,13 +82,21 @@ def project_post_save(sender, instance, created, **kwargs):
 
     if owner_role:
         Membership = apps.get_model("projects", "Membership")
-        Membership.objects.create(user=instance.owner, project=instance, role=owner_role,
-                                  is_admin=True, email=instance.owner.email)
+        Membership.objects.create(
+            user=instance.owner,
+            project=instance,
+            role=owner_role,
+            is_admin=True,
+            email=instance.owner.email,
+        )
 
 
 ## US statuses
 
-def try_to_close_or_open_user_stories_when_edit_us_status(sender, instance, created, **kwargs):
+
+def try_to_close_or_open_user_stories_when_edit_us_status(
+    sender, instance, created, **kwargs
+):
     from taiga.projects.userstories import services
 
     for user_story in instance.user_stories.all():
@@ -99,7 +108,10 @@ def try_to_close_or_open_user_stories_when_edit_us_status(sender, instance, crea
 
 ## Task statuses
 
-def try_to_close_or_open_user_stories_when_edit_task_status(sender, instance, created, **kwargs):
+
+def try_to_close_or_open_user_stories_when_edit_task_status(
+    sender, instance, created, **kwargs
+):
     from taiga.projects.userstories import services
 
     UserStory = apps.get_model("userstories", "UserStory")

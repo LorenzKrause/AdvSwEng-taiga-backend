@@ -35,9 +35,11 @@ def get_current_session_id() -> str:
 
     global _local
     if not hasattr(_local, "session_id"):
-        raise RuntimeError("No session identifier is found, "
-                           "are you sure that session id middleware "
-                           "is active?")
+        raise RuntimeError(
+            "No session identifier is found, "
+            "are you sure that session id middleware "
+            "is active?"
+        )
     return _local.session_id
 
 

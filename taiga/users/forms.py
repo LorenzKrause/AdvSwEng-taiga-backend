@@ -33,14 +33,14 @@ class UserCreationForm(DjangoUserCreationForm):
             User._default_manager.get(username=username)
         except User.DoesNotExist:
             return username
-        raise forms.ValidationError(self.error_messages['duplicate_username'])
+        raise forms.ValidationError(self.error_messages["duplicate_username"])
 
     class Meta:
         model = User
-        fields = ('username',)
+        fields = ("username",)
 
 
 class UserChangeForm(DjangoUserChangeForm):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = "__all__"

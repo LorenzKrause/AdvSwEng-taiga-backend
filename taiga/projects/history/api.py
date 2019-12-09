@@ -64,15 +64,19 @@ class HistoryViewSet(ReadOnlyListViewSet):
         submitted_mentions = notifications_services.get_mentions(obj, new_comment)
         return list(set(submitted_mentions) - set(old_mentions))
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=["get"])
     def comment_versions(self, request, pk):
         obj = self.get_object()
-        history_entry_id = request.QUERY_PARAMS.get('id', None)
-        history_entry = services.get_history_queryset_by_model_instance(obj).filter(id=history_entry_id).first()
+        history_entry_id = request.QUERY_PARAMS.get("id", None)
+        history_entry = (
+            services.get_history_queryset_by_model_instance(obj)
+            .filter(id=history_entry_id)
+            .first()
+        )
         if history_entry is None:
             return response.NotFound()
 
-        self.check_permissions(request, 'comment_versions', history_entry)
+        self.check_permissions(request, "comment_versions", history_entry)
 
         if history_entry is None:
             return response.NotFound()
@@ -80,18 +84,22 @@ class HistoryViewSet(ReadOnlyListViewSet):
         history_entry.attach_user_info_to_comment_versions()
         return response.Ok(history_entry.comment_versions)
 
-    @detail_route(methods=['post'])
+    @detail_route(methods=["post"])
     def edit_comment(self, request, pk):
         obj = self.get_object()
-        history_entry_id = request.QUERY_PARAMS.get('id', None)
-        history_entry = services.get_history_queryset_by_model_instance(obj).filter(id=history_entry_id).first()
+        history_entry_id = request.QUERY_PARAMS.get("id", None)
+        history_entry = (
+            services.get_history_queryset_by_model_instance(obj)
+            .filter(id=history_entry_id)
+            .first()
+        )
         if history_entry is None:
             return response.NotFound()
 
         obj = services.get_instance_from_key(history_entry.key)
         comment = request.DATA.get("comment", None)
 
-        self.check_permissions(request, 'edit_comment', history_entry)
+        self.check_permissions(request, "edit_comment", history_entry)
 
         if history_entry is None:
             return response.NotFound()
@@ -104,14 +112,14 @@ class HistoryViewSet(ReadOnlyListViewSet):
 
         # comment_versions can be None if there are no historic versions of the comment
         comment_versions = history_entry.comment_versions or []
-        comment_versions.append({
-            "date": history_entry.created_at,
-            "comment": history_entry.comment,
-            "comment_html": history_entry.comment_html,
-            "user": {
-                "id": request.user.pk,
+        comment_versions.append(
+            {
+                "date": history_entry.created_at,
+                "comment": history_entry.comment,
+                "comment_html": history_entry.comment_html,
+                "user": {"id": request.user.pk,},
             }
-        })
+        )
 
         new_mentions = self._get_new_mentions(obj, history_entry.comment, comment)
 
@@ -122,22 +130,28 @@ class HistoryViewSet(ReadOnlyListViewSet):
         history_entry.save()
 
         if new_mentions:
-            signal_mentions.send(sender=self.__class__,
-                                 user=self.request.user,
-                                 obj=obj,
-                                 mentions=new_mentions)
+            signal_mentions.send(
+                sender=self.__class__,
+                user=self.request.user,
+                obj=obj,
+                mentions=new_mentions,
+            )
 
         return response.Ok()
 
-    @detail_route(methods=['post'])
+    @detail_route(methods=["post"])
     def delete_comment(self, request, pk):
         obj = self.get_object()
-        history_entry_id = request.QUERY_PARAMS.get('id', None)
-        history_entry = services.get_history_queryset_by_model_instance(obj).filter(id=history_entry_id).first()
+        history_entry_id = request.QUERY_PARAMS.get("id", None)
+        history_entry = (
+            services.get_history_queryset_by_model_instance(obj)
+            .filter(id=history_entry_id)
+            .first()
+        )
         if history_entry is None:
             return response.NotFound()
 
-        self.check_permissions(request, 'delete_comment', history_entry)
+        self.check_permissions(request, "delete_comment", history_entry)
 
         if history_entry is None:
             return response.NotFound()
@@ -146,24 +160,34 @@ class HistoryViewSet(ReadOnlyListViewSet):
             return response.BadRequest({"error": _("Comment already deleted")})
 
         history_entry.delete_comment_date = timezone.now()
-        history_entry.delete_comment_user = {"pk": request.user.pk, "name": request.user.get_full_name()}
+        history_entry.delete_comment_user = {
+            "pk": request.user.pk,
+            "name": request.user.get_full_name(),
+        }
         history_entry.save()
         return response.Ok()
 
-    @detail_route(methods=['post'])
+    @detail_route(methods=["post"])
     def undelete_comment(self, request, pk):
         obj = self.get_object()
-        history_entry_id = request.QUERY_PARAMS.get('id', None)
-        history_entry = services.get_history_queryset_by_model_instance(obj).filter(id=history_entry_id).first()
+        history_entry_id = request.QUERY_PARAMS.get("id", None)
+        history_entry = (
+            services.get_history_queryset_by_model_instance(obj)
+            .filter(id=history_entry_id)
+            .first()
+        )
         if history_entry is None:
             return response.NotFound()
 
-        self.check_permissions(request, 'undelete_comment', history_entry)
+        self.check_permissions(request, "undelete_comment", history_entry)
 
         if history_entry is None:
             return response.NotFound()
 
-        if not history_entry.delete_comment_date and not history_entry.delete_comment_user:
+        if (
+            not history_entry.delete_comment_date
+            and not history_entry.delete_comment_user
+        ):
             return response.BadRequest({"error": _("Comment not deleted")})
 
         history_entry.delete_comment_date = None
@@ -181,12 +205,14 @@ class HistoryViewSet(ReadOnlyListViewSet):
         self.check_permissions(request, "retrieve", obj)
         qs = services.get_history_queryset_by_model_instance(obj)
 
-        history_type = self.request.GET.get('type')
-        if history_type == 'activity':
-            qs = qs.filter(diff__isnull=False, comment__exact='').exclude(diff__exact='')
+        history_type = self.request.GET.get("type")
+        if history_type == "activity":
+            qs = qs.filter(diff__isnull=False, comment__exact="").exclude(
+                diff__exact=""
+            )
 
-        if history_type == 'comment':
-            qs = qs.exclude(comment__exact='')
+        if history_type == "comment":
+            qs = qs.exclude(comment__exact="")
 
         qs = qs.order_by("-created_at")
         qs = services.prefetch_owners_in_history_queryset(qs)

@@ -30,6 +30,7 @@ from django.utils.translation import ugettext as _
 # Base permissiones definition
 ######################################################################
 
+
 class ResourcePermission(object):
     """
     Base class for define resource permissions.
@@ -47,7 +48,7 @@ class ResourcePermission(object):
         self.request = request
         self.view = view
 
-    def check_permissions(self, action:str, obj:object=None):
+    def check_permissions(self, action: str, obj: object = None):
         permset = getattr(self, "{}_perms".format(action))
 
         if isinstance(permset, (list, tuple)):
@@ -65,14 +66,12 @@ class ResourcePermission(object):
             raise RuntimeError(_("Invalid permission definition."))
 
         if self.global_perms:
-            permset = (self.global_perms & permset)
+            permset = self.global_perms & permset
 
         if self.enought_perms:
-            permset = (self.enought_perms | permset)
+            permset = self.enought_perms | permset
 
-        return permset.check_permissions(request=self.request,
-                                         view=self.view,
-                                         obj=obj)
+        return permset.check_permissions(request=self.request, view=self.view, obj=obj)
 
 
 class PermissionComponent(object, metaclass=abc.ABCMeta):
@@ -112,7 +111,7 @@ class Not(PermissionOperator):
 
     def check_permissions(self, *args, **kwargs):
         component = self.components[0]
-        return (not component.check_permissions(*args, **kwargs))
+        return not component.check_permissions(*args, **kwargs)
 
 
 class Or(PermissionOperator):
@@ -151,6 +150,7 @@ class And(PermissionOperator):
 # Generic components.
 ######################################################################
 
+
 class AllowAny(PermissionComponent):
     def check_permissions(self, request, view, obj=None):
         return True
@@ -168,7 +168,11 @@ class IsAuthenticated(PermissionComponent):
 
 class IsSuperUser(PermissionComponent):
     def check_permissions(self, request, view, obj=None):
-        return request.user and request.user.is_authenticated() and request.user.is_superuser
+        return (
+            request.user
+            and request.user.is_authenticated()
+            and request.user.is_superuser
+        )
 
 
 class HasProjectPerm(PermissionComponent):
@@ -196,6 +200,7 @@ class IsObjectOwner(PermissionComponent):
 ######################################################################
 # Generic permissions.
 ######################################################################
+
 
 class AllowAnyPermission(ResourcePermission):
     enought_perms = AllowAny()

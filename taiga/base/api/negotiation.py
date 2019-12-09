@@ -101,8 +101,10 @@ class DefaultContentNegotiation(BaseContentNegotiation):
                 for media_type in media_type_set:
                     if media_type_matches(renderer.media_type, media_type):
                         # Return the most specific media type as accepted.
-                        if (_MediaType(renderer.media_type).precedence >
-                            _MediaType(media_type).precedence):
+                        if (
+                            _MediaType(renderer.media_type).precedence
+                            > _MediaType(media_type).precedence
+                        ):
                             # Eg client requests "*/*"
                             # Accepted media type is "application/json"
                             return renderer, renderer.media_type
@@ -118,8 +120,7 @@ class DefaultContentNegotiation(BaseContentNegotiation):
         If there is a ".json" style format suffix, filter the renderers
         so that we only negotiation against those that accept that format.
         """
-        renderers = [renderer for renderer in renderers
-                     if renderer.format == format]
+        renderers = [renderer for renderer in renderers if renderer.format == format]
         if not renderers:
             raise Http404
         return renderers

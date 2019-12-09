@@ -30,21 +30,42 @@ from taiga.projects.occ import OCCModelMixin
 
 
 class WikiPage(OCCModelMixin, WatchedModelMixin, models.Model):
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="wiki_pages", verbose_name=_("project"))
-    slug = models.SlugField(max_length=500, db_index=True, null=False, blank=False,
-                            verbose_name=_("slug"), allow_unicode=True)
-    content = models.TextField(null=False, blank=True,
-                               verbose_name=_("content"))
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
-                              related_name="owned_wiki_pages", verbose_name=_("owner"))
-    last_modifier = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
-                              related_name="last_modified_wiki_pages", verbose_name=_("last modifier"))
-    created_date = models.DateTimeField(null=False, blank=False,
-                                        verbose_name=_("created date"),
-                                        default=timezone.now)
-    modified_date = models.DateTimeField(null=False, blank=False,
-                                         verbose_name=_("modified date"))
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="wiki_pages",
+        verbose_name=_("project"),
+    )
+    slug = models.SlugField(
+        max_length=500,
+        db_index=True,
+        null=False,
+        blank=False,
+        verbose_name=_("slug"),
+        allow_unicode=True,
+    )
+    content = models.TextField(null=False, blank=True, verbose_name=_("content"))
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="owned_wiki_pages",
+        verbose_name=_("owner"),
+    )
+    last_modifier = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="last_modified_wiki_pages",
+        verbose_name=_("last modifier"),
+    )
+    created_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("created date"), default=timezone.now
+    )
+    modified_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("modified date")
+    )
     attachments = GenericRelation("attachments.Attachment")
     _importing = None
 
@@ -52,10 +73,11 @@ class WikiPage(OCCModelMixin, WatchedModelMixin, models.Model):
         verbose_name = "wiki page"
         verbose_name_plural = "wiki pages"
         ordering = ["project", "slug"]
-        unique_together = ("project", "slug",)
-        permissions = (
-            ("view_wikipage", "Can view wiki page"),
+        unique_together = (
+            "project",
+            "slug",
         )
+        permissions = (("view_wikipage", "Can view wiki page"),)
 
     def __str__(self):
         return "project {0} - {1}".format(self.project_id, self.slug)
@@ -68,13 +90,20 @@ class WikiPage(OCCModelMixin, WatchedModelMixin, models.Model):
 
 
 class WikiLink(models.Model):
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="wiki_links", verbose_name=_("project"))
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="wiki_links",
+        verbose_name=_("project"),
+    )
     title = models.CharField(max_length=500, null=False, blank=False)
-    href = models.SlugField(max_length=500, db_index=True, null=False, blank=False,
-                            verbose_name=_("href"))
-    order = models.BigIntegerField(null=False, blank=False, default=timestamp_ms,
-                                             verbose_name=_("order"))
+    href = models.SlugField(
+        max_length=500, db_index=True, null=False, blank=False, verbose_name=_("href")
+    )
+    order = models.BigIntegerField(
+        null=False, blank=False, default=timestamp_ms, verbose_name=_("order")
+    )
 
     class Meta:
         verbose_name = "wiki link"
@@ -89,7 +118,9 @@ class WikiLink(models.Model):
         if not self.href:
             with advisory_lock("wiki-page-creation-{}".format(self.project_id)):
                 wl_qs = self.project.wiki_links.all()
-                self.href = slugify_uniquely_for_queryset(self.title, wl_qs, slugfield="href")
+                self.href = slugify_uniquely_for_queryset(
+                    self.title, wl_qs, slugfield="href"
+                )
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)

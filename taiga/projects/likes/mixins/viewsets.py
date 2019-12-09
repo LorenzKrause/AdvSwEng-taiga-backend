@@ -32,6 +32,7 @@ class LikedResourceMixin:
     NOTE:the classes using this mixing must have a method:
     def pre_conditions_on_save(self, obj)
     """
+
     @detail_route(methods=["POST"])
     def like(self, request, pk=None):
         obj = self.get_object()
@@ -63,11 +64,11 @@ class FansViewSetMixin:
         resource_id = kwargs.get("resource_id", None)
         resource = get_object_or_404(self.resource_model, pk=resource_id)
 
-        self.check_permissions(request, 'retrieve', resource)
+        self.check_permissions(request, "retrieve", resource)
 
         try:
             self.object = services.get_fans(resource).get(pk=pk)
-        except ObjectDoesNotExist: # or User.DoesNotExist
+        except ObjectDoesNotExist:  # or User.DoesNotExist
             return response.NotFound()
 
         serializer = self.get_serializer(self.object)
@@ -77,7 +78,7 @@ class FansViewSetMixin:
         resource_id = kwargs.get("resource_id", None)
         resource = get_object_or_404(self.resource_model, pk=resource_id)
 
-        self.check_permissions(request, 'list', resource)
+        self.check_permissions(request, "list", resource)
 
         return super().list(request, *args, **kwargs)
 

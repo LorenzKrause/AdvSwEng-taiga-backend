@@ -29,12 +29,16 @@ from django.utils.translation import ugettext as _
 # Translators: Name of scrum project template.
 _("Scrum")
 # Translators: Description of scrum project template.
-_("The agile product backlog in Scrum is a prioritized features list, containing short descriptions of all functionality desired in the product. When applying Scrum, it's not necessary to start a project with a lengthy, upfront effort to document all requirements. The Scrum product backlog is then allowed to grow and change as more is learned about the product and its customers")
+_(
+    "The agile product backlog in Scrum is a prioritized features list, containing short descriptions of all functionality desired in the product. When applying Scrum, it's not necessary to start a project with a lengthy, upfront effort to document all requirements. The Scrum product backlog is then allowed to grow and change as more is learned about the product and its customers"
+)
 
 # Translators: Name of kanban project template.
 _("Kanban")
 # Translators: Description of kanban project template.
-_("Kanban is a method for managing knowledge work with an emphasis on just-in-time delivery while not overloading the team members. In this approach, the process, from definition of a task to its delivery to the customer, is displayed for participants to see and team members pull work from a queue.")
+_(
+    "Kanban is a method for managing knowledge work with an emphasis on just-in-time delivery while not overloading the team members. In this approach, the process, from definition of a task to its delivery to the customer, is displayed for participants to see and team members pull work from a queue."
+)
 
 
 ##########################

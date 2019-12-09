@@ -30,9 +30,9 @@ from taiga.base.api.reverse import reverse
 from taiga.base.api.urlpatterns import format_suffix_patterns
 
 
-Route = namedtuple('Route', ['url', 'mapping', 'name', 'initkwargs'])
-DynamicDetailRoute = namedtuple('DynamicDetailRoute', ['url', 'name', 'initkwargs'])
-DynamicListRoute = namedtuple('DynamicListRoute', ['url', 'name', 'initkwargs'])
+Route = namedtuple("Route", ["url", "mapping", "name", "initkwargs"])
+DynamicDetailRoute = namedtuple("DynamicDetailRoute", ["url", "name", "initkwargs"])
+DynamicListRoute = namedtuple("DynamicListRoute", ["url", "name", "initkwargs"])
 
 
 def replace_methodname(format_string, methodname):
@@ -40,10 +40,10 @@ def replace_methodname(format_string, methodname):
     Partially format a format_string, swapping out any
     '{methodname}' or '{methodnamehyphen}' components.
     """
-    methodnamehyphen = methodname.replace('_', '-')
+    methodnamehyphen = methodname.replace("_", "-")
     ret = format_string
-    ret = ret.replace('{methodname}', methodname)
-    ret = ret.replace('{methodnamehyphen}', methodnamehyphen)
+    ret = ret.replace("{methodname}", methodname)
+    ret = ret.replace("{methodnamehyphen}", methodnamehyphen)
     return ret
 
 
@@ -68,17 +68,17 @@ class BaseRouter(object):
         If `base_name` is not specified, attempt to automatically determine
         it from the viewset.
         """
-        raise NotImplemented('get_default_base_name must be overridden')
+        raise NotImplemented("get_default_base_name must be overridden")
 
     def get_urls(self):
         """
         Return a list of URL patterns, given the registered viewsets.
         """
-        raise NotImplemented('get_urls must be overridden')
+        raise NotImplemented("get_urls must be overridden")
 
     @property
     def urls(self):
-        if not hasattr(self, '_urls'):
+        if not hasattr(self, "_urls"):
             self._urls = self.get_urls()
         return self._urls
 
@@ -87,45 +87,42 @@ class SimpleRouter(BaseRouter):
     routes = [
         # List route.
         Route(
-            url=r'^{prefix}{trailing_slash}$',
-            mapping={
-                'get': 'list',
-                'post': 'create'
-            },
-            name='{basename}-list',
-            initkwargs={'suffix': 'List'}
+            url=r"^{prefix}{trailing_slash}$",
+            mapping={"get": "list", "post": "create"},
+            name="{basename}-list",
+            initkwargs={"suffix": "List"},
         ),
         # Dynamically generated list routes.
         # Generated using @list_route decorator
         # on methods of the viewset.
         DynamicListRoute(
-            url=r'^{prefix}/{methodname}{trailing_slash}$',
-            name='{basename}-{methodnamehyphen}',
-            initkwargs={}
+            url=r"^{prefix}/{methodname}{trailing_slash}$",
+            name="{basename}-{methodnamehyphen}",
+            initkwargs={},
         ),
         # Detail route.
         Route(
-            url=r'^{prefix}/{lookup}{trailing_slash}$',
+            url=r"^{prefix}/{lookup}{trailing_slash}$",
             mapping={
-                'get': 'retrieve',
-                'put': 'update',
-                'patch': 'partial_update',
-                'delete': 'destroy'
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
             },
-            name='{basename}-detail',
-            initkwargs={'suffix': 'Instance'}
+            name="{basename}-detail",
+            initkwargs={"suffix": "Instance"},
         ),
         # Dynamically generated detail routes.
         # Generated using @detail_route decorator on methods of the viewset.
         DynamicDetailRoute(
-            url=r'^{prefix}/{lookup}/{methodname}{trailing_slash}$',
-            name='{basename}-{methodnamehyphen}',
-            initkwargs={}
+            url=r"^{prefix}/{lookup}/{methodname}{trailing_slash}$",
+            name="{basename}-{methodnamehyphen}",
+            initkwargs={},
         ),
     ]
 
     def __init__(self, trailing_slash=True):
-        self.trailing_slash = trailing_slash and '/' or ''
+        self.trailing_slash = trailing_slash and "/" or ""
         super(SimpleRouter, self).__init__()
 
     def get_default_base_name(self, viewset):
@@ -133,14 +130,16 @@ class SimpleRouter(BaseRouter):
         If `base_name` is not specified, attempt to automatically determine
         it from the viewset.
         """
-        model_cls = getattr(viewset, 'model', None)
-        queryset = getattr(viewset, 'queryset', None)
+        model_cls = getattr(viewset, "model", None)
+        queryset = getattr(viewset, "queryset", None)
         if model_cls is None and queryset is not None:
             model_cls = queryset.model
 
-        assert model_cls, '`base_name` argument not specified, and could ' \
-            'not automatically determine the name from the viewset, as ' \
-            'it does not have a `.model` or `.queryset` attribute.'
+        assert model_cls, (
+            "`base_name` argument not specified, and could "
+            "not automatically determine the name from the viewset, as "
+            "it does not have a `.model` or `.queryset` attribute."
+        )
 
         return model_cls._meta.object_name.lower()
 
@@ -151,20 +150,28 @@ class SimpleRouter(BaseRouter):
         Returns a list of the Route namedtuple.
         """
 
-        known_actions = flatten([route.mapping.values() for route in self.routes if isinstance(route, Route)])
+        known_actions = flatten(
+            [
+                route.mapping.values()
+                for route in self.routes
+                if isinstance(route, Route)
+            ]
+        )
 
         # Determine any `@detail_route` or `@list_route` decorated methods on the viewset
         detail_routes = []
         list_routes = []
         for methodname in dir(viewset):
             attr = getattr(viewset, methodname)
-            httpmethods = getattr(attr, 'bind_to_methods', None)
-            detail = getattr(attr, 'detail', True)
+            httpmethods = getattr(attr, "bind_to_methods", None)
+            detail = getattr(attr, "detail", True)
             if httpmethods:
                 if methodname in known_actions:
-                    raise ImproperlyConfigured('Cannot use @detail_route or @list_route '
-                                               'decorators on method "%s" '
-                                               'as it is an existing route' % methodname)
+                    raise ImproperlyConfigured(
+                        "Cannot use @detail_route or @list_route "
+                        'decorators on method "%s" '
+                        "as it is an existing route" % methodname
+                    )
                 httpmethods = [method.lower() for method in httpmethods]
                 if detail:
                     detail_routes.append((httpmethods, methodname))
@@ -178,23 +185,31 @@ class SimpleRouter(BaseRouter):
                 for httpmethods, methodname in detail_routes:
                     initkwargs = route.initkwargs.copy()
                     initkwargs.update(getattr(viewset, methodname).kwargs)
-                    ret.append(Route(
-                        url=replace_methodname(route.url, methodname),
-                        mapping=dict((httpmethod, methodname) for httpmethod in httpmethods),
-                        name=replace_methodname(route.name, methodname),
-                        initkwargs=initkwargs,
-                    ))
+                    ret.append(
+                        Route(
+                            url=replace_methodname(route.url, methodname),
+                            mapping=dict(
+                                (httpmethod, methodname) for httpmethod in httpmethods
+                            ),
+                            name=replace_methodname(route.name, methodname),
+                            initkwargs=initkwargs,
+                        )
+                    )
             elif isinstance(route, DynamicListRoute):
                 # Dynamic list routes (@list_route decorator)
                 for httpmethods, methodname in list_routes:
                     initkwargs = route.initkwargs.copy()
                     initkwargs.update(getattr(viewset, methodname).kwargs)
-                    ret.append(Route(
-                        url=replace_methodname(route.url, methodname),
-                        mapping=dict((httpmethod, methodname) for httpmethod in httpmethods),
-                        name=replace_methodname(route.name, methodname),
-                        initkwargs=initkwargs,
-                    ))
+                    ret.append(
+                        Route(
+                            url=replace_methodname(route.url, methodname),
+                            mapping=dict(
+                                (httpmethod, methodname) for httpmethod in httpmethods
+                            ),
+                            name=replace_methodname(route.name, methodname),
+                            initkwargs=initkwargs,
+                        )
+                    )
             else:
                 # Standard route
                 ret.append(route)
@@ -213,7 +228,7 @@ class SimpleRouter(BaseRouter):
                 bound_methods[method] = action
         return bound_methods
 
-    def get_lookup_regex(self, viewset, lookup_prefix=''):
+    def get_lookup_regex(self, viewset, lookup_prefix=""):
         """
         Given a viewset, return the portion of URL regex that is used
         to match against a single instance.
@@ -224,15 +239,15 @@ class SimpleRouter(BaseRouter):
 
         https://github.com/alanjds/drf-nested-routers
         """
-        base_regex = '(?P<{lookup_prefix}{lookup_field}>{lookup_value})'
+        base_regex = "(?P<{lookup_prefix}{lookup_field}>{lookup_value})"
         # Use `pk` as default field, unset set.  Default regex should not
         # consume `.json` style suffixes and should break at '/' boundaries.
-        lookup_field = getattr(viewset, 'lookup_field', 'pk')
-        lookup_value = getattr(viewset, 'lookup_value_regex', '[^/.]+')
+        lookup_field = getattr(viewset, "lookup_field", "pk")
+        lookup_value = getattr(viewset, "lookup_value_regex", "[^/.]+")
         return base_regex.format(
             lookup_prefix=lookup_prefix,
             lookup_field=lookup_field,
-            lookup_value=lookup_value
+            lookup_value=lookup_value,
         )
 
     def get_urls(self):
@@ -254,9 +269,7 @@ class SimpleRouter(BaseRouter):
 
                 # Build the url pattern
                 regex = route.url.format(
-                    prefix=prefix,
-                    lookup=lookup,
-                    trailing_slash=self.trailing_slash
+                    prefix=prefix, lookup=lookup, trailing_slash=self.trailing_slash
                 )
                 view = viewset.as_view(mapping, **route.initkwargs)
                 name = route.name.format(basename=basename)
@@ -270,9 +283,10 @@ class DRFDefaultRouter(SimpleRouter):
     The default router extends the SimpleRouter, but also adds in a default
     API root view, and adds format suffix patterns to the URLs.
     """
+
     include_root_view = True
     include_format_suffixes = True
-    root_view_name = 'api-root'
+    root_view_name = "api-root"
 
     def get_api_root_view(self):
         """
@@ -306,7 +320,7 @@ class DRFDefaultRouter(SimpleRouter):
         urls = []
 
         if self.include_root_view:
-            root_url = url(r'^$', self.get_api_root_view(), name=self.root_view_name)
+            root_url = url(r"^$", self.get_api_root_view(), name=self.root_view_name)
             urls.append(root_url)
 
         default_urls = super(DRFDefaultRouter, self).get_urls()
@@ -326,20 +340,19 @@ class NestedRegistryItem(object):
 
     def register(self, prefix, viewset, base_name, parents_query_lookups):
         self.router._register(
-            prefix=self.get_prefix(current_prefix=prefix, parents_query_lookups=parents_query_lookups),
+            prefix=self.get_prefix(
+                current_prefix=prefix, parents_query_lookups=parents_query_lookups
+            ),
             viewset=viewset,
             base_name=base_name,
         )
         return NestedRegistryItem(
-            router=self.router,
-            parent_prefix=prefix,
-            parent_item=self
+            router=self.router, parent_prefix=prefix, parent_item=self
         )
 
     def get_prefix(self, current_prefix, parents_query_lookups):
         return "{0}/{1}".format(
-            self.get_parent_prefix(parents_query_lookups),
-            current_prefix
+            self.get_parent_prefix(parents_query_lookups), current_prefix
         )
 
     def get_parent_prefix(self, parents_query_lookups):
@@ -350,7 +363,7 @@ class NestedRegistryItem(object):
             prefix = "{parent_prefix}/(?P<{parent_pk_kwarg_name}>[^/.]+)/{prefix}".format(
                 parent_prefix=current_item.parent_prefix,
                 parent_pk_kwarg_name=parents_query_lookups[i],
-                prefix=prefix
+                prefix=prefix,
             )
             i -= 1
             current_item = current_item.parent_item
@@ -363,13 +376,11 @@ class NestedRouterMixin:
 
     def register(self, *args, **kwargs):
         self._register(*args, **kwargs)
-        return NestedRegistryItem(
-            router=self,
-            parent_prefix=self.registry[-1][0]
-        )
+        return NestedRegistryItem(router=self, parent_prefix=self.registry[-1][0])
 
 
 class DefaultRouter(NestedRouterMixin, DRFDefaultRouter):
     pass
+
 
 __all__ = ["DefaultRouter"]

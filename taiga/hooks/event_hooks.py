@@ -52,7 +52,9 @@ class BaseEventHook:
                 pass
 
         if user is None:
-            user = get_user_model().objects.get(is_system=True, username__startswith=platform)
+            user = get_user_model().objects.get(
+                is_system=True, username__startswith=platform
+            )
 
         return user
 
@@ -64,15 +66,19 @@ class BaseIssueCommentEventHook(BaseEventHook):
     def generate_issue_comment_message(self, **kwargs):
         _issue_comment_message = _(
             "[@{user_name}]({user_url} "
-            "\"See @{user_name}'s {platform} profile\") "
-            "says in [{platform}#{number}]({comment_url} \"Go to comment\"):\n\n"
-            "\"{comment_message}\""
+            '"See @{user_name}\'s {platform} profile") '
+            'says in [{platform}#{number}]({comment_url} "Go to comment"):\n\n'
+            '"{comment_message}"'
         )
-        _simple_issue_comment_message = _("Comment From {platform}:\n\n> {comment_message}")
+        _simple_issue_comment_message = _(
+            "Comment From {platform}:\n\n> {comment_message}"
+        )
         try:
             return _issue_comment_message.format(platform=self.platform, **kwargs)
         except Exception:
-            return _simple_issue_comment_message.format(platform=self.platform, message=kwargs.get('comment_message'))
+            return _simple_issue_comment_message.format(
+                platform=self.platform, message=kwargs.get("comment_message")
+            )
 
     def process_event(self):
         if self.ignore():
@@ -80,17 +86,27 @@ class BaseIssueCommentEventHook(BaseEventHook):
 
         data = self.get_data()
 
-        if not all([data['comment_message'], data['url']]):
+        if not all([data["comment_message"], data["url"]]):
             raise ActionSyntaxException(_("Invalid issue comment information"))
 
         comment = self.generate_issue_comment_message(**data)
 
-        issues = Issue.objects.filter(external_reference=[self.platform_slug, data['url']])
-        tasks = Task.objects.filter(external_reference=[self.platform_slug, data['url']])
-        uss = UserStory.objects.filter(external_reference=[self.platform_slug, data['url']])
+        issues = Issue.objects.filter(
+            external_reference=[self.platform_slug, data["url"]]
+        )
+        tasks = Task.objects.filter(
+            external_reference=[self.platform_slug, data["url"]]
+        )
+        uss = UserStory.objects.filter(
+            external_reference=[self.platform_slug, data["url"]]
+        )
 
         for item in list(issues) + list(tasks) + list(uss):
-            snapshot = take_snapshot(item, comment=comment, user=self.get_user(data['user_id'], self.platform_slug))
+            snapshot = take_snapshot(
+                item,
+                comment=comment,
+                user=self.get_user(data["user_id"], self.platform_slug),
+            )
             send_notifications(item, history=snapshot)
 
 
@@ -101,8 +117,8 @@ class BaseNewIssueEventHook(BaseEventHook):
     def generate_new_issue_comment(self, **kwargs):
         _new_issue_message = _(
             "Issue created by [@{user_name}]({user_url} "
-            "\"See @{user_name}'s {platform} profile\") "
-            "from [{platform}#{number}]({url} \"Go to issue\")."
+            '"See @{user_name}\'s {platform} profile") '
+            'from [{platform}#{number}]({url} "Go to issue").'
         )
         _simple_new_issue_message = _("Issue created from {platform}.")
         try:
@@ -116,21 +132,21 @@ class BaseNewIssueEventHook(BaseEventHook):
 
         data = self.get_data()
 
-        if not all([data['subject'], data['url']]):
+        if not all([data["subject"], data["url"]]):
             raise ActionSyntaxException(_("Invalid issue information"))
 
-        user = self.get_user(data['user_id'], self.platform_slug)
+        user = self.get_user(data["user_id"], self.platform_slug)
 
         issue = Issue.objects.create(
             project=self.project,
-            subject=data['subject'],
-            description=data['description'],
+            subject=data["subject"],
+            description=data["description"],
             status=self.project.default_issue_status,
             type=self.project.default_issue_type,
             severity=self.project.default_severity,
             priority=self.project.default_priority,
-            external_reference=[self.platform_slug, data['url']],
-            owner=user
+            external_reference=[self.platform_slug, data["url"]],
+            owner=user,
         )
         take_snapshot(issue, user=user)
 
@@ -145,12 +161,11 @@ class BasePushEventHook(BaseEventHook):
         raise NotImplementedError
 
     def generate_status_change_comment(self, **kwargs):
-        if kwargs.get('user_url', None) is None:
-            user_text = kwargs.get('user_name', _('unknown user'))
+        if kwargs.get("user_url", None) is None:
+            user_text = kwargs.get("user_name", _("unknown user"))
         else:
-            user_text = "[@{user_name}]({user_url} \"See @{user_name}'s {platform} profile\")".format(
-                platform=self.platform,
-                **kwargs
+            user_text = '[@{user_name}]({user_url} "See @{user_name}\'s {platform} profile")'.format(
+                platform=self.platform, **kwargs
             )
         _status_change_message = _(
             "{user_text} changed the status from "
@@ -162,30 +177,33 @@ class BasePushEventHook(BaseEventHook):
             " - Status: **{src_status}** → **{dst_status}**"
         )
         try:
-            return _status_change_message.format(platform=self.platform, user_text=user_text, **kwargs)
+            return _status_change_message.format(
+                platform=self.platform, user_text=user_text, **kwargs
+            )
         except Exception:
             return _simple_status_change_message.format(platform=self.platform)
 
     def generate_commit_reference_comment(self, **kwargs):
-        if kwargs.get('user_url', None) is None:
-            user_text = kwargs.get('user_name', _('unknown user'))
+        if kwargs.get("user_url", None) is None:
+            user_text = kwargs.get("user_name", _("unknown user"))
         else:
-            user_text = "[@{user_name}]({user_url} \"See @{user_name}'s {platform} profile\")".format(
-                platform=self.platform,
-                **kwargs
+            user_text = '[@{user_name}]({user_url} "See @{user_name}\'s {platform} profile")'.format(
+                platform=self.platform, **kwargs
             )
 
         _status_change_message = _(
             "This {type_name} has been mentioned by {user_text} "
             "in the [{platform} commit]({commit_url} \"See commit '{commit_id} - {commit_short_message}'\") "
-            "\"{commit_message}\""
+            '"{commit_message}"'
         )
         _simple_status_change_message = _(
             "This issue has been mentioned in the {platform} commit "
-            "\"{commit_message}\""
+            '"{commit_message}"'
         )
         try:
-            return _status_change_message.format(platform=self.platform, user_text=user_text, **kwargs)
+            return _status_change_message.format(
+                platform=self.platform, user_text=user_text, **kwargs
+            )
         except Exception:
             return _simple_status_change_message.format(platform=self.platform)
 
@@ -238,29 +256,39 @@ class BasePushEventHook(BaseEventHook):
 
             # Status changes
             p = re.compile("tg-(\d+) +#([-\w]+)")
-            for m in p.finditer(commit['commit_message'].lower()):
+            for m in p.finditer(commit["commit_message"].lower()):
                 ref = m.group(1)
                 status_slug = m.group(2)
-                (element, src_status, dst_status) = self.set_item_status(ref, status_slug)
+                (element, src_status, dst_status) = self.set_item_status(
+                    ref, status_slug
+                )
 
-                comment = self.generate_status_change_comment(src_status=src_status, dst_status=dst_status, **commit)
-                snapshot = take_snapshot(element,
-                                         comment=comment,
-                                         user=self.get_user(commit['user_id'], self.platform_slug))
+                comment = self.generate_status_change_comment(
+                    src_status=src_status, dst_status=dst_status, **commit
+                )
+                snapshot = take_snapshot(
+                    element,
+                    comment=comment,
+                    user=self.get_user(commit["user_id"], self.platform_slug),
+                )
                 send_notifications(element, history=snapshot)
                 consumed_refs.append(ref)
 
             # Reference on commit
             p = re.compile("tg-(\d+)")
-            for m in p.finditer(commit['commit_message'].lower()):
+            for m in p.finditer(commit["commit_message"].lower()):
                 ref = m.group(1)
                 if ref in consumed_refs:
                     continue
                 element = self.get_item_by_ref(ref)
                 type_name = element.__class__._meta.verbose_name
-                comment = self.generate_commit_reference_comment(type_name=type_name, **commit)
-                snapshot = take_snapshot(element,
-                                         comment=comment,
-                                         user=self.get_user(commit['user_id'], self.platform_slug))
+                comment = self.generate_commit_reference_comment(
+                    type_name=type_name, **commit
+                )
+                snapshot = take_snapshot(
+                    element,
+                    comment=comment,
+                    user=self.get_user(commit["user_id"], self.platform_slug),
+                )
                 send_notifications(element, history=snapshot)
                 consumed_refs.append(ref)

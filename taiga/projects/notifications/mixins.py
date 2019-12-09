@@ -29,13 +29,13 @@ from taiga.base.api.utils import get_object_or_404
 from taiga.base.fields import WatchersField, MethodField
 from taiga.projects.notifications import services
 
-from . apps import signal_assigned_to
-from . apps import signal_assigned_users
-from . apps import signal_comment
-from . apps import signal_comment_mentions
-from . apps import signal_mentions
-from . apps import signal_watchers_added
-from . serializers import WatcherSerializer
+from .apps import signal_assigned_to
+from .apps import signal_assigned_users
+from .apps import signal_comment
+from .apps import signal_comment_mentions
+from .apps import signal_mentions
+from .apps import signal_watchers_added
+from .serializers import WatcherSerializer
 
 
 class WatchedResourceMixin:
@@ -94,25 +94,22 @@ class WatchedResourceMixin:
         # some text fields for extract mentions and add them
         # to watchers before obtain a complete list of
         # notifiable users.
-        services.analize_object_for_watchers(obj, history.comment,
-                                             history.owner)
+        services.analize_object_for_watchers(obj, history.comment, history.owner)
 
         # Get a complete list of notifiable users for current
         # object and send the change notification to them.
         services.send_notifications(obj, history=history)
 
     def update(self, request, *args, **kwargs):
-        if not getattr(self, 'object', None):
+        if not getattr(self, "object", None):
             self.object = self.get_object_or_none()
 
         obj = self.object
         if obj and obj.id:
             if hasattr(obj, "watchers"):
-                self._old_watchers = [
-                    watcher.id for watcher in obj.get_watchers()
-                ]
+                self._old_watchers = [watcher.id for watcher in obj.get_watchers()]
 
-            mention_fields = ['description', 'content']
+            mention_fields = ["description", "content"]
             for field_name in mention_fields:
                 old_mentions = self._get_old_mentions_in_field(obj, field_name)
                 if not len(old_mentions):
@@ -136,31 +133,35 @@ class WatchedResourceMixin:
         self.send_notifications(obj)
         super().pre_delete(obj)
 
-    def create_web_notifications_for_comment(self, obj, exclude: list=None):
+    def create_web_notifications_for_comment(self, obj, exclude: list = None):
         if "comment" in self.request.DATA:
             watchers = [
-                watcher_id for watcher_id in obj.watchers
-                if watcher_id not in exclude
+                watcher_id for watcher_id in obj.watchers if watcher_id not in exclude
             ]
 
-            signal_comment.send(sender=self.__class__,
-                                user=self.request.user,
-                                obj=obj,
-                                watchers=watchers)
+            signal_comment.send(
+                sender=self.__class__,
+                user=self.request.user,
+                obj=obj,
+                watchers=watchers,
+            )
 
     def create_web_notifications_for_added_watchers(self, obj):
         if not hasattr(obj, "watchers"):
             return
 
         new_watchers = [
-            watcher_id for watcher_id in obj.watchers
+            watcher_id
+            for watcher_id in obj.watchers
             if watcher_id not in self._old_watchers
             and watcher_id != self.request.user.id
         ]
-        signal_watchers_added.send(sender=self.__class__,
-                                   user=self.request.user,
-                                   obj=obj,
-                                   new_watchers=new_watchers)
+        signal_watchers_added.send(
+            sender=self.__class__,
+            user=self.request.user,
+            obj=obj,
+            new_watchers=new_watchers,
+        )
 
     def create_web_notifications_for_mentioned_users(self, obj):
         """
@@ -169,10 +170,12 @@ class WatchedResourceMixin:
         submitted_mentions = self._get_submitted_mentions(obj)
         new_mentions = list(set(submitted_mentions) - set(self._old_mentions))
         if new_mentions:
-            signal_mentions.send(sender=self.__class__,
-                                 user=self.request.user,
-                                 obj=obj,
-                                 mentions=new_mentions)
+            signal_mentions.send(
+                sender=self.__class__,
+                user=self.request.user,
+                obj=obj,
+                mentions=new_mentions,
+            )
 
     def create_web_notifications_for_mentions_in_comments(self, obj):
         """
@@ -180,15 +183,17 @@ class WatchedResourceMixin:
         """
         new_mentions_in_comment = self._get_mentions_in_comment(obj)
         if new_mentions_in_comment:
-            signal_comment_mentions.send(sender=self.__class__,
-                                         user=self.request.user,
-                                         obj=obj,
-                                         mentions=new_mentions_in_comment)
+            signal_comment_mentions.send(
+                sender=self.__class__,
+                user=self.request.user,
+                obj=obj,
+                mentions=new_mentions_in_comment,
+            )
 
         return [user.id for user in new_mentions_in_comment]
 
     def _get_submitted_mentions(self, obj):
-        mention_fields = ['description', 'content']
+        mention_fields = ["description", "content"]
         for field_name in mention_fields:
             new_mentions = self._get_new_mentions_in_field(obj, field_name)
             if len(new_mentions) > 0:
@@ -197,7 +202,7 @@ class WatchedResourceMixin:
         return []
 
     def _get_mentions_in_comment(self, obj):
-        comment = self.request.DATA.get('comment')
+        comment = self.request.DATA.get("comment")
         if comment:
             return services.get_mentions(obj, comment)
         return []
@@ -280,8 +285,10 @@ class WatchedModelMixin(object):
         of participans. It is mainly the owner and
         assigned user.
         """
-        participants = (self.get_assigned_to(),
-                        self.get_owner(),)
+        participants = (
+            self.get_assigned_to(),
+            self.get_owner(),
+        )
         is_not_none = partial(is_not, None)
         return frozenset(filter(is_not_none, participants))
 
@@ -312,7 +319,9 @@ class EditableWatchedResourceSerializer(serializers.ModelSerializer):
         self.fields.pop("watchers", None)
         self.validate_watchers(attrs, "watchers")
         new_watcher_ids = attrs.pop("watchers", None)
-        obj = super(EditableWatchedResourceSerializer, self).restore_object(attrs, instance)
+        obj = super(EditableWatchedResourceSerializer, self).restore_object(
+            attrs, instance
+        )
 
         # A partial update can exclude the watchers field or if the new instance can still not be saved
         if instance is None or new_watcher_ids is None:
@@ -367,7 +376,7 @@ class WatchersViewSetMixin:
         resource_id = kwargs.get("resource_id", None)
         resource = get_object_or_404(self.resource_model, pk=resource_id)
 
-        self.check_permissions(request, 'retrieve', resource)
+        self.check_permissions(request, "retrieve", resource)
 
         try:
             self.object = resource.get_watchers().get(pk=pk)
@@ -381,7 +390,7 @@ class WatchersViewSetMixin:
         resource_id = kwargs.get("resource_id", None)
         resource = get_object_or_404(self.resource_model, pk=resource_id)
 
-        self.check_permissions(request, 'list', resource)
+        self.check_permissions(request, "list", resource)
 
         return super().list(request, *args, **kwargs)
 
@@ -399,11 +408,14 @@ class AssignedToSignalMixin:
         super().pre_save(obj)
 
     def post_save(self, obj, created=False):
-        if obj.assigned_to and obj.assigned_to != self._old_assigned_to \
-                and self.request.user != obj.assigned_to:
-            signal_assigned_to.send(sender=self.__class__,
-                                    user=self.request.user,
-                                    obj=obj)
+        if (
+            obj.assigned_to
+            and obj.assigned_to != self._old_assigned_to
+            and self.request.user != obj.assigned_to
+        ):
+            signal_assigned_to.send(
+                sender=self.__class__, user=self.request.user, obj=obj
+            )
         super().post_save(obj, created)
 
 
@@ -422,15 +434,18 @@ class AssignedUsersSignalMixin:
 
         result = super().update(request, *args, **kwargs)
 
-        if result and result.data.get('assigned_users'):
+        if result and result.data.get("assigned_users"):
             new_assigned_users = [
-                user_id for user_id in result.data.get('assigned_users')
+                user_id
+                for user_id in result.data.get("assigned_users")
                 if user_id not in self._old_assigned_users
                 and user_id != self.request.user
             ]
-            signal_assigned_users.send(sender=self.__class__,
-                                       user=self.request.user,
-                                       obj=obj,
-                                       new_assigned_users=new_assigned_users)
+            signal_assigned_users.send(
+                sender=self.__class__,
+                user=self.request.user,
+                obj=obj,
+                new_assigned_users=new_assigned_users,
+            )
 
         return result

@@ -28,6 +28,7 @@ def get_gravatar_id(email: str) -> str:
 
     return hashlib.md5(email.lower().encode()).hexdigest()
 
+
 def get_user_gravatar_id(user: object) -> str:
     """Get the gravatar id associated to a user.
 

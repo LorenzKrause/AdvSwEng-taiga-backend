@@ -25,43 +25,45 @@ UPDATE_PROJECTS_PUBLIC_PERMISSIONS_SQL = """
         NOT '{comment_permission}' = ANY(PUBLIC_PERMISSIONS)
 """
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0041_auto_20160519_1058'),
+        ("projects", "0041_auto_20160519_1058"),
     ]
 
     operations = [
         # user stories
-        migrations.RunSQL(UPDATE_PROJECTS_ANON_PERMISSIONS_SQL.format(
-            base_permission="modify_us",
-            comment_permission="comment_us")
+        migrations.RunSQL(
+            UPDATE_PROJECTS_ANON_PERMISSIONS_SQL.format(
+                base_permission="modify_us", comment_permission="comment_us"
+            )
         ),
-
-        migrations.RunSQL(UPDATE_PROJECTS_PUBLIC_PERMISSIONS_SQL.format(
-            base_permission="modify_us",
-            comment_permission="comment_us")
+        migrations.RunSQL(
+            UPDATE_PROJECTS_PUBLIC_PERMISSIONS_SQL.format(
+                base_permission="modify_us", comment_permission="comment_us"
+            )
         ),
-
         # tasks
-        migrations.RunSQL(UPDATE_PROJECTS_ANON_PERMISSIONS_SQL.format(
-            base_permission="modify_task",
-            comment_permission="comment_task")
+        migrations.RunSQL(
+            UPDATE_PROJECTS_ANON_PERMISSIONS_SQL.format(
+                base_permission="modify_task", comment_permission="comment_task"
+            )
         ),
-
-        migrations.RunSQL(UPDATE_PROJECTS_PUBLIC_PERMISSIONS_SQL.format(
-            base_permission="modify_task",
-            comment_permission="comment_task")
+        migrations.RunSQL(
+            UPDATE_PROJECTS_PUBLIC_PERMISSIONS_SQL.format(
+                base_permission="modify_task", comment_permission="comment_task"
+            )
         ),
-
         # issues
-        migrations.RunSQL(UPDATE_PROJECTS_ANON_PERMISSIONS_SQL.format(
-            base_permission="modify_issue",
-            comment_permission="comment_issue")
+        migrations.RunSQL(
+            UPDATE_PROJECTS_ANON_PERMISSIONS_SQL.format(
+                base_permission="modify_issue", comment_permission="comment_issue"
+            )
         ),
-
-        migrations.RunSQL(UPDATE_PROJECTS_PUBLIC_PERMISSIONS_SQL.format(
-            base_permission="modify_issue",
-            comment_permission="comment_issue")
-        )
+        migrations.RunSQL(
+            UPDATE_PROJECTS_PUBLIC_PERMISSIONS_SQL.format(
+                base_permission="modify_issue", comment_permission="comment_issue"
+            )
+        ),
     ]

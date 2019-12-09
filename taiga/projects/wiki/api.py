@@ -45,8 +45,13 @@ from . import validators
 from . import utils as wiki_utils
 
 
-class WikiViewSet(OCCResourceMixin, HistoryResourceMixin, WatchedResourceMixin,
-                  BlockedByProjectMixin, ModelCrudViewSet):
+class WikiViewSet(
+    OCCResourceMixin,
+    HistoryResourceMixin,
+    WatchedResourceMixin,
+    BlockedByProjectMixin,
+    ModelCrudViewSet,
+):
 
     model = models.WikiPage
     serializer_class = serializers.WikiPageSerializer
@@ -77,7 +82,9 @@ class WikiViewSet(OCCResourceMixin, HistoryResourceMixin, WatchedResourceMixin,
             raise exc.WrongArguments({"content": _("'content' parameter is mandatory")})
 
         if not project_id:
-            raise exc.WrongArguments({"project_id": _("'project_id' parameter is mandatory")})
+            raise exc.WrongArguments(
+                {"project_id": _("'project_id' parameter is mandatory")}
+            )
 
         project = get_object_or_404(Project, pk=project_id)
 
@@ -123,7 +130,11 @@ class WikiLinkViewSet(BlockedByProjectMixin, ModelCrudViewSet):
             wiki_page, created = models.WikiPage.objects.get_or_create(
                 slug=wiki_link.href,
                 project=wiki_link.project,
-                defaults={"owner": self.request.user, "last_modifier": self.request.user})
+                defaults={
+                    "owner": self.request.user,
+                    "last_modifier": self.request.user,
+                },
+            )
 
             if created:
                 # Creaste the new history entre, sSet watcher for the new wiki page

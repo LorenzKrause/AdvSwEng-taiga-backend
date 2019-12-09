@@ -30,10 +30,11 @@ from . import serializers
 
 from concurrent import futures
 
+
 class SearchViewSet(viewsets.ViewSet):
     def list(self, request, **kwargs):
-        text = request.QUERY_PARAMS.get('text', "")
-        project_id = request.QUERY_PARAMS.get('project', None)
+        text = request.QUERY_PARAMS.get("text", "")
+        project_id = request.QUERY_PARAMS.get("project", None)
 
         project = self._get_project(project_id)
 
@@ -57,7 +58,9 @@ class SearchViewSet(viewsets.ViewSet):
                 issues_future.result_key = "issues"
                 futures_list.append(issues_future)
             if user_has_perm(request.user, "view_wiki_pages", project):
-                wiki_pages_future = executor.submit(self._search_wiki_pages, project, text)
+                wiki_pages_future = executor.submit(
+                    self._search_wiki_pages, project, text
+                )
                 wiki_pages_future.result_key = "wikipages"
                 futures_list.append(wiki_pages_future)
 
@@ -66,7 +69,7 @@ class SearchViewSet(viewsets.ViewSet):
                 try:
                     data = future.result()
                 except Exception as exc:
-                    print('%s generated an exception: %s' % (future.result_key, exc))
+                    print("%s generated an exception: %s" % (future.result_key, exc))
                 finally:
                     result[future.result_key] = data
 

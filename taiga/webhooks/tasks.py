@@ -28,10 +28,17 @@ from taiga.base.utils import json, urls
 from taiga.base.utils.db import get_typename_for_model_instance
 from taiga.celery import app
 
-from .serializers import (EpicSerializer, EpicRelatedUserStorySerializer,
-                          UserStorySerializer, IssueSerializer, TaskSerializer,
-                          WikiPageSerializer, MilestoneSerializer,
-                          HistoryEntrySerializer, UserSerializer)
+from .serializers import (
+    EpicSerializer,
+    EpicRelatedUserStorySerializer,
+    UserStorySerializer,
+    IssueSerializer,
+    TaskSerializer,
+    WikiPageSerializer,
+    MilestoneSerializer,
+    HistoryEntrySerializer,
+    UserSerializer,
+)
 
 from .models import WebhookLog
 
@@ -69,9 +76,11 @@ def _generate_signature(data, key):
 def _remove_leftover_webhooklogs(webhook_id):
     # Only the last ten webhook logs traces are required
     # so remove the leftover
-    ids = (WebhookLog.objects.filter(webhook_id=webhook_id)
-               .order_by("-id")
-               .values_list('id', flat=True)[10:])
+    ids = (
+        WebhookLog.objects.filter(webhook_id=webhook_id)
+        .order_by("-id")
+        .values_list("id", flat=True)[10:]
+    )
     WebhookLog.objects.filter(id__in=ids).delete()
 
 
@@ -79,9 +88,9 @@ def _send_request(webhook_id, url, key, data):
     serialized_data = UnicodeJSONRenderer().render(data)
     signature = _generate_signature(serialized_data, key)
     headers = {
-        "X-TAIGA-WEBHOOK-SIGNATURE": signature,        # For backward compatibility
+        "X-TAIGA-WEBHOOK-SIGNATURE": signature,  # For backward compatibility
         "X-Hub-Signature": "sha1={}".format(signature),
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     if settings.WEBHOOKS_BLOCK_PRIVATE_ADDRESS:
@@ -89,19 +98,21 @@ def _send_request(webhook_id, url, key, data):
             urls.validate_private_url(url)
         except (urls.IpAddresValueError, urls.HostnameException) as e:
             # Error validating url
-            webhook_log = WebhookLog.objects.create(webhook_id=webhook_id, url=url,
-                                                    status=0,
-                                                    request_data=data,
-                                                    request_headers=dict(),
-                                                    response_data="error-in-request: {}".format(
-                                                        str(e)),
-                                                    response_headers={},
-                                                    duration=0)
+            webhook_log = WebhookLog.objects.create(
+                webhook_id=webhook_id,
+                url=url,
+                status=0,
+                request_data=data,
+                request_headers=dict(),
+                response_data="error-in-request: {}".format(str(e)),
+                response_headers={},
+                duration=0,
+            )
             _remove_leftover_webhooklogs(webhook_id)
 
             return webhook_log
 
-    request = requests.Request('POST', url, data=serialized_data, headers=headers)
+    request = requests.Request("POST", url, data=serialized_data, headers=headers)
     prepared_request = request.prepare()
 
     with requests.Session() as session:
@@ -109,24 +120,31 @@ def _send_request(webhook_id, url, key, data):
             response = session.send(prepared_request)
         except RequestException as e:
             # Error sending the webhook
-            webhook_log = WebhookLog.objects.create(webhook_id=webhook_id, url=url, status=0,
-                                                    request_data=data,
-                                                    request_headers=dict(prepared_request.headers),
-                                                    response_data="error-in-request: {}".format(str(e)),
-                                                    response_headers={},
-                                                    duration=0)
+            webhook_log = WebhookLog.objects.create(
+                webhook_id=webhook_id,
+                url=url,
+                status=0,
+                request_data=data,
+                request_headers=dict(prepared_request.headers),
+                response_data="error-in-request: {}".format(str(e)),
+                response_headers={},
+                duration=0,
+            )
         else:
             # Webhook was sent successfully
 
             # response.content can be a not valid json so we encapsulate it
             response_data = json.dumps({"content": response.text})
-            webhook_log = WebhookLog.objects.create(webhook_id=webhook_id, url=url,
-                                                    status=response.status_code,
-                                                    request_data=data,
-                                                    request_headers=dict(prepared_request.headers),
-                                                    response_data=response_data,
-                                                    response_headers=dict(response.headers),
-                                                    duration=response.elapsed.total_seconds())
+            webhook_log = WebhookLog.objects.create(
+                webhook_id=webhook_id,
+                url=url,
+                status=response.status_code,
+                request_data=data,
+                request_headers=dict(prepared_request.headers),
+                response_data=response_data,
+                response_headers=dict(response.headers),
+                duration=response.elapsed.total_seconds(),
+            )
         finally:
             _remove_leftover_webhooklogs(webhook_id)
 
@@ -136,11 +154,11 @@ def _send_request(webhook_id, url, key, data):
 @app.task
 def create_webhook(webhook_id, url, key, by, date, obj):
     data = {}
-    data['action'] = "create"
-    data['type'] = _get_type(obj)
-    data['by'] = UserSerializer(by).data
-    data['date'] = date
-    data['data'] = _serialize(obj)
+    data["action"] = "create"
+    data["type"] = _get_type(obj)
+    data["by"] = UserSerializer(by).data
+    data["date"] = date
+    data["data"] = _serialize(obj)
 
     return _send_request(webhook_id, url, key, data)
 
@@ -148,11 +166,11 @@ def create_webhook(webhook_id, url, key, by, date, obj):
 @app.task
 def delete_webhook(webhook_id, url, key, by, date, obj):
     data = {}
-    data['action'] = "delete"
-    data['type'] = _get_type(obj)
-    data['by'] = UserSerializer(by).data
-    data['date'] = date
-    data['data'] = _serialize(obj)
+    data["action"] = "delete"
+    data["type"] = _get_type(obj)
+    data["by"] = UserSerializer(by).data
+    data["date"] = date
+    data["data"] = _serialize(obj)
 
     return _send_request(webhook_id, url, key, data)
 
@@ -160,12 +178,12 @@ def delete_webhook(webhook_id, url, key, by, date, obj):
 @app.task
 def change_webhook(webhook_id, url, key, by, date, obj, change):
     data = {}
-    data['action'] = "change"
-    data['type'] = _get_type(obj)
-    data['by'] = UserSerializer(by).data
-    data['date'] = date
-    data['data'] = _serialize(obj)
-    data['change'] = _serialize(change)
+    data["action"] = "change"
+    data["type"] = _get_type(obj)
+    data["by"] = UserSerializer(by).data
+    data["date"] = date
+    data["data"] = _serialize(obj)
+    data["change"] = _serialize(change)
 
     return _send_request(webhook_id, url, key, data)
 
@@ -178,9 +196,9 @@ def resend_webhook(webhook_id, url, key, data):
 @app.task
 def test_webhook(webhook_id, url, key, by, date):
     data = {}
-    data['action'] = "test"
-    data['type'] = "test"
-    data['by'] = UserSerializer(by).data
-    data['date'] = date
-    data['data'] = {"test": "test"}
+    data["action"] = "test"
+    data["type"] = "test"
+    data["by"] = UserSerializer(by).data
+    data["date"] = date
+    data["data"] = {"test": "test"}
     return _send_request(webhook_id, url, key, data)

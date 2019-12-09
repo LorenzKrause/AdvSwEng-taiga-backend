@@ -27,10 +27,7 @@ def send_feedback(feedback_entry, extra, reply_to=[]):
     if support_email:
         reply_to.append(support_email)
 
-        ctx = {
-            "feedback_entry": feedback_entry,
-            "extra": extra
-        }
+        ctx = {"feedback_entry": feedback_entry, "extra": extra}
 
         email = mail_builder.feedback_notification(support_email, ctx)
         email.extra_headers["Reply-To"] = ", ".join(reply_to)

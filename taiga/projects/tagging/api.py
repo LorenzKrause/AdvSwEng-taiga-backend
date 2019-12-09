@@ -58,10 +58,12 @@ class TagsColorsResourceMixin:
             return response.BadRequest(validator.errors)
 
         data = validator.data
-        services.edit_tag(project,
-                          data.get("from_tag"),
-                          to_tag=data.get("to_tag", None),
-                          color=data.get("color", None))
+        services.edit_tag(
+            project,
+            data.get("from_tag"),
+            to_tag=data.get("to_tag", None),
+            color=data.get("color", None),
+        )
 
         return response.Ok()
 
@@ -111,7 +113,9 @@ class TaggedResourceMixin:
                 name, color = tag
                 name = name.lower()
 
-                if color and not services.tag_exist_for_project_elements(obj.project, name):
+                if color and not services.tag_exist_for_project_elements(
+                    obj.project, name
+                ):
                     new_tags_colors[name] = color
 
                 new_obj_tags.add(name)

@@ -47,8 +47,10 @@ def _delete_file(file_obj):
             storage.delete(file_obj.name)
             cleanup_post_delete.send(sender=None, file=file_obj)
         except Exception:
-            logger.exception("Unexpected exception while attempting "
-                             "to delete old file '%s'".format(file_obj.name))
+            logger.exception(
+                "Unexpected exception while attempting "
+                "to delete old file '%s'".format(file_obj.name)
+            )
 
     storage = file_obj.storage
     if storage and storage.exists(file_obj.name):
@@ -57,8 +59,7 @@ def _delete_file(file_obj):
 
 def _get_file_fields(instance):
     return filter(
-        lambda field: isinstance(field, models.FileField),
-        instance._meta.fields,
+        lambda field: isinstance(field, models.FileField), instance._meta.fields,
     )
 
 

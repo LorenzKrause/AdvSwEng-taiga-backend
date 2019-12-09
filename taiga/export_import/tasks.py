@@ -36,7 +36,7 @@ from . import exceptions as err
 from . import services
 from .renderers import ExportRenderer
 
-logger = logging.getLogger('taiga.export_import')
+logger = logging.getLogger("taiga.export_import")
 
 import resource
 
@@ -45,11 +45,15 @@ import resource
 def dump_project(self, user, project, dump_format):
     try:
         if dump_format == "gzip":
-            path = "exports/{}/{}-{}.json.gz".format(project.pk, project.slug, self.request.id)
+            path = "exports/{}/{}-{}.json.gz".format(
+                project.pk, project.slug, self.request.id
+            )
             with default_storage.open(path, mode="wb") as outfile:
                 services.render_project(project, gzip.GzipFile(fileobj=outfile))
         else:
-            path = "exports/{}/{}-{}.json".format(project.pk, project.slug, self.request.id)
+            path = "exports/{}/{}-{}.json".format(
+                project.pk, project.slug, self.request.id
+            )
             with default_storage.open(path, mode="wb") as outfile:
                 services.render_project(project, outfile)
 
@@ -61,19 +65,26 @@ def dump_project(self, user, project, dump_format):
             "user": user,
             "error_subject": _("Error generating project dump"),
             "error_message": _("Error generating project dump"),
-            "project": project
+            "project": project,
         }
         email = mail_builder.export_error(user, ctx)
         email.send()
-        logger.error('Error generating dump %s (by %s)', project.slug, user, exc_info=sys.exc_info())
+        logger.error(
+            "Error generating dump %s (by %s)",
+            project.slug,
+            user,
+            exc_info=sys.exc_info(),
+        )
     else:
         # Success
-        deletion_date = timezone.now() + datetime.timedelta(seconds=settings.EXPORTS_TTL)
+        deletion_date = timezone.now() + datetime.timedelta(
+            seconds=settings.EXPORTS_TTL
+        )
         ctx = {
             "url": url,
             "project": project,
             "user": user,
-            "deletion_date": deletion_date
+            "deletion_date": deletion_date,
         }
         email = mail_builder.dump_project(user, ctx)
         email.send()
@@ -88,7 +99,8 @@ def delete_project_dump(project_id, project_slug, task_id, dump_format):
     default_storage.delete(path)
 
 
-ADMIN_ERROR_LOAD_PROJECT_DUMP_MESSAGE = _("""
+ADMIN_ERROR_LOAD_PROJECT_DUMP_MESSAGE = _(
+    """
 
 Error loading dump by {user_full_name} <{user_email}>:"
 
@@ -102,7 +114,8 @@ DETAILS:
 {details}
 
 TRACE ERROR:
-------------""")
+------------"""
+)
 
 
 @app.task
@@ -133,7 +146,7 @@ def load_project_dump(user, dump):
             user_full_name=user,
             user_email=user.email,
             reason=e.message or _("  -- no detail info --"),
-            details=json.dumps(e.errors, indent=4)
+            details=json.dumps(e.errors, indent=4),
         )
         logger.error(text, exc_info=sys.exc_info())
 

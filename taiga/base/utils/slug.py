@@ -38,7 +38,7 @@ def slugify_uniquely(value, model, slugfield="slug"):
     suffix = 0
     potential = base = django_slugify(unidecode(value))
     if len(potential) == 0:
-        potential = 'null'
+        potential = "null"
     while True:
         if suffix:
             potential = "-".join([base, str(suffix)])
@@ -55,7 +55,7 @@ def slugify_uniquely_for_queryset(value, queryset, slugfield="slug"):
     suffix = 0
     potential = base = django_slugify(unidecode(value))
     if len(potential) == 0:
-        potential = 'null'
+        potential = "null"
     while True:
         if suffix:
             potential = "-".join([base, str(suffix)])
@@ -64,12 +64,12 @@ def slugify_uniquely_for_queryset(value, queryset, slugfield="slug"):
         suffix += 1
 
 
-def ref_uniquely(p, seq_field,  model, field='ref'):
+def ref_uniquely(p, seq_field, model, field="ref"):
     project = p.__class__.objects.select_for_update().get(pk=p.pk)
     ref = getattr(project, seq_field) + 1
 
     while True:
-        params = {field: ref, 'project': project}
+        params = {field: ref, "project": project}
         if not model.objects.filter(**params).exists():
             setattr(project, seq_field, ref)
             project.save(update_fields=[seq_field])

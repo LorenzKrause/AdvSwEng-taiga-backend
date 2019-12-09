@@ -32,44 +32,82 @@ from taiga.projects.mixins.blocked import BlockedMixin
 
 
 class Epic(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, models.Model):
-    ref = models.BigIntegerField(db_index=True, null=True, blank=True, default=None,
-                                 verbose_name=_("ref"))
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="epics", verbose_name=_("project"))
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
-                              related_name="owned_epics", verbose_name=_("owner"),
-                              on_delete=models.SET_NULL)
-    status = models.ForeignKey("projects.EpicStatus", null=True, blank=True,
-                               related_name="epics", verbose_name=_("status"),
-                               on_delete=models.SET_NULL)
-    epics_order = models.BigIntegerField(null=False, blank=False, default=timestamp_ms,
-                                      verbose_name=_("epics order"))
+    ref = models.BigIntegerField(
+        db_index=True, null=True, blank=True, default=None, verbose_name=_("ref")
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="epics",
+        verbose_name=_("project"),
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="owned_epics",
+        verbose_name=_("owner"),
+        on_delete=models.SET_NULL,
+    )
+    status = models.ForeignKey(
+        "projects.EpicStatus",
+        null=True,
+        blank=True,
+        related_name="epics",
+        verbose_name=_("status"),
+        on_delete=models.SET_NULL,
+    )
+    epics_order = models.BigIntegerField(
+        null=False, blank=False, default=timestamp_ms, verbose_name=_("epics order")
+    )
 
-    created_date = models.DateTimeField(null=False, blank=False,
-                                        verbose_name=_("created date"),
-                                        default=timezone.now)
-    modified_date = models.DateTimeField(null=False, blank=False,
-                                         verbose_name=_("modified date"))
+    created_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("created date"), default=timezone.now
+    )
+    modified_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("modified date")
+    )
 
-    subject = models.TextField(null=False, blank=False,
-                               verbose_name=_("subject"))
-    description = models.TextField(null=False, blank=True, verbose_name=_("description"))
-    color = models.CharField(max_length=32, null=False, blank=True,
-                             default=generate_random_predefined_hex_color,
-                             verbose_name=_("color"))
-    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
-                                    default=None, related_name="epics_assigned_to_me",
-                                    verbose_name=_("assigned to"))
-    client_requirement = models.BooleanField(default=False, null=False, blank=True,
-                                             verbose_name=_("is client requirement"))
-    team_requirement = models.BooleanField(default=False, null=False, blank=True,
-                                           verbose_name=_("is team requirement"))
+    subject = models.TextField(null=False, blank=False, verbose_name=_("subject"))
+    description = models.TextField(
+        null=False, blank=True, verbose_name=_("description")
+    )
+    color = models.CharField(
+        max_length=32,
+        null=False,
+        blank=True,
+        default=generate_random_predefined_hex_color,
+        verbose_name=_("color"),
+    )
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        default=None,
+        related_name="epics_assigned_to_me",
+        verbose_name=_("assigned to"),
+    )
+    client_requirement = models.BooleanField(
+        default=False, null=False, blank=True, verbose_name=_("is client requirement")
+    )
+    team_requirement = models.BooleanField(
+        default=False, null=False, blank=True, verbose_name=_("is team requirement")
+    )
 
-    user_stories = models.ManyToManyField("userstories.UserStory", related_name="epics",
-                                          through='RelatedUserStory',
-                                          verbose_name=_("user stories"))
-    external_reference = ArrayField(models.TextField(null=False, blank=False),
-                                    null=True, blank=True, default=None, verbose_name=_("external reference"))
+    user_stories = models.ManyToManyField(
+        "userstories.UserStory",
+        related_name="epics",
+        through="RelatedUserStory",
+        verbose_name=_("user stories"),
+    )
+    external_reference = ArrayField(
+        models.TextField(null=False, blank=False),
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name=_("external reference"),
+    )
 
     attachments = GenericRelation("attachments.Attachment")
 
@@ -100,14 +138,15 @@ class RelatedUserStory(WatchedModelMixin, models.Model):
     user_story = models.ForeignKey("userstories.UserStory", on_delete=models.CASCADE)
     epic = models.ForeignKey("epics.Epic", on_delete=models.CASCADE)
 
-    order = models.BigIntegerField(null=False, blank=False, default=timestamp_ms,
-                                verbose_name=_("order"))
+    order = models.BigIntegerField(
+        null=False, blank=False, default=timestamp_ms, verbose_name=_("order")
+    )
 
     class Meta:
         verbose_name = "related user story"
         verbose_name_plural = "related user stories"
         ordering = ["user_story", "order", "id"]
-        unique_together = (("user_story", "epic"), )
+        unique_together = (("user_story", "epic"),)
 
     def __str__(self):
         return "{0} - {1}".format(self.epic_id, self.user_story_id)

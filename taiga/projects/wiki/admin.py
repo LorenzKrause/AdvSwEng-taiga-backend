@@ -26,6 +26,7 @@ from taiga.projects.wiki.models import WikiPage
 
 from . import models
 
+
 class WikiPageAdmin(admin.ModelAdmin):
     list_display = ["project", "slug", "owner"]
     list_display_links = list_display
@@ -37,16 +38,20 @@ class WikiPageAdmin(admin.ModelAdmin):
         return self.obj
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if (db_field.name in ["owner", "last_modifier"] and getattr(self, 'obj', None)):
+        if db_field.name in ["owner", "last_modifier"] and getattr(self, "obj", None):
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                         memberships__project=self.obj.project)
+                memberships__project=self.obj.project
+            )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
 admin.site.register(models.WikiPage, WikiPageAdmin)
+
 
 class WikiLinkAdmin(admin.ModelAdmin):
     list_display = ["project", "title"]
     list_display_links = list_display
     raw_id_fields = ["project"]
+
 
 admin.site.register(models.WikiLink, WikiLinkAdmin)

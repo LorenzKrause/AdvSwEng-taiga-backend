@@ -22,16 +22,23 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class ContactEntry(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="contact_entries",
-                             verbose_name=_("user"))
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="contact_entries", verbose_name=_("user")
+    )
 
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="contact_entries", verbose_name=_("project"))
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="contact_entries",
+        verbose_name=_("project"),
+    )
 
     comment = models.TextField(null=False, blank=False, verbose_name=_("comment"))
-    
-    created_date = models.DateTimeField(null=False, blank=False, auto_now_add=True,
-                                        verbose_name=_("created date"))
+
+    created_date = models.DateTimeField(
+        null=False, blank=False, auto_now_add=True, verbose_name=_("created date")
+    )
 
     class Meta:
         verbose_name = "contact entry"

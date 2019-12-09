@@ -397,7 +397,9 @@ def attach_epic_custom_attributes(queryset, as_field="epic_custom_attributes_att
     return queryset
 
 
-def attach_userstory_custom_attributes(queryset, as_field="userstory_custom_attributes_attr"):
+def attach_userstory_custom_attributes(
+    queryset, as_field="userstory_custom_attributes_attr"
+):
     """Attach a json userstory custom attributes representation to each object of the queryset.
 
     :param queryset: A Django projects queryset object.
@@ -543,7 +545,9 @@ def attach_my_role_permissions(queryset, user, as_field="my_role_permissions_att
     return queryset
 
 
-def attach_private_projects_same_owner(queryset, user, as_field="private_projects_same_owner_attr"):
+def attach_private_projects_same_owner(
+    queryset, user, as_field="private_projects_same_owner_attr"
+):
     """Attach a private projects counter to each object of the queryset.
 
     :param queryset: A Django projects queryset object.
@@ -568,7 +572,9 @@ def attach_private_projects_same_owner(queryset, user, as_field="private_project
     return queryset
 
 
-def attach_public_projects_same_owner(queryset, user, as_field="public_projects_same_owner_attr"):
+def attach_public_projects_same_owner(
+    queryset, user, as_field="public_projects_same_owner_attr"
+):
     """Attach a public projects counter to each object of the queryset.
 
     :param queryset: A Django projects queryset object.

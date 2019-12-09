@@ -49,7 +49,14 @@ class TimelineViewSet(ReadOnlyListViewSet):
         # Switch between paginated or standard style responses
         page = self.paginate_queryset(queryset)
         if page is not None:
-            user_ids = list(set([obj.data.get("user", {}).get("id", None) for obj in page.object_list]))
+            user_ids = list(
+                set(
+                    [
+                        obj.data.get("user", {}).get("id", None)
+                        for obj in page.object_list
+                    ]
+                )
+            )
             User = get_user_model()
             users = {u.id: u for u in User.objects.filter(id__in=user_ids)}
 
@@ -78,20 +85,29 @@ class TimelineViewSet(ReadOnlyListViewSet):
         qs = self.get_timeline(obj)
 
         if request.GET.get("only_relevant", None) is not None:
-            qs = qs.exclude(Q(event_type=["issues.issue.change",
-                                          "tasks.task.change",
-                                          "userstories.userstory.change",
-                                          "epics.epic.change",
-                                          "wiki.wikipage.change"]),
-                            Q(data__values_diff={}) |
-                            Q(data__values_diff__attachments__new=[]))
+            qs = qs.exclude(
+                Q(
+                    event_type=[
+                        "issues.issue.change",
+                        "tasks.task.change",
+                        "userstories.userstory.change",
+                        "epics.epic.change",
+                        "wiki.wikipage.change",
+                    ]
+                ),
+                Q(data__values_diff={}) | Q(data__values_diff__attachments__new=[]),
+            )
 
-            qs = qs.exclude(event_type__in=["issues.issue.delete",
-                                            "tasks.task.delete",
-                                            "userstories.userstory.delete",
-                                            "epics.epic.delete",
-                                            "wiki.wikipage.delete",
-                                            "projects.project.change"])
+            qs = qs.exclude(
+                event_type__in=[
+                    "issues.issue.delete",
+                    "tasks.task.delete",
+                    "userstories.userstory.delete",
+                    "epics.epic.delete",
+                    "wiki.wikipage.delete",
+                    "projects.project.change",
+                ]
+            )
 
         return self.response_for_queryset(qs)
 

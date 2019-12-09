@@ -25,15 +25,13 @@ class Command(BaseCommand):
     help = "Block user projects"
 
     def add_arguments(self, parser):
-        parser.add_argument("owner_usernames",
-                            nargs="+",
-                            help="<owner_usernames owner_usernames ...>")
+        parser.add_argument(
+            "owner_usernames", nargs="+", help="<owner_usernames owner_usernames ...>"
+        )
 
-        parser.add_argument("--is-private",
-                            dest="is_private")
+        parser.add_argument("--is-private", dest="is_private")
 
-        parser.add_argument("--blocked-code",
-                            dest="blocked_code")
+        parser.add_argument("--blocked-code", dest="blocked_code")
 
     def handle(self, *args, **options):
         owner_usernames = options["owner_usernames"]
@@ -46,5 +44,7 @@ class Command(BaseCommand):
             projects = projects.filter(is_private=is_private)
 
         blocked_code = options.get("blocked_code")
-        blocked_code = blocked_code if blocked_code is not None else BLOCKED_BY_NONPAYMENT
+        blocked_code = (
+            blocked_code if blocked_code is not None else BLOCKED_BY_NONPAYMENT
+        )
         projects.update(blocked_code=blocked_code)

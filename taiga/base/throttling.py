@@ -30,13 +30,11 @@ class GlobalThrottlingMixin:
     Define the cache key based on the user IP independently if the user is
     logged in or not.
     """
+
     def get_cache_key(self, request, view):
         ident = get_ip(request)
 
-        return self.cache_format % {
-            "scope": self.scope,
-            "ident": ident
-        }
+        return self.cache_format % {"scope": self.scope, "ident": ident}
 
 
 # If you derive a class from this mixin you have to put this class previously
@@ -73,14 +71,14 @@ class CommonThrottle(throttling.SimpleRateThrottle):
         return False
 
     def is_whitelisted(self, ident):
-        for whitelisted in settings.REST_FRAMEWORK['DEFAULT_THROTTLE_WHITELIST']:
+        for whitelisted in settings.REST_FRAMEWORK["DEFAULT_THROTTLE_WHITELIST"]:
             if isinstance(whitelisted, int) and whitelisted == ident:
                 return True
             elif isinstance(whitelisted, str):
                 try:
                     if all_matching_cidrs(ident, [whitelisted]) != []:
                         return True
-                except(AddrFormatError, ValueError):
+                except (AddrFormatError, ValueError):
                     pass
         return False
 
@@ -114,22 +112,20 @@ class CommonThrottle(throttling.SimpleRateThrottle):
             if len(history) >= rate_num_requests:
                 waits.append(self.wait_time(history, rate, now))
 
-            history_writes.append({
-                "key": key,
-                "history": history,
-                "rate_duration": rate_duration,
-            })
+            history_writes.append(
+                {"key": key, "history": history, "rate_duration": rate_duration,}
+            )
 
         if waits:
             self._wait = max(waits)
             return False
 
         for history_write in history_writes:
-            history_write['history'].insert(0, now)
+            history_write["history"].insert(0, now)
             self.cache.set(
-                history_write['key'],
-                history_write['history'],
-                history_write['rate_duration']
+                history_write["key"],
+                history_write["history"],
+                history_write["rate_duration"],
             )
         return True
 
@@ -137,7 +133,7 @@ class CommonThrottle(throttling.SimpleRateThrottle):
         try:
             rates = self.THROTTLE_RATES[scope]
         except KeyError:
-            msg = "No default throttle rate set for \"%s\" scope" % scope
+            msg = 'No default throttle rate set for "%s" scope' % scope
             raise ImproperlyConfigured(msg)
 
         if rates is None:
@@ -147,7 +143,7 @@ class CommonThrottle(throttling.SimpleRateThrottle):
         elif isinstance(rates, list):
             return list(map(self.parse_rate, rates))
         else:
-            msg = "No valid throttle rate set for \"%s\" scope" % scope
+            msg = 'No valid throttle rate set for "%s" scope' % scope
             raise ImproperlyConfigured(msg)
 
     def parse_rate(self, rate):
@@ -164,7 +160,9 @@ class CommonThrottle(throttling.SimpleRateThrottle):
 
     def get_scope(self, request):
         scope_prefix = "user" if request.user.is_authenticated() else "anon"
-        scope_sufix = "write" if request.method in ["POST", "PUT", "PATCH", "DELETE"] else "read"
+        scope_sufix = (
+            "write" if request.method in ["POST", "PUT", "PATCH", "DELETE"] else "read"
+        )
         scope = "{}-{}".format(scope_prefix, scope_sufix)
         return scope
 
@@ -175,7 +173,7 @@ class CommonThrottle(throttling.SimpleRateThrottle):
         return ident
 
     def get_cache_key(self, ident, scope, rate):
-        return self.cache_format % { "scope": scope, "ident": ident, "rate": rate }
+        return self.cache_format % {"scope": scope, "ident": ident, "rate": rate}
 
     def wait_time(self, history, rate, now):
         rate_num_requests = rate[1]

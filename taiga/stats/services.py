@@ -28,6 +28,7 @@ from collections import OrderedDict
 # Public Stats
 ###########################################################################
 
+
 def get_users_public_stats():
     model = get_user_model()
     queryset = model.objects.filter(is_active=True, is_system=False)
@@ -39,15 +40,19 @@ def get_users_public_stats():
     a_year_ago = today - timedelta(days=365)
 
     stats["total"] = queryset.count()
-    stats["today"] = queryset.filter(date_joined__year=today.year,
-                                     date_joined__month=today.month,
-                                     date_joined__day=today.day).count()
-    stats["average_last_seven_days"] = (queryset.filter(date_joined__range=(seven_days_ago, yesterday))
-                                                .count()) / 7
-    stats["average_last_five_working_days"] = (queryset.filter(date_joined__range=(seven_days_ago, yesterday))
-                                                       .exclude(Q(date_joined__week_day=1) |
-                                                                Q(date_joined__week_day=7))
-                                                       .count()) / 5
+    stats["today"] = queryset.filter(
+        date_joined__year=today.year,
+        date_joined__month=today.month,
+        date_joined__day=today.day,
+    ).count()
+    stats["average_last_seven_days"] = (
+        queryset.filter(date_joined__range=(seven_days_ago, yesterday)).count()
+    ) / 7
+    stats["average_last_five_working_days"] = (
+        queryset.filter(date_joined__range=(seven_days_ago, yesterday))
+        .exclude(Q(date_joined__week_day=1) | Q(date_joined__week_day=7))
+        .count()
+    ) / 5
 
     # Graph: users last year
     # increments ->
@@ -60,11 +65,13 @@ def get_users_public_stats():
     #              AND "users_user"."date_joined" >= %s) AS "filtered_users"
     # GROUP BY "week"
     # ORDER BY "week";
-    increments = (queryset.filter(date_joined__gte=a_year_ago)
-                          .extra({"week": "date_trunc('week', date_joined)"})
-                          .values("week")
-                          .order_by("week")
-                          .annotate(count=Count("id")))
+    increments = (
+        queryset.filter(date_joined__gte=a_year_ago)
+        .extra({"week": "date_trunc('week', date_joined)"})
+        .values("week")
+        .order_by("week")
+        .annotate(count=Count("id"))
+    )
 
     counts_last_year_per_week = OrderedDict()
     sumatory = queryset.filter(date_joined__lt=increments[0]["week"]).count()
@@ -87,30 +94,36 @@ def get_projects_public_stats():
     seven_days_ago = yesterday - timedelta(days=7)
 
     stats["total"] = queryset.count()
-    stats["today"] = queryset.filter(created_date__year=today.year,
-                                     created_date__month=today.month,
-                                     created_date__day=today.day).count()
-    stats["average_last_seven_days"] = (queryset.filter(created_date__range=(seven_days_ago, yesterday))
-                                                 .count()) / 7
-    stats["average_last_five_working_days"] = (queryset.filter(created_date__range=(seven_days_ago, yesterday))
-                                                       .exclude(Q(created_date__week_day=1) |
-                                                                Q(created_date__week_day=7))
-                                                       .count()) / 5
+    stats["today"] = queryset.filter(
+        created_date__year=today.year,
+        created_date__month=today.month,
+        created_date__day=today.day,
+    ).count()
+    stats["average_last_seven_days"] = (
+        queryset.filter(created_date__range=(seven_days_ago, yesterday)).count()
+    ) / 7
+    stats["average_last_five_working_days"] = (
+        queryset.filter(created_date__range=(seven_days_ago, yesterday))
+        .exclude(Q(created_date__week_day=1) | Q(created_date__week_day=7))
+        .count()
+    ) / 5
 
-    stats["total_with_backlog"] = (queryset.filter(is_backlog_activated=True,
-                                                   is_kanban_activated=False)
-                                           .count())
+    stats["total_with_backlog"] = queryset.filter(
+        is_backlog_activated=True, is_kanban_activated=False
+    ).count()
     stats["percent_with_backlog"] = stats["total_with_backlog"] * 100 / stats["total"]
 
-    stats["total_with_kanban"] = (queryset.filter(is_backlog_activated=False,
-                                                  is_kanban_activated=True)
-                                          .count())
+    stats["total_with_kanban"] = queryset.filter(
+        is_backlog_activated=False, is_kanban_activated=True
+    ).count()
     stats["percent_with_kanban"] = stats["total_with_kanban"] * 100 / stats["total"]
 
-    stats["total_with_backlog_and_kanban"] = (queryset.filter(is_backlog_activated=True,
-                                                              is_kanban_activated=True)
-                                                      .count())
-    stats["percent_with_backlog_and_kanban"] = stats["total_with_backlog_and_kanban"] * 100 / stats["total"]
+    stats["total_with_backlog_and_kanban"] = queryset.filter(
+        is_backlog_activated=True, is_kanban_activated=True
+    ).count()
+    stats["percent_with_backlog_and_kanban"] = (
+        stats["total_with_backlog_and_kanban"] * 100 / stats["total"]
+    )
 
     return stats
 
@@ -125,21 +138,27 @@ def get_user_stories_public_stats():
     seven_days_ago = yesterday - timedelta(days=7)
 
     stats["total"] = queryset.count()
-    stats["today"] = queryset.filter(created_date__year=today.year,
-                                     created_date__month=today.month,
-                                     created_date__day=today.day).count()
-    stats["average_last_seven_days"] = (queryset.filter(created_date__range=(seven_days_ago, yesterday))
-                                                 .count()) / 7
-    stats["average_last_five_working_days"] = (queryset.filter(created_date__range=(seven_days_ago, yesterday))
-                                                       .exclude(Q(created_date__week_day=1) |
-                                                                Q(created_date__week_day=7))
-                                                       .count()) / 5
+    stats["today"] = queryset.filter(
+        created_date__year=today.year,
+        created_date__month=today.month,
+        created_date__day=today.day,
+    ).count()
+    stats["average_last_seven_days"] = (
+        queryset.filter(created_date__range=(seven_days_ago, yesterday)).count()
+    ) / 7
+    stats["average_last_five_working_days"] = (
+        queryset.filter(created_date__range=(seven_days_ago, yesterday))
+        .exclude(Q(created_date__week_day=1) | Q(created_date__week_day=7))
+        .count()
+    ) / 5
 
     return stats
+
 
 ###########################################################################
 # Discover Stats
 ###########################################################################
+
 
 def get_projects_discover_stats(user=None):
     model = apps.get_model("projects", "Project")
@@ -147,8 +166,10 @@ def get_projects_discover_stats(user=None):
     stats = OrderedDict()
 
     # Get Public (visible) projects
-    queryset = queryset.filter(Q(is_private=False) |
-                               Q(is_private=True, anon_permissions__contains=["view_project"]))
+    queryset = queryset.filter(
+        Q(is_private=False)
+        | Q(is_private=True, anon_permissions__contains=["view_project"])
+    )
 
     stats["total"] = queryset.count()
 

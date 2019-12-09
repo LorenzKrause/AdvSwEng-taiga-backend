@@ -34,9 +34,11 @@ from taiga.base.mails import InlineCSSTemplateMail
 from taiga.front.templatetags.functions import resolve as resolve_front_url
 from taiga.projects.notifications.choices import NotifyLevel
 from taiga.projects.history.choices import HistoryType
-from taiga.projects.history.services import (make_key_from_model_object,
-                                             get_last_snapshot_for_key,
-                                             get_model_from_key)
+from taiga.projects.history.services import (
+    make_key_from_model_object,
+    get_last_snapshot_for_key,
+    get_model_from_key,
+)
 from taiga.permissions.services import user_has_perm
 from taiga.events import events
 
@@ -54,31 +56,34 @@ def notify_policy_exists(project, user) -> bool:
     and user.
     """
     model_cls = apps.get_model("notifications", "NotifyPolicy")
-    qs = model_cls.objects.filter(project=project,
-                                  user=user)
+    qs = model_cls.objects.filter(project=project, user=user)
     return qs.exists()
 
 
-def create_notify_policy(project, user, level=NotifyLevel.involved,
-                         live_level=NotifyLevel.involved):
+def create_notify_policy(
+    project, user, level=NotifyLevel.involved, live_level=NotifyLevel.involved
+):
     """
     Given a project and user, create notification policy for it.
     """
     model_cls = apps.get_model("notifications", "NotifyPolicy")
     try:
-        return model_cls.objects.create(project=project,
-                                        user=user,
-                                        notify_level=level,
-                                        live_notify_level=live_level)
+        return model_cls.objects.create(
+            project=project, user=user, notify_level=level, live_notify_level=live_level
+        )
     except IntegrityError as e:
         raise exc.IntegrityError(
-            _("Notify exists for specified user and project")) from e
+            _("Notify exists for specified user and project")
+        ) from e
 
 
-def create_notify_policy_if_not_exists(project, user,
-                                       level=NotifyLevel.involved,
-                                       live_level=NotifyLevel.involved,
-                                       web_level=True):
+def create_notify_policy_if_not_exists(
+    project,
+    user,
+    level=NotifyLevel.involved,
+    live_level=NotifyLevel.involved,
+    web_level=True,
+):
     """
     Given a project and user, create notification policy for it.
     """
@@ -90,13 +95,14 @@ def create_notify_policy_if_not_exists(project, user,
             defaults={
                 "notify_level": level,
                 "live_notify_level": live_level,
-                "web_notify_level": web_level
-            }
+                "web_notify_level": web_level,
+            },
         )
         return result[0]
     except IntegrityError as e:
         raise exc.IntegrityError(
-            _("Notify exists for specified user and project")) from e
+            _("Notify exists for specified user and project")
+        ) from e
 
 
 def analize_object_for_watchers(obj: object, comment: str, user: object):
@@ -125,15 +131,18 @@ def get_object_mentions(obj: object, comment: str):
     if not hasattr(obj, "get_project"):
         return
 
-    texts = (getattr(obj, "description", ""),
-             getattr(obj, "content", ""),
-             comment,)
+    texts = (
+        getattr(obj, "description", ""),
+        getattr(obj, "content", ""),
+        comment,
+    )
 
     return get_mentions(obj.get_project(), "\n".join(texts))
 
 
 def get_mentions(project: object, text: str):
     from taiga.mdrender.service import render_and_extract
+
     _, data = render_and_extract(project, text)
 
     return data.get("mentions")
@@ -179,10 +188,10 @@ def get_users_to_notify(obj, *, history=None, discard_users=None, live=False) ->
             return policy.live_notify_level in levels
         return policy.notify_level in levels
 
-    _can_notify_hard = partial(_check_level, project,
-                               levels=[NotifyLevel.all])
-    _can_notify_light = partial(_check_level, project,
-                                levels=[NotifyLevel.all, NotifyLevel.involved])
+    _can_notify_hard = partial(_check_level, project, levels=[NotifyLevel.all])
+    _can_notify_light = partial(
+        _check_level, project, levels=[NotifyLevel.all, NotifyLevel.involved]
+    )
 
     candidates = set()
     candidates.update(filter(_can_notify_hard, project.members.all()))
@@ -193,7 +202,11 @@ def get_users_to_notify(obj, *, history=None, discard_users=None, live=False) ->
     # If the history is an unassignment change we should notify that user too
     user_ids = []
     if history and history.type == HistoryType.change and "assigned_to" in history.diff:
-        user_ids = [user_id for user_id in history.diff["assigned_to"] if isinstance(user_id, int)]
+        user_ids = [
+            user_id
+            for user_id in history.diff["assigned_to"]
+            if isinstance(user_id, int)
+        ]
 
     if user_ids:
         assigned_to_users = get_user_model().objects.filter(id__in=user_ids)
@@ -227,9 +240,7 @@ def _resolve_template_name(model: object, *, change_type: int) -> str:
     else:
         change_type = "delete"
     tmpl = "{app_label}/{model}-{change}"
-    return tmpl.format(app_label=ct.app_label,
-                       model=ct.model,
-                       change=change_type)
+    return tmpl.format(app_label=ct.app_label, model=ct.model, change=change_type)
 
 
 def _make_template_mail(name: str):
@@ -238,9 +249,7 @@ def _make_template_mail(name: str):
     instance for specified name, and return an instance
     of it.
     """
-    cls = type("InlineCSSTemplateMail",
-               (InlineCSSTemplateMail,),
-               {"name": name})
+    cls = type("InlineCSSTemplateMail", (InlineCSSTemplateMail,), {"name": name})
 
     return cls()
 
@@ -252,25 +261,30 @@ def send_notifications(obj, *, history):
 
     key = make_key_from_model_object(obj)
     owner = get_user_model().objects.get(pk=history.user["pk"])
-    notification, created = (HistoryChangeNotification.objects.select_for_update()
-                             .get_or_create(key=key,
-                                            owner=owner,
-                                            project=obj.project,
-                                            history_type=history.type))
+    (
+        notification,
+        created,
+    ) = HistoryChangeNotification.objects.select_for_update().get_or_create(
+        key=key, owner=owner, project=obj.project, history_type=history.type
+    )
     notification.updated_datetime = timezone.now()
     notification.save()
     notification.history_entries.add(history)
 
     # Get a complete list of notifiable users for current
     # object and send the change notification to them.
-    notify_users = get_users_to_notify(obj, history=history, discard_users=[notification.owner])
+    notify_users = get_users_to_notify(
+        obj, history=history, discard_users=[notification.owner]
+    )
     notification.notify_users.add(*notify_users)
 
     # If we are the min interval is 0 it just work in a synchronous and spamming way
     if settings.CHANGE_NOTIFICATIONS_MIN_INTERVAL == 0:
         send_sync_notifications(notification.id)
 
-    live_notify_users = get_users_to_notify(obj, history=history, discard_users=[notification.owner], live=True)
+    live_notify_users = get_users_to_notify(
+        obj, history=history, discard_users=[notification.owner], live=True
+    )
     for user in live_notify_users:
         events.emit_live_notification_for_model(obj, user, history)
 
@@ -283,7 +297,9 @@ def send_sync_notifications(notification_id):
     email to all users.
     """
 
-    notification = HistoryChangeNotification.objects.select_for_update().get(pk=notification_id)
+    notification = HistoryChangeNotification.objects.select_for_update().get(
+        pk=notification_id
+    )
     # If the last modification is too recent we ignore it for the time being
     now = timezone.now()
     time_diff = now - notification.updated_datetime
@@ -302,41 +318,49 @@ def send_sync_notifications(notification_id):
     obj, _ = get_last_snapshot_for_key(notification.key)
     obj_class = get_model_from_key(obj.key)
 
-    context = {"obj_class": obj_class,
-               "snapshot": obj.snapshot,
-               "project": notification.project,
-               "changer": notification.owner,
-               "history_entries": history_entries}
+    context = {
+        "obj_class": obj_class,
+        "snapshot": obj.snapshot,
+        "project": notification.project,
+        "changer": notification.owner,
+        "history_entries": history_entries,
+    }
 
     model = get_model_from_key(notification.key)
     template_name = _resolve_template_name(model, change_type=notification.history_type)
     email = _make_template_mail(template_name)
-    domain = settings.SITES["api"]["domain"].split(":")[0] or settings.SITES["api"]["domain"]
+    domain = (
+        settings.SITES["api"]["domain"].split(":")[0] or settings.SITES["api"]["domain"]
+    )
 
     if "ref" in obj.snapshot:
         msg_id = obj.snapshot["ref"]
     elif "slug" in obj.snapshot:
         msg_id = obj.snapshot["slug"]
     else:
-        msg_id = 'taiga-system'
+        msg_id = "taiga-system"
 
     now = datetime.datetime.now()
     project_name = remove_lr_cr(notification.project.name)
     format_args = {
-        "unsubscribe_url": resolve_front_url('settings-mail-notifications'),
+        "unsubscribe_url": resolve_front_url("settings-mail-notifications"),
         "project_slug": notification.project.slug,
         "project_name": project_name,
         "msg_id": msg_id,
         "time": int(now.timestamp()),
-        "domain": domain
+        "domain": domain,
     }
 
     headers = {
         "Message-ID": "<{project_slug}/{msg_id}/{time}@{domain}>".format(**format_args),
         "In-Reply-To": "<{project_slug}/{msg_id}@{domain}>".format(**format_args),
         "References": "<{project_slug}/{msg_id}@{domain}>".format(**format_args),
-        "List-ID": 'Taiga/{project_name} <taiga.{project_slug}@{domain}>'.format(**format_args),
-        "Thread-Index": make_ms_thread_index("<{project_slug}/{msg_id}@{domain}>".format(**format_args), now),
+        "List-ID": "Taiga/{project_name} <taiga.{project_slug}@{domain}>".format(
+            **format_args
+        ),
+        "Thread-Index": make_ms_thread_index(
+            "<{project_slug}/{msg_id}@{domain}>".format(**format_args), now
+        ),
         "List-Unsubscribe": "<{unsubscribe_url}>".format(**format_args),
     }
 
@@ -344,7 +368,6 @@ def send_sync_notifications(notification_id):
         context["user"] = user
         context["lang"] = user.lang or settings.LANGUAGE_CODE
         email.send(user.email, context, headers=headers)
-
 
     notification.delete()
 
@@ -378,7 +401,7 @@ def get_related_people(obj):
     """
 
     ## - Watchers
-    related_people_ids = list(get_watchers(obj).values_list('id', flat=True))
+    related_people_ids = list(get_watchers(obj).values_list("id", flat=True))
 
     ## - Owner
     if hasattr(obj, "owner_id") and obj.owner_id:
@@ -406,18 +429,25 @@ def get_watched(user_or_id, model):
 
     :return: Queryset of objects representing the votes of the user.
     """
-    obj_type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(model)
-    conditions = ('notifications_watched.content_type_id = %s',
-                  '%s.id = notifications_watched.object_id' % model._meta.db_table,
-                  'notifications_watched.user_id = %s')
+    obj_type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(
+        model
+    )
+    conditions = (
+        "notifications_watched.content_type_id = %s",
+        "%s.id = notifications_watched.object_id" % model._meta.db_table,
+        "notifications_watched.user_id = %s",
+    )
 
     if isinstance(user_or_id, get_user_model()):
         user_id = user_or_id.id
     else:
         user_id = user_or_id
 
-    return model.objects.extra(where=conditions, tables=('notifications_watched',),
-                               params=(obj_type.id, user_id))
+    return model.objects.extra(
+        where=conditions,
+        tables=("notifications_watched",),
+        params=(obj_type.id, user_id),
+    )
 
 
 def get_projects_watched(user_or_id):
@@ -435,8 +465,9 @@ def get_projects_watched(user_or_id):
         user = get_user_model().objects.get(id=user_or_id)
 
     project_class = apps.get_model("projects", "Project")
-    project_ids = (user.notify_policies.exclude(notify_level=NotifyLevel.none)
-                                       .values_list("project__id", flat=True))
+    project_ids = user.notify_policies.exclude(
+        notify_level=NotifyLevel.none
+    ).values_list("project__id", flat=True)
     return project_class.objects.filter(id__in=project_ids)
 
 
@@ -451,16 +482,18 @@ def add_watcher(obj, user):
     """
     obj_type = apps.get_model("contenttypes", "ContentType").objects.get_for_model(obj)
     watched, created = Watched.objects.get_or_create(
-        content_type=obj_type,
-        object_id=obj.id,
-        user=user,
-        project=obj.project)
+        content_type=obj_type, object_id=obj.id, user=user, project=obj.project
+    )
 
-    notify_policy, _ = apps.get_model("notifications", "NotifyPolicy").objects.get_or_create(
+    notify_policy, _ = apps.get_model(
+        "notifications", "NotifyPolicy"
+    ).objects.get_or_create(
         project=obj.project,
         user=user,
-        defaults={"notify_level": NotifyLevel.involved,
-                  "live_notify_level": NotifyLevel.involved}
+        defaults={
+            "notify_level": NotifyLevel.involved,
+            "live_notify_level": NotifyLevel.involved,
+        },
     )
 
     return watched
@@ -527,7 +560,7 @@ def make_ms_thread_index(msg_id, dt):
 
     # Make a guid. This is usually generated by Outlook.
     # The format is usually >IHHQ, but we don't care since it's just a hash of the id
-    md5 = hashlib.md5(msg_id.encode('utf-8'))
+    md5 = hashlib.md5(msg_id.encode("utf-8"))
     thread_bin += md5.digest()
 
     # base64 encode

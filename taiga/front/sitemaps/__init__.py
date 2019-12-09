@@ -39,24 +39,18 @@ from .wiki import WikiPagesSitemap
 from .users import UsersSitemap
 
 
-sitemaps = OrderedDict([
-    ("generics", GenericSitemap),
-
-    ("projects", ProjectsSitemap),
-    ("project-backlogs", ProjectBacklogsSitemap),
-    ("project-kanbans", ProjectKanbansSitemap),
-
-    ("epics", EpicsSitemap),
-
-    ("milestones", MilestonesSitemap),
-
-    ("userstories", UserStoriesSitemap),
-
-    ("tasks", TasksSitemap),
-
-    ("issues", IssuesSitemap),
-
-    ("wikipages", WikiPagesSitemap),
-
-    ("users", UsersSitemap)
-])
+sitemaps = OrderedDict(
+    [
+        ("generics", GenericSitemap),
+        ("projects", ProjectsSitemap),
+        ("project-backlogs", ProjectBacklogsSitemap),
+        ("project-kanbans", ProjectKanbansSitemap),
+        ("epics", EpicsSitemap),
+        ("milestones", MilestonesSitemap),
+        ("userstories", UserStoriesSitemap),
+        ("tasks", TasksSitemap),
+        ("issues", IssuesSitemap),
+        ("wikipages", WikiPagesSitemap),
+        ("users", UsersSitemap),
+    ]
+)

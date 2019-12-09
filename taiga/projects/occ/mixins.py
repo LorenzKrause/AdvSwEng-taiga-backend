@@ -29,8 +29,9 @@ class OCCResourceMixin(object):
     Rest Framework resource mixin for resources that need to have concurrent
     accesses and editions controlled.
     """
+
     def _extract_param_version(self):
-        param_version = self.request.DATA.get('version', None)
+        param_version = self.request.DATA.get("version", None)
         try:
             param_version = param_version and int(param_version)
         except (ValueError, TypeError):
@@ -57,7 +58,9 @@ class OCCResourceMixin(object):
             # Extract param version
             param_version = self._extract_param_version()
             if not self._validate_param_version(param_version, current_version):
-                raise exc.WrongArguments({"version": _("The version parameter is not valid")})
+                raise exc.WrongArguments(
+                    {"version": _("The version parameter is not valid")}
+                )
 
             if current_version != param_version:
                 diff_versions = current_version - param_version
@@ -73,9 +76,11 @@ class OCCResourceMixin(object):
                 both_modified = modifying_fields & modified_fields
 
                 if both_modified:
-                    raise exc.WrongArguments({"version": _("The version doesn't match with the current one")})
+                    raise exc.WrongArguments(
+                        {"version": _("The version doesn't match with the current one")}
+                    )
 
-            obj.version = models.F('version') + 1
+            obj.version = models.F("version") + 1
 
     def pre_save(self, obj):
         self._validate_and_update_version(obj)
@@ -84,7 +89,7 @@ class OCCResourceMixin(object):
     def post_save(self, obj, created=False):
         super().post_save(obj, created)
         if not created:
-            obj.version = db.reload_attribute(obj, 'version')
+            obj.version = db.reload_attribute(obj, "version")
 
 
 class OCCModelMixin(models.Model):
@@ -92,7 +97,10 @@ class OCCModelMixin(models.Model):
     Generic model mixin that makes model compatible
     with concurrency control system.
     """
-    version = models.IntegerField(null=False, blank=False, default=1, verbose_name=_("version"))
+
+    version = models.IntegerField(
+        null=False, blank=False, default=1, verbose_name=_("version")
+    )
 
     class Meta:
         abstract = True

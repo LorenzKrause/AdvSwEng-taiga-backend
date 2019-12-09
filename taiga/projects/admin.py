@@ -31,7 +31,7 @@ from . import models
 
 
 class MembershipAdmin(admin.ModelAdmin):
-    list_display = ['project', 'role', 'user']
+    list_display = ["project", "role", "user"]
     list_display_links = list_display
     raw_id_fields = ["project"]
 
@@ -43,13 +43,15 @@ class MembershipAdmin(admin.ModelAdmin):
         return self.obj
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name in ["user", "invited_by"] and getattr(self, 'obj', None):
+        if db_field.name in ["user", "invited_by"] and getattr(self, "obj", None):
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                    memberships__project=self.obj.project)
+                memberships__project=self.obj.project
+            )
 
-        elif db_field.name in ["role"] and getattr(self, 'obj', None):
+        elif db_field.name in ["role"] and getattr(self, "obj", None):
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                         project=self.obj.project)
+                project=self.obj.project
+            )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -64,104 +66,173 @@ class MembershipInline(admin.TabularInline):
         return super(MembershipInline, self).get_formset(request, obj, **kwargs)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if (db_field.name in ["user", "invited_by"]):
+        if db_field.name in ["user", "invited_by"]:
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                         memberships__project=self.parent_obj)
+                memberships__project=self.parent_obj
+            )
 
-        elif (db_field.name in ["role"]):
+        elif db_field.name in ["role"]:
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                                      project=self.parent_obj)
+                project=self.parent_obj
+            )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "slug", "is_private",
-                    "owner_url", "blocked_code", "is_featured"]
+    list_display = [
+        "id",
+        "name",
+        "slug",
+        "is_private",
+        "owner_url",
+        "blocked_code",
+        "is_featured",
+    ]
     list_display_links = ["id", "name", "slug"]
     list_filter = ("is_private", "blocked_code", "is_featured")
     list_editable = ["is_featured", "blocked_code"]
-    search_fields = ["id", "name", "slug", "owner__username", "owner__email", "owner__full_name"]
-    inlines = [RoleInline,
-               MembershipInline,
-               NotifyPolicyInline,
-               LikeInline]
+    search_fields = [
+        "id",
+        "name",
+        "slug",
+        "owner__username",
+        "owner__email",
+        "owner__full_name",
+    ]
+    inlines = [RoleInline, MembershipInline, NotifyPolicyInline, LikeInline]
 
     fieldsets = (
-        (None, {
-            "fields": ("name",
-                       "slug",
-                       "is_featured",
-                       "description",
-                       "tags",
-                       "logo",
-                       ("created_date", "modified_date"))
-        }),
-        (_("Privacity"), {
-            "fields": (("owner", "blocked_code"),
-                       "is_private",
-                       ("anon_permissions", "public_permissions"),
-                       "transfer_token")
-        }),
-        (_("Extra info"), {
-            "classes": ("collapse",),
-            "fields": ("creation_template",
-                       ("is_looking_for_people", "looking_for_people_note")),
-        }),
-        (_("Modules"), {
-            "classes": ("collapse",),
-            "fields": (("is_backlog_activated", "total_milestones", "total_story_points"),
-                       "is_kanban_activated",
-                       "is_issues_activated",
-                       "is_wiki_activated",
-                       ("videoconferences", "videoconferences_extra_data")),
-        }),
-        (_("Default values"), {
-            "classes": ("collapse",),
-            "fields": (("default_us_status", "default_points"),
-                       "default_task_status",
-                       "default_issue_status",
-                       ("default_priority", "default_severity", "default_issue_type")),
-        }),
-        (_("Activity"), {
-            "classes": ("collapse",),
-            "fields": (("total_activity", "total_activity_last_week",
-                        "total_activity_last_month", "total_activity_last_year"),),
-        }),
-        (_("Fans"), {
-            "classes": ("collapse",),
-            "fields": (("total_fans", "total_fans_last_week",
-                        "total_fans_last_month", "total_fans_last_year"),),
-        }),
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "slug",
+                    "is_featured",
+                    "description",
+                    "tags",
+                    "logo",
+                    ("created_date", "modified_date"),
+                )
+            },
+        ),
+        (
+            _("Privacity"),
+            {
+                "fields": (
+                    ("owner", "blocked_code"),
+                    "is_private",
+                    ("anon_permissions", "public_permissions"),
+                    "transfer_token",
+                )
+            },
+        ),
+        (
+            _("Extra info"),
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "creation_template",
+                    ("is_looking_for_people", "looking_for_people_note"),
+                ),
+            },
+        ),
+        (
+            _("Modules"),
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    ("is_backlog_activated", "total_milestones", "total_story_points"),
+                    "is_kanban_activated",
+                    "is_issues_activated",
+                    "is_wiki_activated",
+                    ("videoconferences", "videoconferences_extra_data"),
+                ),
+            },
+        ),
+        (
+            _("Default values"),
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    ("default_us_status", "default_points"),
+                    "default_task_status",
+                    "default_issue_status",
+                    ("default_priority", "default_severity", "default_issue_type"),
+                ),
+            },
+        ),
+        (
+            _("Activity"),
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    (
+                        "total_activity",
+                        "total_activity_last_week",
+                        "total_activity_last_month",
+                        "total_activity_last_year",
+                    ),
+                ),
+            },
+        ),
+        (
+            _("Fans"),
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    (
+                        "total_fans",
+                        "total_fans_last_week",
+                        "total_fans_last_month",
+                        "total_fans_last_year",
+                    ),
+                ),
+            },
+        ),
     )
 
     def owner_url(self, obj):
         if obj.owner:
-            url = reverse('admin:{0}_{1}_change'.format(obj.owner._meta.app_label,
-                                                        obj.owner._meta.model_name),
-                          args=(obj.owner.pk,))
-            return format_html("<a href='{url}' title='{user}'>{user}</a>", url=url, user=obj.owner)
+            url = reverse(
+                "admin:{0}_{1}_change".format(
+                    obj.owner._meta.app_label, obj.owner._meta.model_name
+                ),
+                args=(obj.owner.pk,),
+            )
+            return format_html(
+                "<a href='{url}' title='{user}'>{user}</a>", url=url, user=obj.owner
+            )
         return ""
-    owner_url.short_description = _('owner')
+
+    owner_url.short_description = _("owner")
 
     def get_object(self, *args, **kwargs):
         self.obj = super().get_object(*args, **kwargs)
         return self.obj
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if (db_field.name in ["default_points", "default_us_status", "default_task_status",
-                              "default_priority", "default_severity",
-                              "default_issue_status", "default_issue_type"]):
-            if getattr(self, 'obj', None):
+        if db_field.name in [
+            "default_points",
+            "default_us_status",
+            "default_task_status",
+            "default_priority",
+            "default_severity",
+            "default_issue_status",
+            "default_issue_type",
+        ]:
+            if getattr(self, "obj", None):
                 kwargs["queryset"] = db_field.related_model.objects.filter(
-                                                          project=self.obj)
+                    project=self.obj
+                )
             else:
                 kwargs["queryset"] = db_field.related_model.objects.none()
 
-        elif (db_field.name in ["owner"]
-                and getattr(self, 'obj', None)):
+        elif db_field.name in ["owner"] and getattr(self, "obj", None):
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                         memberships__project=self.obj.project)
+                memberships__project=self.obj.project
+            )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -170,11 +241,7 @@ class ProjectAdmin(admin.ModelAdmin):
         super().delete_model(request, obj)
 
     ## Actions
-    actions = [
-        "make_public",
-        "make_private",
-        "delete_selected"
-    ]
+    actions = ["make_public", "make_private", "delete_selected"]
 
     @transaction.atomic
     def make_public(self, request, queryset):
@@ -183,14 +250,23 @@ class ProjectAdmin(admin.ModelAdmin):
         for project in queryset.exclude(is_private=False):
             project.is_private = False
 
-            anon_permissions = list(map(lambda perm: perm[0], permissions.ANON_PERMISSIONS))
-            project.anon_permissions = list(set((project.anon_permissions or []) + anon_permissions))
-            project.public_permissions = list(set((project.public_permissions or []) + anon_permissions))
+            anon_permissions = list(
+                map(lambda perm: perm[0], permissions.ANON_PERMISSIONS)
+            )
+            project.anon_permissions = list(
+                set((project.anon_permissions or []) + anon_permissions)
+            )
+            project.public_permissions = list(
+                set((project.public_permissions or []) + anon_permissions)
+            )
 
             project.save()
             total_updates += 1
 
-        self.message_user(request, _("{count} successfully made public.").format(count=total_updates))
+        self.message_user(
+            request, _("{count} successfully made public.").format(count=total_updates)
+        )
+
     make_public.short_description = _("Make public")
 
     @transaction.atomic
@@ -205,21 +281,31 @@ class ProjectAdmin(admin.ModelAdmin):
             project.save()
             total_updates += 1
 
-        self.message_user(request, _("{count} successfully made private.").format(count=total_updates))
+        self.message_user(
+            request, _("{count} successfully made private.").format(count=total_updates)
+        )
+
     make_private.short_description = _("Make private")
 
     def delete_selected(self, request, queryset):
         # NOTE: This must be equal to taiga.projects.models.Project.delete_related_content
-        from taiga.events.apps import (connect_events_signals,
-                                       disconnect_events_signals)
-        from taiga.projects.tasks.apps import (connect_all_tasks_signals,
-                                               disconnect_all_tasks_signals)
-        from taiga.projects.userstories.apps import (connect_all_userstories_signals,
-                                                     disconnect_all_userstories_signals)
-        from taiga.projects.issues.apps import (connect_all_issues_signals,
-                                                disconnect_all_issues_signals)
-        from taiga.projects.apps import (connect_memberships_signals,
-                                         disconnect_memberships_signals)
+        from taiga.events.apps import connect_events_signals, disconnect_events_signals
+        from taiga.projects.tasks.apps import (
+            connect_all_tasks_signals,
+            disconnect_all_tasks_signals,
+        )
+        from taiga.projects.userstories.apps import (
+            connect_all_userstories_signals,
+            disconnect_all_userstories_signals,
+        )
+        from taiga.projects.issues.apps import (
+            connect_all_issues_signals,
+            disconnect_all_issues_signals,
+        )
+        from taiga.projects.apps import (
+            connect_memberships_signals,
+            disconnect_memberships_signals,
+        )
 
         disconnect_events_signals()
         disconnect_all_issues_signals()
@@ -227,7 +313,7 @@ class ProjectAdmin(admin.ModelAdmin):
         disconnect_all_userstories_signals()
         disconnect_memberships_signals()
 
-        r =  admin.actions.delete_selected(self, request, queryset)
+        r = admin.actions.delete_selected(self, request, queryset)
 
         connect_events_signals()
         connect_all_issues_signals()
@@ -236,6 +322,7 @@ class ProjectAdmin(admin.ModelAdmin):
         connect_memberships_signals()
 
         return r
+
     delete_selected.short_description = _("Delete selected %(verbose_name_plural)s")
 
 
@@ -254,6 +341,7 @@ class UserStoryStatusAdmin(admin.ModelAdmin):
 
 # Tasks common admins
 
+
 class TaskStatusAdmin(admin.ModelAdmin):
     list_display = ["project", "order", "name", "is_closed", "color"]
     list_display_links = ["name"]
@@ -261,6 +349,7 @@ class TaskStatusAdmin(admin.ModelAdmin):
 
 
 # Issues common admins
+
 
 class SeverityAdmin(admin.ModelAdmin):
     list_display = ["project", "order", "name", "color"]
@@ -288,6 +377,7 @@ class IssueStatusAdmin(admin.ModelAdmin):
 
 class ProjectTemplateAdmin(admin.ModelAdmin):
     pass
+
 
 admin.site.register(models.IssueStatus, IssueStatusAdmin)
 admin.site.register(models.TaskStatus, TaskStatusAdmin)

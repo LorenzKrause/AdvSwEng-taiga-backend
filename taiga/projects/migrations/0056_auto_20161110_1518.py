@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0055_json_to_jsonb'),
+        ("projects", "0055_json_to_jsonb"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='is_contact_activated',
-            field=models.BooleanField(default=True, verbose_name='active contact'),
+            model_name="project",
+            name="is_contact_activated",
+            field=models.BooleanField(default=True, verbose_name="active contact"),
         ),
         migrations.AddField(
-            model_name='projecttemplate',
-            name='is_contact_activated',
-            field=models.BooleanField(default=True, verbose_name='active contact'),
+            model_name="projecttemplate",
+            name="is_contact_activated",
+            field=models.BooleanField(default=True, verbose_name="active contact"),
         ),
     ]

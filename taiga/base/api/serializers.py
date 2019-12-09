@@ -144,6 +144,7 @@ class DictWithMetadata(dict):
     """
     A dict-like object, that can have additional properties attached.
     """
+
     def __getstate__(self):
         """
         Used by pickle (e.g., caching).
@@ -157,6 +158,7 @@ class OrderedDictWithMetadata(OrderedDict):
     """
     A sorted dict-like object, that can have additional properties attached.
     """
+
     def __getstate__(self):
         """
         Used by pickle (e.g., caching).
@@ -171,12 +173,18 @@ def _is_protected_type(obj):
     True if the object is a native datatype that does not need to
     be serialized further.
     """
-    return isinstance(obj, (
-        types.NoneType,
-        int,
-        datetime.datetime, datetime.date, datetime.time,
-        float, Decimal,
-        basestring)
+    return isinstance(
+        obj,
+        (
+            types.NoneType,
+            int,
+            datetime.datetime,
+            datetime.date,
+            datetime.time,
+            float,
+            Decimal,
+            basestring,
+        ),
     )
 
 
@@ -187,9 +195,11 @@ def _get_declared_fields(bases, attrs):
 
     Note that all fields from the base classes are used.
     """
-    fields = [(field_name, attrs.pop(field_name))
-              for field_name, obj in list(six.iteritems(attrs))
-              if isinstance(obj, Field)]
+    fields = [
+        (field_name, attrs.pop(field_name))
+        for field_name, obj in list(six.iteritems(attrs))
+        if isinstance(obj, Field)
+    ]
     fields.sort(key=lambda x: x[1].creation_counter)
 
     # If this class is subclassing another Serializer, add that Serializer's
@@ -212,6 +222,7 @@ class SerializerOptions(object):
     """
     Meta class options for Serializer
     """
+
     def __init__(self, meta):
         self.depth = getattr(meta, "depth", 0)
         self.fields = getattr(meta, "fields", ())
@@ -223,15 +234,24 @@ class BaseSerializer(WritableField):
     This is the Serializer implementation.
     We need to implement it as `BaseSerializer` due to metaclass magicks.
     """
+
     class Meta(object):
         pass
 
     _options_class = SerializerOptions
     _dict_class = OrderedDictWithMetadata
 
-    def __init__(self, instance=None, data=None, files=None,
-                 context=None, partial=False, many=None,
-                 allow_add_remove=False, **kwargs):
+    def __init__(
+        self,
+        instance=None,
+        data=None,
+        files=None,
+        context=None,
+        partial=False,
+        many=None,
+        allow_add_remove=False,
+        **kwargs
+    ):
         super(BaseSerializer, self).__init__(**kwargs)
         self.opts = self._options_class(self.Meta)
         self.parent = None
@@ -252,10 +272,14 @@ class BaseSerializer(WritableField):
         self._errors = None
 
         if many and instance is not None and not hasattr(instance, "__iter__"):
-            raise ValueError("instance should be a queryset or other iterable with many=True")
+            raise ValueError(
+                "instance should be a queryset or other iterable with many=True"
+            )
 
         if allow_add_remove and not many:
-            raise ValueError("allow_add_remove should only be used for bulk updates, but you have not set many=True")
+            raise ValueError(
+                "allow_add_remove should only be used for bulk updates, but you have not set many=True"
+            )
 
     #####
     # Methods to determine which fields to use when (de)serializing objects.
@@ -288,7 +312,9 @@ class BaseSerializer(WritableField):
 
         # If "fields" is specified, use those fields, in that order.
         if self.opts.fields:
-            assert isinstance(self.opts.fields, (list, tuple)), "`fields` must be a list or tuple"
+            assert isinstance(
+                self.opts.fields, (list, tuple)
+            ), "`fields` must be a list or tuple"
             new = OrderedDict()
             for key in self.opts.fields:
                 new[key] = ret[key]
@@ -296,7 +322,9 @@ class BaseSerializer(WritableField):
 
         # Remove anything in "exclude"
         if self.opts.exclude:
-            assert isinstance(self.opts.exclude, (list, tuple)), "`exclude` must be a list or tuple"
+            assert isinstance(
+                self.opts.exclude, (list, tuple)
+            ), "`exclude` must be a list or tuple"
             for key in self.opts.exclude:
                 ret.pop(key, None)
 
@@ -350,7 +378,9 @@ class BaseSerializer(WritableField):
                 if validate_method:
                     attrs = validate_method(attrs, source)
             except ValidationError as err:
-                self._errors[field_name] = self._errors.get(field_name, []) + list(err.messages)
+                self._errors[field_name] = self._errors.get(field_name, []) + list(
+                    err.messages
+                )
 
         # If there are already errors, we don't run .validate() because
         # field-validation failed and thus `attrs` may not be complete.
@@ -361,7 +391,9 @@ class BaseSerializer(WritableField):
             except ValidationError as err:
                 if hasattr(err, "message_dict"):
                     for field_name, error_messages in err.message_dict.items():
-                        self._errors[field_name] = self._errors.get(field_name, []) + list(error_messages)
+                        self._errors[field_name] = self._errors.get(
+                            field_name, []
+                        ) + list(error_messages)
                 elif hasattr(err, "messages"):
                     self._errors["non_field_errors"] = err.messages
 
@@ -423,7 +455,9 @@ class BaseSerializer(WritableField):
         # This horrible stuff is to manage serializers rendering to HTML
         field._errors = self._errors.get(key) if self._errors else None
         field._name = field_name
-        field._value = self.init_data.get(key) if self._errors and self.init_data else value
+        field._value = (
+            self.init_data.get(key) if self._errors and self.init_data else value
+        )
         if not field.label:
             field.label = pretty_name(key)
         return field
@@ -460,13 +494,15 @@ class BaseSerializer(WritableField):
         if self.many is not None:
             many = self.many
         else:
-            many = hasattr(value, "__iter__") and not isinstance(value, (Page, dict, six.text_type))
+            many = hasattr(value, "__iter__") and not isinstance(
+                value, (Page, dict, six.text_type)
+            )
 
         if many:
             try:
                 return [self.to_native(item) for item in value]
             except TypeError:
-                pass # LazyObject is iterable so we need to catch this
+                pass  # LazyObject is iterable so we need to catch this
         return self.to_native(value)
 
     def field_from_native(self, data, files, field_name, into):
@@ -489,13 +525,19 @@ class BaseSerializer(WritableField):
                 return
 
         # Set the serializer object if it exists
-        obj = get_component(self.parent.object, self.source or field_name) if self.parent.object else None
+        obj = (
+            get_component(self.parent.object, self.source or field_name)
+            if self.parent.object
+            else None
+        )
 
         # If we have a model manager or similar object then we need
         # to iterate through each instance.
-        if (self.many and
-            not hasattr(obj, "__iter__") and
-            is_simple_callable(getattr(obj, "all", None))):
+        if (
+            self.many
+            and not hasattr(obj, "__iter__")
+            and is_simple_callable(getattr(obj, "all", None))
+        ):
             obj = obj.all()
 
         if self.source == "*":
@@ -513,7 +555,7 @@ class BaseSerializer(WritableField):
                     "context": self.context,
                     "partial": self.partial,
                     "many": self.many,
-                    "allow_add_remove": self.allow_add_remove
+                    "allow_add_remove": self.allow_add_remove,
                 }
                 serializer = self.__class__(**kwargs)
 
@@ -549,11 +591,16 @@ class BaseSerializer(WritableField):
             if self.many is not None:
                 many = self.many
             else:
-                many = hasattr(data, "__iter__") and not isinstance(data, (Page, dict, six.text_type))
+                many = hasattr(data, "__iter__") and not isinstance(
+                    data, (Page, dict, six.text_type)
+                )
                 if many:
-                    warnings.warn("Implicit list/queryset serialization is deprecated. "
-                                  "Use the `many=True` flag when instantiating the serializer.",
-                                  DeprecationWarning, stacklevel=3)
+                    warnings.warn(
+                        "Implicit list/queryset serialization is deprecated. "
+                        "Use the `many=True` flag when instantiating the serializer.",
+                        DeprecationWarning,
+                        stacklevel=3,
+                    )
 
             if many:
                 ret = RelationsList()
@@ -566,10 +613,14 @@ class BaseSerializer(WritableField):
                     # individual object is being updated for each item in the
                     # incoming data
                     objects = self.object
-                    identities = [self.get_identity(self.to_native(obj)) for obj in objects]
+                    identities = [
+                        self.get_identity(self.to_native(obj)) for obj in objects
+                    ]
                     identity_to_objects = dict(zip(identities, objects))
 
-                if hasattr(data, "__iter__") and not isinstance(data, (dict, six.text_type)):
+                if hasattr(data, "__iter__") and not isinstance(
+                    data, (dict, six.text_type)
+                ):
                     for item in data:
                         if update:
                             # Determine which object we"re updating
@@ -577,7 +628,15 @@ class BaseSerializer(WritableField):
                             self.object = identity_to_objects.pop(identity, None)
                             if self.object is None and not self.allow_add_remove:
                                 ret.append(None)
-                                errors.append({"non_field_errors": [_("Cannot create a new item, only existing items may be updated.")]})
+                                errors.append(
+                                    {
+                                        "non_field_errors": [
+                                            _(
+                                                "Cannot create a new item, only existing items may be updated."
+                                            )
+                                        ]
+                                    }
+                                )
                                 continue
 
                         ret.append(self.from_native(item, None))
@@ -588,7 +647,9 @@ class BaseSerializer(WritableField):
 
                     self._errors = any(errors) and errors or []
                 else:
-                    self._errors = {"non_field_errors": [_("Expected a list of items.")]}
+                    self._errors = {
+                        "non_field_errors": [_("Expected a list of items.")]
+                    }
             else:
                 ret = self.from_native(data, files)
 
@@ -613,15 +674,20 @@ class BaseSerializer(WritableField):
             else:
                 many = hasattr(obj, "__iter__") and not isinstance(obj, (Page, dict))
                 if many:
-                    warnings.warn("Implicit list/queryset serialization is deprecated. "
-                                  "Use the `many=True` flag when instantiating the serializer.",
-                                  DeprecationWarning, stacklevel=2)
+                    warnings.warn(
+                        "Implicit list/queryset serialization is deprecated. "
+                        "Use the `many=True` flag when instantiating the serializer.",
+                        DeprecationWarning,
+                        stacklevel=2,
+                    )
 
             if many:
                 try:
                     self._data = [self.to_native(item) for item in obj]
                 except TypeError:
-                    self._data = self.to_native(obj) # LazyObject is iterable so we need to catch this
+                    self._data = self.to_native(
+                        obj
+                    )  # LazyObject is iterable so we need to catch this
             else:
                 self._data = self.to_native(obj)
 
@@ -657,8 +723,10 @@ class BaseSerializer(WritableField):
         API schemas for auto-documentation.
         """
         return OrderedDict(
-            [(field_name, field.metadata())
-            for field_name, field in six.iteritems(self.fields)]
+            [
+                (field_name, field.metadata())
+                for field_name, field in six.iteritems(self.fields)
+            ]
         )
 
 
@@ -679,11 +747,13 @@ class Serializer(six.with_metaclass(SerializerMetaclass, BaseSerializer)):
                 continue
 
             try:
-                validate_method = getattr(self, 'validate_%s' % field_name, None)
+                validate_method = getattr(self, "validate_%s" % field_name, None)
                 if validate_method:
                     attrs = validate_method(attrs, source)
             except ValidationError as err:
-                self._errors[field_name] = self._errors.get(field_name, []) + list(err.messages)
+                self._errors[field_name] = self._errors.get(field_name, []) + list(
+                    err.messages
+                )
 
         # If there are already errors, we don't run .validate() because
         # field-validation failed and thus `attrs` may not be complete.
@@ -692,11 +762,13 @@ class Serializer(six.with_metaclass(SerializerMetaclass, BaseSerializer)):
             try:
                 attrs = self.validate(attrs)
             except ValidationError as err:
-                if hasattr(err, 'message_dict'):
+                if hasattr(err, "message_dict"):
                     for field_name, error_messages in err.message_dict.items():
-                        self._errors[field_name] = self._errors.get(field_name, []) + list(error_messages)
-                elif hasattr(err, 'messages'):
-                    self._errors['non_field_errors'] = err.messages
+                        self._errors[field_name] = self._errors.get(
+                            field_name, []
+                        ) + list(error_messages)
+                elif hasattr(err, "messages"):
+                    self._errors["non_field_errors"] = err.messages
 
         return attrs
 
@@ -705,6 +777,7 @@ class ModelSerializerOptions(SerializerOptions):
     """
     Meta class options for ModelSerializer
     """
+
     def __init__(self, meta):
         super(ModelSerializerOptions, self).__init__(meta)
         self.model = getattr(meta, "model", None)
@@ -717,6 +790,7 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
     """
     A serializer that deals with model instances and querysets.
     """
+
     _options_class = ModelSerializerOptions
 
     field_mapping = {
@@ -748,8 +822,10 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
         """
 
         cls = self.opts.model
-        assert cls is not None, \
-                "Serializer class '%s' is missing `model` Meta option" % self.__class__.__name__
+        assert cls is not None, (
+            "Serializer class '%s' is missing `model` Meta option"
+            % self.__class__.__name__
+        )
         opts = cls._meta.concrete_model._meta
         ret = OrderedDict()
         nested = bool(self.opts.depth)
@@ -772,8 +848,7 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
             has_through_model = False
 
             if model_field.rel:
-                to_many = isinstance(model_field,
-                                     models.fields.related.ManyToManyField)
+                to_many = isinstance(model_field, models.fields.related.ManyToManyField)
                 related_model = _resolve_model(model_field.rel.to)
 
                 if to_many and not model_field.rel.through._meta.auto_created:
@@ -786,7 +861,7 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
                         "is due to be deprecated. "
                         "Use `get_nested_field(model_field, related_model, "
                         "to_many) instead",
-                        PendingDeprecationWarning
+                        PendingDeprecationWarning,
                     )
                     field = self.get_nested_field(model_field)
                 else:
@@ -798,7 +873,7 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
                         "signature is due to be deprecated. "
                         "Use `get_related_field(model_field, related_model, "
                         "to_many) instead",
-                        PendingDeprecationWarning
+                        PendingDeprecationWarning,
                     )
                     field = self.get_related_field(model_field, to_many=to_many)
                 else:
@@ -822,12 +897,13 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
             # NOTE: Rewrite after Django 1.10 upgrade.
             #       See https://docs.djangoproject.com/es/1.10/ref/models/meta/#migrating-from-the-old-api
             reverse_rels = [
-                f for f in opts.get_fields()
-                if (f.one_to_many or f.one_to_one)
-                and f.auto_created and not f.concrete
+                f
+                for f in opts.get_fields()
+                if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
             ]
             reverse_rels += [
-                f for f in opts.get_fields(include_hidden=True)
+                f
+                for f in opts.get_fields(include_hidden=True)
                 if f.many_to_many and f.auto_created
             ]
 
@@ -838,12 +914,13 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
             related_model = relation.model
             to_many = relation.field.rel.multiple
             has_through_model = False
-            is_m2m = isinstance(relation.field,
-                                models.fields.related.ManyToManyField)
+            is_m2m = isinstance(relation.field, models.fields.related.ManyToManyField)
 
-            if (is_m2m and
-                hasattr(relation.field.rel, "through") and
-                not relation.field.rel.through._meta.auto_created):
+            if (
+                is_m2m
+                and hasattr(relation.field.rel, "through")
+                and not relation.field.rel.through._meta.auto_created
+            ):
                 has_through_model = True
 
             if nested:
@@ -863,24 +940,26 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
             assert field_name not in self.base_fields.keys(), (
                 "field '%s' on serializer '%s' specified in "
                 "`read_only_fields`, but also added "
-                "as an explicit field.  Remove it from `read_only_fields`." %
-                (field_name, self.__class__.__name__))
+                "as an explicit field.  Remove it from `read_only_fields`."
+                % (field_name, self.__class__.__name__)
+            )
             assert field_name in ret, (
                 "Non-existant field '%s' specified in `read_only_fields` "
-                "on serializer '%s'." %
-                (field_name, self.__class__.__name__))
+                "on serializer '%s'." % (field_name, self.__class__.__name__)
+            )
             ret[field_name].read_only = True
 
         for field_name in self.opts.write_only_fields:
             assert field_name not in self.base_fields.keys(), (
                 "field '%s' on serializer '%s' specified in "
                 "`write_only_fields`, but also added "
-                "as an explicit field.  Remove it from `write_only_fields`." %
-                (field_name, self.__class__.__name__))
+                "as an explicit field.  Remove it from `write_only_fields`."
+                % (field_name, self.__class__.__name__)
+            )
             assert field_name in ret, (
                 "Non-existant field '%s' specified in `write_only_fields` "
-                "on serializer '%s'." %
-                (field_name, self.__class__.__name__))
+                "on serializer '%s'." % (field_name, self.__class__.__name__)
+            )
             ret[field_name].write_only = True
 
         # Add the `i18n` flag to any fields that have been specified
@@ -902,6 +981,7 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
 
         Note that model_field will be `None` for reverse relationships.
         """
+
         class NestedModelSerializer(ModelSerializer):
             class Meta:
                 model = related_model
@@ -918,13 +998,10 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
         # TODO: filter queryset using:
         # .using(db).complex_filter(self.rel.limit_choices_to)
 
-        kwargs = {
-            "queryset": related_model._default_manager,
-            "many": to_many
-        }
+        kwargs = {"queryset": related_model._default_manager, "many": to_many}
 
         if model_field:
-            kwargs["required"] = not(model_field.null or model_field.blank)
+            kwargs["required"] = not (model_field.null or model_field.blank)
 
         return PrimaryKeyRelatedField(**kwargs)
 
@@ -960,8 +1037,9 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
             return ChoiceField(**kwargs)
 
         # put this below the ChoiceField because min_value isn't a valid initializer
-        if issubclass(model_field.__class__, models.PositiveIntegerField) or\
-                issubclass(model_field.__class__, models.PositiveSmallIntegerField):
+        if issubclass(model_field.__class__, models.PositiveIntegerField) or issubclass(
+            model_field.__class__, models.PositiveSmallIntegerField
+        ):
             kwargs["min_value"] = 0
 
         attribute_dict = {
@@ -1005,10 +1083,12 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
 
         for field_name, field in self.fields.items():
             field_name = field.source or field_name
-            if field_name in exclusions \
-                and not field.read_only \
-                and field.required \
-                and not isinstance(field, Serializer):
+            if (
+                field_name in exclusions
+                and not field.read_only
+                and field.required
+                and not isinstance(field, Serializer)
+            ):
                 exclusions.remove(field_name)
         return exclusions
 
@@ -1044,8 +1124,7 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
         related_objes_with_models = [
             (f, f.model if f.model != model else None)
             for f in meta.get_fields()
-            if (f.one_to_many or f.one_to_one)
-            and f.auto_created and not f.concrete
+            if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         for (obj, model) in related_objes_with_models:
             field_name = obj.get_accessor_name()
@@ -1136,14 +1215,15 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
         if getattr(obj, "_m2m_data", None):
             for accessor_name, object_list in obj._m2m_data.items():
                 setattr(obj, accessor_name, object_list)
-            del(obj._m2m_data)
+            del obj._m2m_data
 
         if getattr(obj, "_related_data", None):
-            related_fields = dict([
-                (field.get_accessor_name(), field)
-                for field, model
-                in obj._meta.get_all_related_objects_with_model()
-            ])
+            related_fields = dict(
+                [
+                    (field.get_accessor_name(), field)
+                    for field, model in obj._meta.get_all_related_objects_with_model()
+                ]
+            )
             for accessor_name, related in obj._related_data.items():
                 if isinstance(related, RelationsList):
                     # Nested reverse fk relationship
@@ -1164,18 +1244,21 @@ class ModelSerializer((six.with_metaclass(SerializerMetaclass, BaseSerializer)))
                 else:
                     # Reverse FK or reverse one-one
                     setattr(obj, accessor_name, related)
-            del(obj._related_data)
+            del obj._related_data
 
 
 class HyperlinkedModelSerializerOptions(ModelSerializerOptions):
     """
     Options for HyperlinkedModelSerializer
     """
+
     def __init__(self, meta):
         super(HyperlinkedModelSerializerOptions, self).__init__(meta)
         self.view_name = getattr(meta, "view_name", None)
         self.lookup_field = getattr(meta, "lookup_field", None)
-        self.url_field_name = getattr(meta, "url_field_name", api_settings.URL_FIELD_NAME)
+        self.url_field_name = getattr(
+            meta, "url_field_name", api_settings.URL_FIELD_NAME
+        )
 
 
 class HyperlinkedModelSerializer(ModelSerializer):
@@ -1183,6 +1266,7 @@ class HyperlinkedModelSerializer(ModelSerializer):
     A subclass of ModelSerializer that uses hyperlinked relationships,
     instead of primary key relationships.
     """
+
     _options_class = HyperlinkedModelSerializerOptions
     _default_view_name = "%(model_name)s-detail"
     _hyperlink_field_class = HyperlinkedRelatedField
@@ -1196,8 +1280,7 @@ class HyperlinkedModelSerializer(ModelSerializer):
 
         if self.opts.url_field_name not in fields:
             url_field = self._hyperlink_identify_field_class(
-                view_name=self.opts.view_name,
-                lookup_field=self.opts.lookup_field
+                view_name=self.opts.view_name, lookup_field=self.opts.lookup_field
             )
             ret = self._dict_class()
             ret[self.opts.url_field_name] = url_field
@@ -1219,11 +1302,11 @@ class HyperlinkedModelSerializer(ModelSerializer):
         kwargs = {
             "queryset": related_model._default_manager,
             "view_name": self._get_default_view_name(related_model),
-            "many": to_many
+            "many": to_many,
         }
 
         if model_field:
-            kwargs["required"] = not(model_field.null or model_field.blank)
+            kwargs["required"] = not (model_field.null or model_field.blank)
 
         if self.opts.lookup_field:
             kwargs["lookup_field"] = self.opts.lookup_field
@@ -1247,7 +1330,7 @@ class HyperlinkedModelSerializer(ModelSerializer):
         model_meta = model._meta
         format_kwargs = {
             "app_label": model_meta.app_label,
-            "model_name": model_meta.object_name.lower()
+            "model_name": model_meta.object_name.lower(),
         }
         return self._default_view_name % format_kwargs
 

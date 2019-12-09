@@ -31,10 +31,12 @@ from taiga.projects.models import Project
 from taiga.projects.notifications.mixins import WatchedResourceMixin
 from taiga.projects.notifications.mixins import WatchersViewSetMixin
 from taiga.projects.history.mixins import HistoryResourceMixin
-from taiga.projects.tasks.validators import UpdateMilestoneBulkValidator as \
-    TasksUpdateMilestoneValidator
-from taiga.projects.issues.validators import UpdateMilestoneBulkValidator as \
-    IssuesUpdateMilestoneValidator
+from taiga.projects.tasks.validators import (
+    UpdateMilestoneBulkValidator as TasksUpdateMilestoneValidator,
+)
+from taiga.projects.issues.validators import (
+    UpdateMilestoneBulkValidator as IssuesUpdateMilestoneValidator,
+)
 
 from . import serializers
 from . import services
@@ -47,8 +49,9 @@ from django_pglocks import advisory_lock
 import datetime
 
 
-class MilestoneViewSet(HistoryResourceMixin, WatchedResourceMixin,
-                       BlockedByProjectMixin, ModelCrudViewSet):
+class MilestoneViewSet(
+    HistoryResourceMixin, WatchedResourceMixin, BlockedByProjectMixin, ModelCrudViewSet
+):
     serializer_class = serializers.MilestoneSerializer
     validator_class = validators.MilestoneValidator
     permission_classes = (permissions.MilestonePermission,)
@@ -59,17 +62,15 @@ class MilestoneViewSet(HistoryResourceMixin, WatchedResourceMixin,
         filters.EstimatedStartFilter,
         filters.EstimatedFinishFilter,
     )
-    filter_fields = (
+    filter_fields = ("project", "project__slug", "closed")
+    order_by_fields = (
         "project",
-        "project__slug",
-        "closed"
+        "name",
+        "estimated_start",
+        "estimated_finish",
+        "closed",
+        "created_date",
     )
-    order_by_fields = ("project",
-                       "name",
-                       "estimated_start",
-                       "estimated_finish",
-                       "closed",
-                       "created_date")
     queryset = models.Milestone.objects.all()
 
     def create(self, request, *args, **kwargs):
@@ -110,7 +111,7 @@ class MilestoneViewSet(HistoryResourceMixin, WatchedResourceMixin,
 
         super().pre_save(obj)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=["get"])
     def stats(self, request, pk=None):
         milestone = get_object_or_404(models.Milestone, pk=pk)
 
@@ -118,31 +119,38 @@ class MilestoneViewSet(HistoryResourceMixin, WatchedResourceMixin,
 
         total_points = milestone.total_points
         milestone_stats = {
-            'name': milestone.name,
-            'estimated_start': milestone.estimated_start,
-            'estimated_finish': milestone.estimated_finish,
-            'total_points': total_points,
-            'completed_points': milestone.closed_points.values(),
-            'total_userstories': milestone.cached_user_stories.count(),
-            'completed_userstories': milestone.cached_user_stories.filter(is_closed=True).count(),
-            'total_tasks': milestone.tasks.count(),
-            'completed_tasks': milestone.tasks.filter(status__is_closed=True).count(),
-            'iocaine_doses': milestone.tasks.filter(is_iocaine=True).count(),
-            'days': []
+            "name": milestone.name,
+            "estimated_start": milestone.estimated_start,
+            "estimated_finish": milestone.estimated_finish,
+            "total_points": total_points,
+            "completed_points": milestone.closed_points.values(),
+            "total_userstories": milestone.cached_user_stories.count(),
+            "completed_userstories": milestone.cached_user_stories.filter(
+                is_closed=True
+            ).count(),
+            "total_tasks": milestone.tasks.count(),
+            "completed_tasks": milestone.tasks.filter(status__is_closed=True).count(),
+            "iocaine_doses": milestone.tasks.filter(is_iocaine=True).count(),
+            "days": [],
         }
         current_date = milestone.estimated_start
         sumTotalPoints = sum(total_points.values())
         optimal_points = sumTotalPoints
         milestone_days = (milestone.estimated_finish - milestone.estimated_start).days
-        optimal_points_per_day = sumTotalPoints / milestone_days if milestone_days else 0
+        optimal_points_per_day = (
+            sumTotalPoints / milestone_days if milestone_days else 0
+        )
 
         while current_date <= milestone.estimated_finish:
-            milestone_stats['days'].append({
-                'day': current_date,
-                'name': current_date.day,
-                'open_points':  sumTotalPoints - milestone.total_closed_points_by_date(current_date),
-                'optimal_points': optimal_points,
-            })
+            milestone_stats["days"].append(
+                {
+                    "day": current_date,
+                    "name": current_date.day,
+                    "open_points": sumTotalPoints
+                    - milestone.total_closed_points_by_date(current_date),
+                    "optimal_points": optimal_points,
+                }
+            )
             current_date = current_date + datetime.timedelta(days=1)
             optimal_points -= optimal_points_per_day
 
@@ -164,7 +172,9 @@ class MilestoneViewSet(HistoryResourceMixin, WatchedResourceMixin,
 
         if data["bulk_stories"]:
             self.check_permissions(request, "move_uss_to_sprint", project)
-            services.update_userstories_milestone_in_bulk(data["bulk_stories"], milestone_result)
+            services.update_userstories_milestone_in_bulk(
+                data["bulk_stories"], milestone_result
+            )
             services.snapshot_userstories_in_bulk(data["bulk_stories"], request.user)
 
         return response.NoContent()
@@ -185,7 +195,9 @@ class MilestoneViewSet(HistoryResourceMixin, WatchedResourceMixin,
 
         if data["bulk_tasks"]:
             self.check_permissions(request, "move_tasks_to_sprint", project)
-            services.update_tasks_milestone_in_bulk(data["bulk_tasks"], milestone_result)
+            services.update_tasks_milestone_in_bulk(
+                data["bulk_tasks"], milestone_result
+            )
             services.snapshot_tasks_in_bulk(data["bulk_tasks"], request.user)
 
         return response.NoContent()
@@ -206,7 +218,9 @@ class MilestoneViewSet(HistoryResourceMixin, WatchedResourceMixin,
 
         if data["bulk_issues"]:
             self.check_permissions(request, "move_issues_to_sprint", project)
-            services.update_issues_milestone_in_bulk(data["bulk_issues"], milestone_result)
+            services.update_issues_milestone_in_bulk(
+                data["bulk_issues"], milestone_result
+            )
             services.snapshot_issues_in_bulk(data["bulk_issues"], request.user)
 
         return response.NoContent()

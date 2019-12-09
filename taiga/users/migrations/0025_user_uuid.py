@@ -17,19 +17,28 @@ def update_uuids(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0024_auto_20170406_0727'),
+        ("users", "0024_auto_20170406_0727"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='uuid',
-            field=models.CharField(default=taiga.users.models.get_default_uuid, editable=False, max_length=32),
+            model_name="user",
+            name="uuid",
+            field=models.CharField(
+                default=taiga.users.models.get_default_uuid,
+                editable=False,
+                max_length=32,
+            ),
         ),
         migrations.RunPython(update_uuids, lambda apps, schema_editor: None),
         migrations.AlterField(
-            model_name='user',
-            name='uuid',
-            field=models.CharField(default=taiga.users.models.get_default_uuid, editable=False, max_length=32, unique=True),
+            model_name="user",
+            name="uuid",
+            field=models.CharField(
+                default=taiga.users.models.get_default_uuid,
+                editable=False,
+                max_length=32,
+                unique=True,
+            ),
         ),
     ]

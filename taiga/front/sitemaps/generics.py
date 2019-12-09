@@ -31,7 +31,7 @@ class GenericSitemap(Sitemap):
             {"url_key": "discover", "changefreq": "daily", "priority": 1},
             {"url_key": "login", "changefreq": "monthly", "priority": 1},
             {"url_key": "register", "changefreq": "monthly", "priority": 1},
-            {"url_key": "forgot-password", "changefreq": "monthly", "priority": 1}
+            {"url_key": "forgot-password", "changefreq": "monthly", "priority": 1},
         ]
 
     def location(self, obj):
@@ -42,4 +42,3 @@ class GenericSitemap(Sitemap):
 
     def priority(self, obj):
         return obj.get("priority", None)
-

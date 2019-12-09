@@ -32,19 +32,25 @@ from taiga.front.templatetags.functions import resolve
 from taiga.projects.history.choices import HistoryType
 
 
-def emit_event(data:dict, routing_key:str, *,
-               sessionid:str=None, channel:str="events",
-               on_commit:bool=True):
+def emit_event(
+    data: dict,
+    routing_key: str,
+    *,
+    sessionid: str = None,
+    channel: str = "events",
+    on_commit: bool = True
+):
     if not sessionid:
         sessionid = mw.get_current_session_id()
 
-    data = {"session_id": sessionid,
-            "data": data}
+    data = {"session_id": sessionid, "data": data}
 
     backend = backends.get_events_backend()
 
     def backend_emit_event():
-        backend.emit_event(message=json.dumps(data), routing_key=routing_key, channel=channel)
+        backend.emit_event(
+            message=json.dumps(data), routing_key=routing_key, channel=channel
+        )
 
     if on_commit:
         connection.on_commit(backend_emit_event)
@@ -52,8 +58,14 @@ def emit_event(data:dict, routing_key:str, *,
         backend_emit_event()
 
 
-def emit_event_for_model(obj, *, type:str="change", channel:str="events",
-                         content_type:str=None, sessionid:str=None):
+def emit_event_for_model(
+    obj,
+    *,
+    type: str = "change",
+    channel: str = "events",
+    content_type: str = None,
+    sessionid: str = None
+):
     """
     Sends a model change event.
     """
@@ -76,33 +88,33 @@ def emit_event_for_model(obj, *, type:str="change", channel:str="events",
     if app_name in settings.INSTALLED_APPS:
         routing_key = "%s.%s" % (routing_key, model_name)
 
-    data = {"type": type,
-            "matches": content_type,
-            "pk": pk}
+    data = {"type": type, "matches": content_type, "pk": pk}
 
-    return emit_event(routing_key=routing_key,
-                      channel=channel,
-                      sessionid=sessionid,
-                      data=data)
+    return emit_event(
+        routing_key=routing_key, channel=channel, sessionid=sessionid, data=data
+    )
 
 
-def emit_event_for_user_notification(user_id,
-                                     *,
-                                     session_id: str=None,
-                                     event_type: str=None,
-                                     data: dict=None):
+def emit_event_for_user_notification(
+    user_id, *, session_id: str = None, event_type: str = None, data: dict = None
+):
     """
     Sends a user notification event.
     """
     return emit_event(
-        data,
-        "web_notifications.{}".format(user_id),
-        sessionid=session_id
+        data, "web_notifications.{}".format(user_id), sessionid=session_id
     )
 
 
-def emit_live_notification_for_model(obj, user, history, *, type:str="change", channel:str="events",
-                                     sessionid:str="not-existing"):
+def emit_live_notification_for_model(
+    obj,
+    user,
+    history,
+    *,
+    type: str = "change",
+    channel: str = "events",
+    sessionid: str = "not-existing"
+):
     """
     Sends a model live notification to users.
     """
@@ -175,14 +187,22 @@ def emit_live_notification_for_model(obj, user, history, *, type:str="change", c
             "body": "Project: {}\n{}".format(obj.project.name, body),
             "url": url,
             "timeout": 10000,
-            "id": history.id
+            "id": history.id,
         },
         "live_notifications.{}".format(user.id),
-        sessionid=sessionid
+        sessionid=sessionid,
     )
 
-def emit_event_for_ids(ids, content_type:str, projectid:int, *,
-                       type:str="change", channel:str="events", sessionid:str=None):
+
+def emit_event_for_ids(
+    ids,
+    content_type: str,
+    projectid: int,
+    *,
+    type: str = "change",
+    channel: str = "events",
+    sessionid: str = None
+):
     assert type in set(["create", "change", "delete"])
     assert isinstance(ids, collections.Iterable)
     assert content_type, "'content_type' parameter is mandatory"
@@ -190,11 +210,8 @@ def emit_event_for_ids(ids, content_type:str, projectid:int, *,
     app_name, model_name = content_type.split(".", 1)
     routing_key = "changes.project.{0}.{1}".format(projectid, app_name)
 
-    data = {"type": type,
-            "matches": content_type,
-            "pk": ids}
+    data = {"type": type, "matches": content_type, "pk": ids}
 
-    return emit_event(routing_key=routing_key,
-                      channel=channel,
-                      sessionid=sessionid,
-                      data=data)
+    return emit_event(
+        routing_key=routing_key, channel=channel, sessionid=sessionid, data=data
+    )

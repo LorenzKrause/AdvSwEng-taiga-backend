@@ -8,34 +8,57 @@ import taiga.base.db.models.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0015_auto_20141230_1212'),
+        ("projects", "0015_auto_20141230_1212"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Webhook',
+            name="Webhook",
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
-                ('url', models.URLField(verbose_name='URL')),
-                ('key', models.TextField(verbose_name='secret key')),
-                ('project', models.ForeignKey(related_name='webhooks', to='projects.Project')),
+                (
+                    "id",
+                    models.AutoField(
+                        serialize=False,
+                        verbose_name="ID",
+                        auto_created=True,
+                        primary_key=True,
+                    ),
+                ),
+                ("url", models.URLField(verbose_name="URL")),
+                ("key", models.TextField(verbose_name="secret key")),
+                (
+                    "project",
+                    models.ForeignKey(related_name="webhooks", to="projects.Project"),
+                ),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='WebhookLog',
+            name="WebhookLog",
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
-                ('url', models.URLField(verbose_name='URL')),
-                ('status', models.IntegerField(verbose_name='Status code')),
-                ('request_data', taiga.base.db.models.fields.JSONField(verbose_name='Request data')),
-                ('response_data', models.TextField(verbose_name='Response data')),
-                ('webhook', models.ForeignKey(related_name='logs', to='webhooks.Webhook')),
+                (
+                    "id",
+                    models.AutoField(
+                        serialize=False,
+                        verbose_name="ID",
+                        auto_created=True,
+                        primary_key=True,
+                    ),
+                ),
+                ("url", models.URLField(verbose_name="URL")),
+                ("status", models.IntegerField(verbose_name="Status code")),
+                (
+                    "request_data",
+                    taiga.base.db.models.fields.JSONField(verbose_name="Request data"),
+                ),
+                ("response_data", models.TextField(verbose_name="Response data")),
+                (
+                    "webhook",
+                    models.ForeignKey(related_name="logs", to="webhooks.Webhook"),
+                ),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
     ]

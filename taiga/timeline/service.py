@@ -52,11 +52,18 @@ def build_project_namespace(project: object):
     return "{0}:{1}".format("project", project.id)
 
 
-def _add_to_object_timeline(obj: object, instance: object, event_type: str, created_datetime: object,
-                            namespace: str="default", extra_data: dict={}):
+def _add_to_object_timeline(
+    obj: object,
+    instance: object,
+    event_type: str,
+    created_datetime: object,
+    namespace: str = "default",
+    extra_data: dict = {},
+):
     assert isinstance(obj, Model), "obj must be a instance of Model"
     assert isinstance(instance, Model), "instance must be a instance of Model"
     from .models import Timeline
+
     event_type_key = _get_impl_key_from_model(instance.__class__, event_type)
     impl = _timeline_impl_map.get(event_type_key, None)
 
@@ -75,25 +82,52 @@ def _add_to_object_timeline(obj: object, instance: object, event_type: str, crea
     )
 
 
-def _add_to_objects_timeline(objects, instance: object, event_type: str, created_datetime: object,
-                             namespace: str="default", extra_data: dict={}):
+def _add_to_objects_timeline(
+    objects,
+    instance: object,
+    event_type: str,
+    created_datetime: object,
+    namespace: str = "default",
+    extra_data: dict = {},
+):
     for obj in objects:
-        _add_to_object_timeline(obj, instance, event_type, created_datetime, namespace, extra_data)
+        _add_to_object_timeline(
+            obj, instance, event_type, created_datetime, namespace, extra_data
+        )
 
 
-def _push_to_timeline(objects, instance: object, event_type: str, created_datetime: object,
-                      namespace: str="default", extra_data: dict={}):
+def _push_to_timeline(
+    objects,
+    instance: object,
+    event_type: str,
+    created_datetime: object,
+    namespace: str = "default",
+    extra_data: dict = {},
+):
     if isinstance(objects, Model):
-        _add_to_object_timeline(objects, instance, event_type, created_datetime, namespace, extra_data)
+        _add_to_object_timeline(
+            objects, instance, event_type, created_datetime, namespace, extra_data
+        )
     elif isinstance(objects, QuerySet) or isinstance(objects, list):
-        _add_to_objects_timeline(objects, instance, event_type, created_datetime, namespace, extra_data)
+        _add_to_objects_timeline(
+            objects, instance, event_type, created_datetime, namespace, extra_data
+        )
     else:
         raise Exception("Invalid objects parameter")
 
 
 @app.task
-def push_to_timelines(project_id, user_id, obj_app_label, obj_model_name, obj_id, event_type,
-                      created_datetime, extra_data={}, refresh_totals=True):
+def push_to_timelines(
+    project_id,
+    user_id,
+    obj_app_label,
+    obj_model_name,
+    obj_id,
+    event_type,
+    created_datetime,
+    extra_data={},
+    refresh_totals=True,
+):
 
     ObjModel = apps.get_model(obj_app_label, obj_model_name)
     try:
@@ -116,9 +150,14 @@ def push_to_timelines(project_id, user_id, obj_app_label, obj_model_name, obj_id
             return
 
         # Project timeline
-        _push_to_timeline(project, obj, event_type, created_datetime,
-                          namespace=build_project_namespace(project),
-                          extra_data=extra_data)
+        _push_to_timeline(
+            project,
+            obj,
+            event_type,
+            created_datetime,
+            namespace=build_project_namespace(project),
+            extra_data=extra_data,
+        )
 
         if refresh_totals:
             project.refresh_totals()
@@ -126,15 +165,25 @@ def push_to_timelines(project_id, user_id, obj_app_label, obj_model_name, obj_id
         if hasattr(obj, "get_related_people"):
             related_people = obj.get_related_people()
 
-            _push_to_timeline(related_people, obj, event_type, created_datetime,
-                              namespace=build_user_namespace(user),
-                              extra_data=extra_data)
+            _push_to_timeline(
+                related_people,
+                obj,
+                event_type,
+                created_datetime,
+                namespace=build_user_namespace(user),
+                extra_data=extra_data,
+            )
     else:
         # Actions not related with a project
         # - Me
-        _push_to_timeline(user, obj, event_type, created_datetime,
-                          namespace=build_user_namespace(user),
-                          extra_data=extra_data)
+        _push_to_timeline(
+            user,
+            obj,
+            event_type,
+            created_datetime,
+            namespace=build_user_namespace(user),
+            extra_data=extra_data,
+        )
 
 
 def get_timeline(obj, namespace=None):
@@ -164,7 +213,9 @@ def filter_timeline_for_user(timeline, user):
     # Filtering private project with some public parts
     content_types = {
         "view_project": ContentType.objects.get_by_natural_key("projects", "project"),
-        "view_milestones": ContentType.objects.get_by_natural_key("milestones", "milestone"),
+        "view_milestones": ContentType.objects.get_by_natural_key(
+            "milestones", "milestone"
+        ),
         "view_epics": ContentType.objects.get_by_natural_key("epics", "epic"),
         "view_us": ContentType.objects.get_by_natural_key("userstories", "userstory"),
         "view_tasks": ContentType.objects.get_by_natural_key("tasks", "task"),
@@ -174,15 +225,21 @@ def filter_timeline_for_user(timeline, user):
     }
 
     for content_type_key, content_type in content_types.items():
-        tl_filter |= Q(project__is_private=True,
-                       project__anon_permissions__contains=[content_type_key],
-                       data_content_type=content_type)
+        tl_filter |= Q(
+            project__is_private=True,
+            project__anon_permissions__contains=[content_type_key],
+            data_content_type=content_type,
+        )
 
     # There is no specific permission for seeing new memberships
-    membership_content_type = ContentType.objects.get_by_natural_key(app_label="projects", model="membership")
-    tl_filter |= Q(project__is_private=True,
-                   project__anon_permissions__contains=["view_project"],
-                   data_content_type=membership_content_type)
+    membership_content_type = ContentType.objects.get_by_natural_key(
+        app_label="projects", model="membership"
+    )
+    tl_filter |= Q(
+        project__is_private=True,
+        project__anon_permissions__contains=["view_project"],
+        data_content_type=membership_content_type,
+    )
 
     # Filtering private projects where user is member
     if not user.is_anonymous():
@@ -191,10 +248,19 @@ def filter_timeline_for_user(timeline, user):
             if membership.is_admin:
                 tl_filter |= Q(project=membership.project)
             else:
-                data_content_types = list(filter(None, [content_types.get(a, None) for a in
-                                                        membership.role.permissions]))
+                data_content_types = list(
+                    filter(
+                        None,
+                        [
+                            content_types.get(a, None)
+                            for a in membership.role.permissions
+                        ],
+                    )
+                )
                 data_content_types.append(membership_content_type)
-                tl_filter |= Q(project=membership.project, data_content_type__in=data_content_types)
+                tl_filter |= Q(
+                    project=membership.project, data_content_type__in=data_content_types
+                )
 
     timeline = timeline.filter(tl_filter)
     return timeline
@@ -250,9 +316,7 @@ def extract_project_info(instance):
 
 
 def extract_user_info(instance):
-    return {
-        "id": instance.pk
-    }
+    return {"id": instance.pk}
 
 
 def extract_milestone_info(instance):
@@ -285,10 +349,7 @@ def extract_userstory_info(instance, include_project=False):
 
 
 def extract_related_userstory_info(instance):
-    return {
-        "id": instance.pk,
-        "subject": instance.user_story.subject
-    }
+    return {"id": instance.pk, "subject": instance.user_story.subject}
 
 
 def extract_issue_info(instance):

@@ -40,16 +40,12 @@ class FileField(Field):
         try:
             read_file = obj.read()
         except UnicodeEncodeError:
-            logger.error("UnicodeEncodeError in %s", obj.name,
-                         exc_info=sys.exc_info())
+            logger.error("UnicodeEncodeError in %s", obj.name, exc_info=sys.exc_info())
             data = ""
         else:
-            data = base64.b64encode(read_file).decode('utf-8')
+            data = base64.b64encode(read_file).decode("utf-8")
 
-        return OrderedDict([
-            ("data", data),
-            ("name", os.path.basename(obj.name)),
-        ])
+        return OrderedDict([("data", data), ("name", os.path.basename(obj.name)),])
 
 
 class ContentTypeField(Field):
@@ -91,10 +87,10 @@ class HistoryUserField(Field):
         if obj is None or obj == {}:
             return []
         try:
-            user = cached_get_user_by_pk(obj['pk'])
+            user = cached_get_user_by_pk(obj["pk"])
         except users_models.User.DoesNotExist:
             user = None
-        return (UserRelatedField().to_value(user), obj['name'])
+        return (UserRelatedField().to_value(user), obj["name"])
 
 
 class HistoryValuesField(Field):
@@ -102,7 +98,7 @@ class HistoryValuesField(Field):
         if obj is None:
             return []
         if "users" in obj:
-            obj['users'] = list(map(UserPkField().to_value, obj['users']))
+            obj["users"] = list(map(UserPkField().to_value, obj["users"]))
         return obj
 
 
@@ -112,7 +108,7 @@ class HistoryDiffField(Field):
             return []
 
         if "assigned_to" in obj:
-            obj['assigned_to'] = list(map(UserPkField().to_value, obj['assigned_to']))
+            obj["assigned_to"] = list(map(UserPkField().to_value, obj["assigned_to"]))
 
         return obj
 

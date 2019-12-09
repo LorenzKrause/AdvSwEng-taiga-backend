@@ -75,24 +75,42 @@ def reset_errors():
 
 ## PROJECT
 
+
 def store_project(data):
     project_data = {}
     for key, value in data.items():
         excluded_fields = [
-            "default_points", "default_us_status", "default_task_status",
-            "default_priority", "default_severity", "default_issue_status",
-            "default_issue_type", "default_epic_status",
-            "memberships", "points",
-            "epic_statuses", "us_statuses", "task_statuses", "issue_statuses",
-            "priorities", "severities",
+            "default_points",
+            "default_us_status",
+            "default_task_status",
+            "default_priority",
+            "default_severity",
+            "default_issue_status",
+            "default_issue_type",
+            "default_epic_status",
+            "memberships",
+            "points",
+            "epic_statuses",
+            "us_statuses",
+            "task_statuses",
+            "issue_statuses",
+            "priorities",
+            "severities",
             "issue_types",
-            "epiccustomattributes", "userstorycustomattributes",
-            "taskcustomattributes", "issuecustomattributes",
-            "roles", "milestones",
-            "wiki_pages", "wiki_links",
+            "epiccustomattributes",
+            "userstorycustomattributes",
+            "taskcustomattributes",
+            "issuecustomattributes",
+            "roles",
+            "milestones",
+            "wiki_pages",
+            "wiki_links",
             "notify_policies",
-            "epics", "user_stories", "issues", "tasks",
-            "is_featured"
+            "epics",
+            "user_stories",
+            "issues",
+            "tasks",
+            "is_featured",
         ]
         if key not in excluded_fields:
             project_data[key] = value
@@ -108,6 +126,7 @@ def store_project(data):
 
 
 ## MISC
+
 
 def _use_id_instead_name_as_key_in_custom_attributes_values(custom_attributes, values):
     ret = {}
@@ -157,7 +176,9 @@ def _store_attachment(project, obj, attachment):
 
 
 def _store_history(project, obj, history, statuses={}):
-    validator = validators.HistoryExportValidator(data=history, context={"project": project, "statuses": statuses})
+    validator = validators.HistoryExportValidator(
+        data=history, context={"project": project, "statuses": statuses}
+    )
     if validator.is_valid():
         validator.object.key = make_key_from_model_object(obj)
         if validator.object.diff is None:
@@ -171,6 +192,7 @@ def _store_history(project, obj, history, statuses={}):
 
 
 ## ROLES
+
 
 def _store_role(project, role):
     validator = validators.RoleExportValidator(data=role)
@@ -195,14 +217,18 @@ def store_roles(project, data):
 
 ## MEMGERSHIPS
 
+
 def _store_membership(project, membership):
-    validator = validators.MembershipExportValidator(data=membership, context={"project": project})
+    validator = validators.MembershipExportValidator(
+        data=membership, context={"project": project}
+    )
     if validator.is_valid():
         validator.object.project = project
         validator.object._importing = True
         validator.object.token = str(uuid.uuid1())
-        validator.object.user = find_invited_user(validator.object.email,
-                                                  default=validator.object.user)
+        validator.object.user = find_invited_user(
+            validator.object.email, default=validator.object.user
+        )
         try:
             validator.save()
         except utils.IntegrityError:
@@ -225,6 +251,7 @@ def store_memberships(project, data):
 
 ## PROJECT ATTRIBUTES
 
+
 def _store_project_attribute_value(project, data, field, serializer):
     validator = serializer(data=data)
     if validator.is_valid():
@@ -240,12 +267,14 @@ def _store_project_attribute_value(project, data, field, serializer):
 def store_project_attributes_values(project, data, field, serializer):
     result = []
     for choice_data in data.get(field, []):
-        result.append(_store_project_attribute_value(project, choice_data, field,
-                                                     serializer))
+        result.append(
+            _store_project_attribute_value(project, choice_data, field, serializer)
+        )
     return result
 
 
 ## DEFAULT PROJECT ATTRIBUTES VALUES
+
 
 def store_default_project_attributes_values(project, data):
     def helper(project, field, related, data):
@@ -254,6 +283,7 @@ def store_default_project_attributes_values(project, data):
         else:
             value = related.all().first()
         setattr(project, field, value)
+
     helper(project, "default_points", project.points, data)
     helper(project, "default_issue_type", project.issue_types, data)
     helper(project, "default_issue_status", project.issue_statuses, data)
@@ -267,6 +297,7 @@ def store_default_project_attributes_values(project, data):
 
 
 ## CUSTOM ATTRIBUTES
+
 
 def _store_custom_attribute(project, data, field, serializer):
     validator = serializer(data=data)
@@ -282,11 +313,14 @@ def _store_custom_attribute(project, data, field, serializer):
 def store_custom_attributes(project, data, field, serializer):
     result = []
     for custom_attribute_data in data.get(field, []):
-        result.append(_store_custom_attribute(project, custom_attribute_data, field, serializer))
+        result.append(
+            _store_custom_attribute(project, custom_attribute_data, field, serializer)
+        )
     return result
 
 
 ## MILESTONE
+
 
 def store_milestone(project, milestone):
     validator = validators.MilestoneExportValidator(data=milestone, project=project)
@@ -315,8 +349,11 @@ def store_milestones(project, data):
 
 ## USER STORIES
 
+
 def _store_role_point(project, us, role_point):
-    validator = validators.RolePointsExportValidator(data=role_point, context={"project": project})
+    validator = validators.RolePointsExportValidator(
+        data=role_point, context={"project": project}
+    )
     if validator.is_valid():
         try:
             existing_role_point = us.role_points.get(role=validator.object.role)
@@ -337,10 +374,21 @@ def store_user_story(project, data):
     if "status" not in data and project.default_us_status:
         data["status"] = project.default_us_status.name
 
-    us_data = {key: value for key, value in data.items() if key not in
-               ["role_points", "custom_attributes_values", 'generated_from_task', 'generated_from_issue']}
+    us_data = {
+        key: value
+        for key, value in data.items()
+        if key
+        not in [
+            "role_points",
+            "custom_attributes_values",
+            "generated_from_task",
+            "generated_from_issue",
+        ]
+    }
 
-    validator = validators.UserStoryExportValidator(data=us_data, context={"project": project})
+    validator = validators.UserStoryExportValidator(
+        data=us_data, context={"project": project}
+    )
 
     if validator.is_valid():
         validator.object.project = project
@@ -377,14 +425,19 @@ def store_user_story(project, data):
 
         custom_attributes_values = data.get("custom_attributes_values", None)
         if custom_attributes_values:
-            custom_attributes = validator.object.project.userstorycustomattributes.all().values('id', 'name')
-            custom_attributes_values = \
-                _use_id_instead_name_as_key_in_custom_attributes_values(custom_attributes,
-                                                                        custom_attributes_values)
+            custom_attributes = validator.object.project.userstorycustomattributes.all().values(
+                "id", "name"
+            )
+            custom_attributes_values = _use_id_instead_name_as_key_in_custom_attributes_values(
+                custom_attributes, custom_attributes_values
+            )
 
-            _store_custom_attributes_values(validator.object, custom_attributes_values,
-                                            "user_story",
-                                            validators.UserStoryCustomAttributesValuesExportValidator)
+            _store_custom_attributes_values(
+                validator.object,
+                custom_attributes_values,
+                "user_story",
+                validators.UserStoryCustomAttributesValuesExportValidator,
+            )
 
         return validator
 
@@ -401,23 +454,22 @@ def store_user_stories(project, data):
     return user_stories
 
 
-def store_user_stories_related_entities(imported_user_stories,
-                                        imported_tasks,
-                                        imported_issues,
-                                        data):
+def store_user_stories_related_entities(
+    imported_user_stories, imported_tasks, imported_issues, data
+):
     for us_data in data.get("user_stories", []):
-        us = imported_user_stories.get(us_data.get('ref'))
-        if not us or \
-                not (us_data.get('generated_from_task')
-                     or us_data.get('generated_from_issue')):
+        us = imported_user_stories.get(us_data.get("ref"))
+        if not us or not (
+            us_data.get("generated_from_task") or us_data.get("generated_from_issue")
+        ):
             continue
 
-        if us_data.get('generated_from_task'):
-            generated_from_task_ref = int(us_data.get('generated_from_task'))
+        if us_data.get("generated_from_task"):
+            generated_from_task_ref = int(us_data.get("generated_from_task"))
             us.generated_from_task = imported_tasks.get(generated_from_task_ref)
 
-        if us_data.get('generated_from_issue'):
-            generated_from_issue_ref = int(us_data.get('generated_from_issue'))
+        if us_data.get("generated_from_issue"):
+            generated_from_issue_ref = int(us_data.get("generated_from_issue"))
             us.generated_from_issue = imported_issues.get(generated_from_issue_ref)
 
         us.save()
@@ -425,9 +477,11 @@ def store_user_stories_related_entities(imported_user_stories,
 
 ## EPICS
 
+
 def _store_epic_related_user_story(project, epic, related_user_story):
-    validator = validators.EpicRelatedUserStoryExportValidator(data=related_user_story,
-                                                               context={"project": project})
+    validator = validators.EpicRelatedUserStoryExportValidator(
+        data=related_user_story, context={"project": project}
+    )
     if validator.is_valid():
         validator.object.epic = epic
         validator.object.save()
@@ -465,7 +519,9 @@ def store_epic(project, data):
             _store_attachment(project, validator.object, epic_attachment)
 
         for related_user_story in data.get("related_user_stories", []):
-            _store_epic_related_user_story(project, validator.object, related_user_story)
+            _store_epic_related_user_story(
+                project, validator.object, related_user_story
+            )
 
         history_entries = data.get("history", [])
         statuses = {s.name: s.id for s in project.epic_statuses.all()}
@@ -477,13 +533,18 @@ def store_epic(project, data):
 
         custom_attributes_values = data.get("custom_attributes_values", None)
         if custom_attributes_values:
-            custom_attributes = validator.object.project.epiccustomattributes.all().values('id', 'name')
-            custom_attributes_values = \
-                _use_id_instead_name_as_key_in_custom_attributes_values(custom_attributes,
-                                                                        custom_attributes_values)
-            _store_custom_attributes_values(validator.object, custom_attributes_values,
-                                            "epic",
-                                            validators.EpicCustomAttributesValuesExportValidator)
+            custom_attributes = validator.object.project.epiccustomattributes.all().values(
+                "id", "name"
+            )
+            custom_attributes_values = _use_id_instead_name_as_key_in_custom_attributes_values(
+                custom_attributes, custom_attributes_values
+            )
+            _store_custom_attributes_values(
+                validator.object,
+                custom_attributes_values,
+                "epic",
+                validators.EpicCustomAttributesValuesExportValidator,
+            )
 
         return validator
 
@@ -500,6 +561,7 @@ def store_epics(project, data):
 
 
 ## TASKS
+
 
 def store_task(project, data):
     if "status" not in data and project.default_task_status:
@@ -538,14 +600,19 @@ def store_task(project, data):
 
         custom_attributes_values = data.get("custom_attributes_values", None)
         if custom_attributes_values:
-            custom_attributes = validator.object.project.taskcustomattributes.all().values('id', 'name')
-            custom_attributes_values = \
-                _use_id_instead_name_as_key_in_custom_attributes_values(custom_attributes,
-                                                                        custom_attributes_values)
+            custom_attributes = validator.object.project.taskcustomattributes.all().values(
+                "id", "name"
+            )
+            custom_attributes_values = _use_id_instead_name_as_key_in_custom_attributes_values(
+                custom_attributes, custom_attributes_values
+            )
 
-            _store_custom_attributes_values(validator.object, custom_attributes_values,
-                                            "task",
-                                            validators.TaskCustomAttributesValuesExportValidator)
+            _store_custom_attributes_values(
+                validator.object,
+                custom_attributes_values,
+                "task",
+                validators.TaskCustomAttributesValuesExportValidator,
+            )
 
         return validator
 
@@ -563,6 +630,7 @@ def store_tasks(project, data):
 
 
 ## ISSUES
+
 
 def store_issue(project, data):
     validator = validators.IssueExportValidator(data=data, context={"project": project})
@@ -611,13 +679,18 @@ def store_issue(project, data):
 
         custom_attributes_values = data.get("custom_attributes_values", None)
         if custom_attributes_values:
-            custom_attributes = validator.object.project.issuecustomattributes.all().values('id', 'name')
-            custom_attributes_values = \
-                _use_id_instead_name_as_key_in_custom_attributes_values(custom_attributes,
-                                                                        custom_attributes_values)
-            _store_custom_attributes_values(validator.object, custom_attributes_values,
-                                            "issue",
-                                            validators.IssueCustomAttributesValuesExportValidator)
+            custom_attributes = validator.object.project.issuecustomattributes.all().values(
+                "id", "name"
+            )
+            custom_attributes_values = _use_id_instead_name_as_key_in_custom_attributes_values(
+                custom_attributes, custom_attributes_values
+            )
+            _store_custom_attributes_values(
+                validator.object,
+                custom_attributes_values,
+                "issue",
+                validators.IssueCustomAttributesValuesExportValidator,
+            )
 
         return validator
 
@@ -635,6 +708,7 @@ def store_issues(project, data):
 
 
 ## WIKI PAGES
+
 
 def store_wiki_page(project, wiki_page):
     wiki_page["slug"] = slugify(unidecode(wiki_page.get("slug", "")))
@@ -673,6 +747,7 @@ def store_wiki_pages(project, data):
 
 ## WIKI LINKS
 
+
 def store_wiki_link(project, wiki_link):
     validator = validators.WikiLinkExportValidator(data=wiki_link)
     if validator.is_valid():
@@ -694,6 +769,7 @@ def store_wiki_links(project, data):
 
 ## TAGS COLORS
 
+
 def store_tags_colors(project, data):
     project.tags_colors = data.get("tags_colors", [])
     project.save()
@@ -702,13 +778,18 @@ def store_tags_colors(project, data):
 
 ## TIMELINE
 
+
 def _store_timeline_entry(project, timeline):
-    validator = validators.TimelineExportValidator(data=timeline, context={"project": project})
+    validator = validators.TimelineExportValidator(
+        data=timeline, context={"project": project}
+    )
     if validator.is_valid():
         validator.object.project = project
         validator.object.namespace = build_project_namespace(project)
         validator.object.object_id = project.id
-        validator.object.content_type = ContentType.objects.get_for_model(project.__class__)
+        validator.object.content_type = ContentType.objects.get_for_model(
+            project.__class__
+        )
         validator.object._importing = True
         validator.save()
         return validator
@@ -734,14 +815,17 @@ def _validate_if_owner_have_enought_space_to_this_project(owner, data):
     data["owner"] = owner.email
 
     is_private = data.get("is_private", False)
-    total_memberships = len([m for m in data.get("memberships", [])
-                            if m.get("email", None) != data["owner"]])
+    total_memberships = len(
+        [
+            m
+            for m in data.get("memberships", [])
+            if m.get("email", None) != data["owner"]
+        ]
+    )
 
     total_memberships = total_memberships + 1  # 1 is the owner
     (enough_slots, error_message) = users_service.has_available_slot_for_new_project(
-        owner,
-        is_private,
-        total_memberships
+        owner, is_private, total_memberships
     )
     if not enough_slots:
         raise err.TaigaImportError(error_message, None)
@@ -753,7 +837,9 @@ def _create_project_object(data):
 
     if not project_validator:
         errors = get_errors(clear=True)
-        raise err.TaigaImportError(_("error importing project data"), None, errors=errors)
+        raise err.TaigaImportError(
+            _("error importing project data"), None, errors=errors
+        )
 
     return project_validator.object if project_validator else None
 
@@ -766,12 +852,14 @@ def _create_membership_for_project_owner(project):
                 email=project.owner.email,
                 user=project.owner,
                 role=project.roles.all().first(),
-                is_admin=True
+                is_admin=True,
             )
 
 
 def _populate_project_object(project, data):
-    def check_if_there_is_some_error(message=_("error importing project data"), project=None):
+    def check_if_there_is_some_error(
+        message=_("error importing project data"), project=None
+    ):
         errors = get_errors(clear=True)
         if errors:
             raise err.TaigaImportError(message, project, errors=errors)
@@ -786,29 +874,65 @@ def _populate_project_object(project, data):
     check_if_there_is_some_error(_("error importing memberships"), project)
 
     # Create project attributes values
-    store_project_attributes_values(project, data, "epic_statuses", validators.EpicStatusExportValidator)
-    store_project_attributes_values(project, data, "us_statuses", validators.UserStoryStatusExportValidator)
-    store_project_attributes_values(project, data, "points", validators.PointsExportValidator)
-    store_project_attributes_values(project, data, "task_statuses", validators.TaskStatusExportValidator)
-    store_project_attributes_values(project, data, "issue_types", validators.IssueTypeExportValidator)
-    store_project_attributes_values(project, data, "issue_statuses", validators.IssueStatusExportValidator)
-    store_project_attributes_values(project, data, "priorities", validators.PriorityExportValidator)
-    store_project_attributes_values(project, data, "severities", validators.SeverityExportValidator)
-    check_if_there_is_some_error(_("error importing lists of project attributes"), project)
+    store_project_attributes_values(
+        project, data, "epic_statuses", validators.EpicStatusExportValidator
+    )
+    store_project_attributes_values(
+        project, data, "us_statuses", validators.UserStoryStatusExportValidator
+    )
+    store_project_attributes_values(
+        project, data, "points", validators.PointsExportValidator
+    )
+    store_project_attributes_values(
+        project, data, "task_statuses", validators.TaskStatusExportValidator
+    )
+    store_project_attributes_values(
+        project, data, "issue_types", validators.IssueTypeExportValidator
+    )
+    store_project_attributes_values(
+        project, data, "issue_statuses", validators.IssueStatusExportValidator
+    )
+    store_project_attributes_values(
+        project, data, "priorities", validators.PriorityExportValidator
+    )
+    store_project_attributes_values(
+        project, data, "severities", validators.SeverityExportValidator
+    )
+    check_if_there_is_some_error(
+        _("error importing lists of project attributes"), project
+    )
 
     # Create default values for project attributes
     store_default_project_attributes_values(project, data)
-    check_if_there_is_some_error(_("error importing default project attributes values"), project)
+    check_if_there_is_some_error(
+        _("error importing default project attributes values"), project
+    )
 
     # Create custom attributes
-    store_custom_attributes(project, data, "epiccustomattributes",
-                            validators.EpicCustomAttributeExportValidator)
-    store_custom_attributes(project, data, "userstorycustomattributes",
-                            validators.UserStoryCustomAttributeExportValidator)
-    store_custom_attributes(project, data, "taskcustomattributes",
-                            validators.TaskCustomAttributeExportValidator)
-    store_custom_attributes(project, data, "issuecustomattributes",
-                            validators.IssueCustomAttributeExportValidator)
+    store_custom_attributes(
+        project,
+        data,
+        "epiccustomattributes",
+        validators.EpicCustomAttributeExportValidator,
+    )
+    store_custom_attributes(
+        project,
+        data,
+        "userstorycustomattributes",
+        validators.UserStoryCustomAttributeExportValidator,
+    )
+    store_custom_attributes(
+        project,
+        data,
+        "taskcustomattributes",
+        validators.TaskCustomAttributeExportValidator,
+    )
+    store_custom_attributes(
+        project,
+        data,
+        "issuecustomattributes",
+        validators.IssueCustomAttributeExportValidator,
+    )
     check_if_there_is_some_error(_("error importing custom attributes"), project)
     # Create milestones
     store_milestones(project, data)
@@ -831,7 +955,9 @@ def _populate_project_object(project, data):
     check_if_there_is_some_error(_("error importing tasks"), project)
 
     # Create user stories relationships
-    store_user_stories_related_entities(imported_user_stories, imported_tasks, imported_issues, data)
+    store_user_stories_related_entities(
+        imported_user_stories, imported_tasks, imported_issues, data
+    )
 
     # Create wiki pages
     store_wiki_pages(project, data)

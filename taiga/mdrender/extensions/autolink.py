@@ -14,9 +14,9 @@ class AutolinkPattern(markdown.inlinepatterns.Pattern):
         el = markdown.util.etree.Element("a")
 
         href = m.group(2)
-        if not re.match('^(ftp|https?)://', href, flags=re.IGNORECASE):
-            href = 'http://%s' % href
-        el.set('href', self.unescape(href))
+        if not re.match("^(ftp|https?)://", href, flags=re.IGNORECASE):
+            href = "http://%s" % href
+        el.set("href", self.unescape(href))
 
         el.text = markdown.util.AtomicString(m.group(2))
         return el
@@ -37,7 +37,8 @@ class AutolinkExtension(markdown.Extension):
     * GitHub only accepts URLs with protocols or "www.", whereas Gruber's regex
       accepts things like "foo.com/bar".
     """
+
     def extendMarkdown(self, md):
-        url_re = r'(?i)\b((?:(?:ftp|https?)://|www\d{0,3}[.])([^\s<>]+))'
+        url_re = r"(?i)\b((?:(?:ftp|https?)://|www\d{0,3}[.])([^\s<>]+))"
         autolink = AutolinkPattern(url_re, md)
-        md.inlinePatterns.add('gfm-autolink', autolink, '_end')
+        md.inlinePatterns.add("gfm-autolink", autolink, "_end")

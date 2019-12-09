@@ -154,7 +154,9 @@ def attach_epic_order(queryset, epic_id, as_field="epic_order"):
     return queryset
 
 
-def attach_extra_info(queryset, user=None, include_attachments=False, include_tasks=False, epic_id=None):
+def attach_extra_info(
+    queryset, user=None, include_attachments=False, include_tasks=False, epic_id=None
+):
     queryset = attach_total_points(queryset)
     queryset = attach_role_points(queryset)
     queryset = attach_epics(queryset)

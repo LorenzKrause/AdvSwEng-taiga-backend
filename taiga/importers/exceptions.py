@@ -16,14 +16,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 class InvalidRequest(Exception):
     pass
+
 
 class InvalidAuthResult(Exception):
     pass
 
+
 class InvalidServiceConfiguration(Exception):
     pass
+
 
 class FailedRequest(Exception):
     pass

@@ -57,9 +57,16 @@ class Response(SimpleTemplateResponse):
     An HttpResponse that allows its data to be rendered into
     arbitrary media types.
     """
-    def __init__(self, data=None, status=None,
-                 template_name=None, headers=None,
-                 exception=False, content_type=None):
+
+    def __init__(
+        self,
+        data=None,
+        status=None,
+        template_name=None,
+        headers=None,
+        exception=False,
+        content_type=None,
+    ):
         """
         Alters the init arguments slightly.
         For example, drop 'template_name', and instead use 'data'.
@@ -99,8 +106,9 @@ class Response(SimpleTemplateResponse):
 
         ret = renderer.render(self.data, media_type, context)
         if isinstance(ret, six.text_type):
-            assert charset, "renderer returned unicode, and did not specify " \
-            "a charset value."
+            assert charset, (
+                "renderer returned unicode, and did not specify " "a charset value."
+            )
             return bytes(ret.encode(charset))
 
         if not ret:
@@ -116,7 +124,7 @@ class Response(SimpleTemplateResponse):
         """
         # TODO: Deprecate and use a template tag instead
         # TODO: Status code text for RFC 6585 status codes
-        return responses.get(self.status_code, '')
+        return responses.get(self.status_code, "")
 
     def __getstate__(self):
         """
@@ -139,6 +147,7 @@ class Ok(Response):
     and that no more specific code in the 2xx series is appropriate. Unlike
     the 204 status code, a 200 response should include a response body.
     """
+
     status_code = 200
 
 
@@ -151,6 +160,7 @@ class Created(Response):
     times when a new resource is created as a result of some controller action,
     in which case 201 would also be an appropriate response.
     """
+
     status_code = 201
 
 
@@ -166,6 +176,7 @@ class Accepted(Response):
     Controller resources may send 202 responses, but other resource types
     should not.
     """
+
     status_code = 202
 
 
@@ -179,6 +190,7 @@ class NoContent(Response):
     in conjunction with a GET request to indicate that the requested resource
     exists, but has no state representation to include in the body.
     """
+
     status_code = 204
 
 
@@ -189,6 +201,7 @@ class MultipleChoices(Response):
     It could be used to present different format options for video, list files
     with different extensions, or word sense disambiguation.
     """
+
     status_code = 300
 
 
@@ -201,6 +214,7 @@ class MovedPermanently(http.HttpResponsePermanentRedirect):
     client's requested resource. The REST API should specify the new URI in
     the response's Location header.
     """
+
     status_code = 301
 
 
@@ -221,6 +235,7 @@ class Found(http.HttpResponseRedirect):
     and 307 ("Temporary Redirect"), either of which should be used
     instead of 302.
     """
+
     status_code = 302
 
 
@@ -238,6 +253,7 @@ class SeeOther(Response):
     Instead, the client may send a GET request to the value of the Location
     header.
     """
+
     status_code = 303
 
 
@@ -251,6 +267,7 @@ class NotModified(http.HttpResponseNotModified):
     information associated with a resource but the client already has the most
     recent version of the representation.
     """
+
     status_code = 304
 
 
@@ -267,6 +284,7 @@ class TemporaryRedirect(Response):
     client's requested resource. For example, a 307 response can be used to
     shift a client request over to another host.
     """
+
     status_code = 307
 
 
@@ -277,6 +295,7 @@ class BadRequest(Response):
     400 is the generic client-side error status, used when no other 4xx error
     code is appropriate.
     """
+
     status_code = 400
 
 
@@ -288,6 +307,7 @@ class Unauthorized(Response):
     protected resource without providing the proper authorization. It may have
     provided the wrong credentials or none at all.
     """
+
     status_code = 401
 
 
@@ -303,6 +323,7 @@ class Forbidden(Response):
     resources. If the client attempts a resource interaction that is outside of
     its permitted scope, the REST API should respond with 403.
     """
+
     status_code = 403
 
 
@@ -313,6 +334,7 @@ class NotFound(Response):
     The 404 error status code indicates that the REST API can't map the
     client's URI to a resource.
     """
+
     status_code = 404
 
 
@@ -330,6 +352,7 @@ class MethodNotAllowed(Response):
         Allow: GET, POST
 
     """
+
     status_code = 405
 
 
@@ -343,6 +366,7 @@ class NotAcceptable(Response):
     will receive a 406 response if the API is only willing to format data as
     application/json.
     """
+
     status_code = 406
 
 
@@ -355,6 +379,7 @@ class Conflict(Response):
     REST API may return this response code when a client tries to delete a
     non-empty store resource.
     """
+
     status_code = 409
 
 
@@ -367,6 +392,7 @@ class Gone(Response):
     resource should be purged. Upon receiving a 410 status code, the client
     should not request the resource again in the future.
     """
+
     status_code = 410
 
 
@@ -380,6 +406,7 @@ class PreconditionFailed(Response):
     A 412 response indicates that those conditions were not met, so instead of
     carrying out the request, the API sends this status code.
     """
+
     status_code = 412
 
 
@@ -394,6 +421,7 @@ class UnsupportedMediaType(Response):
     will receive a 415 response if the API is only willing to process data
     formatted as application/json.
     """
+
     status_code = 415
 
 
@@ -403,6 +431,7 @@ class TooManyRequests(Response):
     The user has sent too many requests in a given amount of time.
     Intended for use with rate limiting schemes.
     """
+
     status_code = 429
 
 
@@ -417,6 +446,7 @@ class InternalServerError(Response):
     the client to retry the exact same request that triggered this response,
     and hope to get a different response.
     """
+
     status_code = 500
 
 
@@ -426,4 +456,5 @@ class NotImplemented(Response):
     The server either does not recognise the request method, or it lacks the
     ability to fulfill the request.
     """
+
     status_code = 501

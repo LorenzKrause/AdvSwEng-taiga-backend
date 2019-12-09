@@ -46,10 +46,12 @@ class WebhookViewSet(BlockedByProjectMixin, ModelCrudViewSet):
     @detail_route(methods=["POST"])
     def test(self, request, pk=None):
         webhook = self.get_object()
-        self.check_permissions(request, 'test', webhook)
+        self.check_permissions(request, "test", webhook)
         self.pre_conditions_blocked(webhook)
 
-        webhooklog = tasks.test_webhook(webhook.id, webhook.url, webhook.key, request.user, timezone.now())
+        webhooklog = tasks.test_webhook(
+            webhook.id, webhook.url, webhook.key, request.user, timezone.now()
+        )
         log = serializers.WebhookLogSerializer(webhooklog)
 
         return response.Ok(log.data)
@@ -65,13 +67,14 @@ class WebhookLogViewSet(ModelListViewSet):
     @detail_route(methods=["POST"])
     def resend(self, request, pk=None):
         webhooklog = self.get_object()
-        self.check_permissions(request, 'resend', webhooklog)
+        self.check_permissions(request, "resend", webhooklog)
         webhook = webhooklog.webhook
         if webhook.project.blocked_code is not None:
             raise exc.Blocked(_("Blocked element"))
 
-        webhooklog = tasks.resend_webhook(webhook.id, webhook.url, webhook.key,
-                                          webhooklog.request_data)
+        webhooklog = tasks.resend_webhook(
+            webhook.id, webhook.url, webhook.key, webhooklog.request_data
+        )
 
         log = serializers.WebhookLogSerializer(webhooklog)
 

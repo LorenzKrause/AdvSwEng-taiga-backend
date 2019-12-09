@@ -8,12 +8,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('external_apps', '0001_initial'),
+        ("external_apps", "0001_initial"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='application',
-            name='key',
-        ),
+        migrations.RemoveField(model_name="application", name="key",),
     ]

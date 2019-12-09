@@ -31,7 +31,7 @@ from .. import serializers
 
 def render_project(project, outfile, chunk_size=8190):
     serializer = serializers.ProjectExportSerializer(project)
-    outfile.write(b'{\n')
+    outfile.write(b"{\n")
 
     first_field = True
     for field_name in serializer._field_map.keys():
@@ -48,16 +48,20 @@ def render_project(project, outfile, chunk_size=8190):
         if field_name in ["wiki_pages", "user_stories", "tasks", "issues", "epics"]:
             value = get_component(project, field_name)
             if field_name != "wiki_pages":
-                value = value.select_related('owner', 'status',
-                                             'project', 'assigned_to',
-                                             'custom_attributes_values')
+                value = value.select_related(
+                    "owner",
+                    "status",
+                    "project",
+                    "assigned_to",
+                    "custom_attributes_values",
+                )
 
             if field_name in ["user_stories", "tasks", "issues"]:
-                value = value.select_related('milestone')
+                value = value.select_related("milestone")
 
             if field_name == "issues":
-                value = value.select_related('severity', 'priority', 'type')
-            value = value.prefetch_related('history_entry', 'attachments')
+                value = value.select_related("severity", "priority", "type")
+            value = value.prefetch_related("history_entry", "attachments")
 
             outfile.write('"{}": [\n'.format(field_name).encode())
 
@@ -74,10 +78,12 @@ def render_project(project, outfile, chunk_size=8190):
                 outfile.write(dumped_value.encode())
                 outfile.flush()
             gc.collect()
-            outfile.write(b']')
+            outfile.write(b"]")
         else:
             if isinstance(field, MethodField):
-                value = field.as_getter(field_name, serializers.ProjectExportSerializer)(serializer, project)
+                value = field.as_getter(
+                    field_name, serializers.ProjectExportSerializer
+                )(serializer, project)
             else:
                 attr = getattr(project, field_name)
                 value = field.to_value(attr)
@@ -93,7 +99,9 @@ def render_project(project, outfile, chunk_size=8190):
         else:
             first_timeline = False
 
-        dumped_value = json.dumps(serializers.TimelineExportSerializer(timeline_item).data)
+        dumped_value = json.dumps(
+            serializers.TimelineExportSerializer(timeline_item).data
+        )
         outfile.write(dumped_value.encode())
 
-    outfile.write(b']}\n')
+    outfile.write(b"]}\n")

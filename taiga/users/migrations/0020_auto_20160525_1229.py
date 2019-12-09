@@ -15,34 +15,37 @@ UPDATE_ROLES_PERMISSIONS_SQL = """
         NOT '{comment_permission}' = ANY(PERMISSIONS)
 """
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0019_auto_20160519_1058'),
+        ("users", "0019_auto_20160519_1058"),
     ]
 
     operations = [
         # user stories
-        migrations.RunSQL(UPDATE_ROLES_PERMISSIONS_SQL.format(
-            base_permission="modify_us",
-            comment_permission="comment_us")
+        migrations.RunSQL(
+            UPDATE_ROLES_PERMISSIONS_SQL.format(
+                base_permission="modify_us", comment_permission="comment_us"
+            )
         ),
-
         # tasks
-        migrations.RunSQL(UPDATE_ROLES_PERMISSIONS_SQL.format(
-            base_permission="modify_task",
-            comment_permission="comment_task")
+        migrations.RunSQL(
+            UPDATE_ROLES_PERMISSIONS_SQL.format(
+                base_permission="modify_task", comment_permission="comment_task"
+            )
         ),
-
         # issues
-        migrations.RunSQL(UPDATE_ROLES_PERMISSIONS_SQL.format(
-            base_permission="modify_issue",
-            comment_permission="comment_issue")
+        migrations.RunSQL(
+            UPDATE_ROLES_PERMISSIONS_SQL.format(
+                base_permission="modify_issue", comment_permission="comment_issue"
+            )
         ),
-
         # wiki pages
-        migrations.RunSQL(UPDATE_ROLES_PERMISSIONS_SQL.format(
-            base_permission="modify_wiki_page",
-            comment_permission="comment_wiki_page")
-        )
+        migrations.RunSQL(
+            UPDATE_ROLES_PERMISSIONS_SQL.format(
+                base_permission="modify_wiki_page",
+                comment_permission="comment_wiki_page",
+            )
+        ),
     ]

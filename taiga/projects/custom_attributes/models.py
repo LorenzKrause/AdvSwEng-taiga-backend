@@ -32,20 +32,39 @@ from . import choices
 #  Custom Attribute Models
 #######################################################
 
+
 class AbstractCustomAttribute(models.Model):
-    name = models.CharField(null=False, blank=False, max_length=64, verbose_name=_("name"))
-    description = models.TextField(null=False, blank=True, verbose_name=_("description"))
-    type = models.CharField(null=False, blank=False, max_length=16,
-                            choices=choices.TYPES_CHOICES, default=choices.TEXT_TYPE,
-                            verbose_name=_("type"))
-    order = models.BigIntegerField(null=False, blank=False, default=timestamp_ms, verbose_name=_("order"))
-    project = models.ForeignKey("projects.Project", null=False, blank=False, related_name="%(class)ss",
-                                verbose_name=_("project"))
+    name = models.CharField(
+        null=False, blank=False, max_length=64, verbose_name=_("name")
+    )
+    description = models.TextField(
+        null=False, blank=True, verbose_name=_("description")
+    )
+    type = models.CharField(
+        null=False,
+        blank=False,
+        max_length=16,
+        choices=choices.TYPES_CHOICES,
+        default=choices.TEXT_TYPE,
+        verbose_name=_("type"),
+    )
+    order = models.BigIntegerField(
+        null=False, blank=False, default=timestamp_ms, verbose_name=_("order")
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="%(class)ss",
+        verbose_name=_("project"),
+    )
     extra = JSONField(blank=True, default=None, null=True)
-    created_date = models.DateTimeField(null=False, blank=False, default=timezone.now,
-                                        verbose_name=_("created date"))
-    modified_date = models.DateTimeField(null=False, blank=False,
-                                         verbose_name=_("modified date"))
+    created_date = models.DateTimeField(
+        null=False, blank=False, default=timezone.now, verbose_name=_("created date")
+    )
+    modified_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("modified date")
+    )
     _importing = None
 
     class Meta:
@@ -91,8 +110,11 @@ class IssueCustomAttribute(AbstractCustomAttribute):
 #  Custom Attributes Values Models
 #######################################################
 
+
 class AbstractCustomAttributesValues(OCCModelMixin, models.Model):
-    attributes_values = JSONField(null=False, blank=False, default={}, verbose_name=_("values"))
+    attributes_values = JSONField(
+        null=False, blank=False, default={}, verbose_name=_("values")
+    )
 
     class Meta:
         abstract = True
@@ -100,9 +122,13 @@ class AbstractCustomAttributesValues(OCCModelMixin, models.Model):
 
 
 class EpicCustomAttributesValues(AbstractCustomAttributesValues):
-    epic = models.OneToOneField("epics.Epic",
-                                null=False, blank=False, related_name="custom_attributes_values",
-                                verbose_name=_("epic"))
+    epic = models.OneToOneField(
+        "epics.Epic",
+        null=False,
+        blank=False,
+        related_name="custom_attributes_values",
+        verbose_name=_("epic"),
+    )
 
     class Meta(AbstractCustomAttributesValues.Meta):
         verbose_name = "epic custom attributes values"
@@ -116,9 +142,13 @@ class EpicCustomAttributesValues(AbstractCustomAttributesValues):
 
 
 class UserStoryCustomAttributesValues(AbstractCustomAttributesValues):
-    user_story = models.OneToOneField("userstories.UserStory",
-                                      null=False, blank=False, related_name="custom_attributes_values",
-                                      verbose_name=_("user story"))
+    user_story = models.OneToOneField(
+        "userstories.UserStory",
+        null=False,
+        blank=False,
+        related_name="custom_attributes_values",
+        verbose_name=_("user story"),
+    )
 
     class Meta(AbstractCustomAttributesValues.Meta):
         verbose_name = "user story custom attributes values"
@@ -132,9 +162,13 @@ class UserStoryCustomAttributesValues(AbstractCustomAttributesValues):
 
 
 class TaskCustomAttributesValues(AbstractCustomAttributesValues):
-    task = models.OneToOneField("tasks.Task",
-                                null=False, blank=False, related_name="custom_attributes_values",
-                                verbose_name=_("task"))
+    task = models.OneToOneField(
+        "tasks.Task",
+        null=False,
+        blank=False,
+        related_name="custom_attributes_values",
+        verbose_name=_("task"),
+    )
 
     class Meta(AbstractCustomAttributesValues.Meta):
         verbose_name = "task custom attributes values"
@@ -148,9 +182,13 @@ class TaskCustomAttributesValues(AbstractCustomAttributesValues):
 
 
 class IssueCustomAttributesValues(AbstractCustomAttributesValues):
-    issue = models.OneToOneField("issues.Issue",
-                                 null=False, blank=False, related_name="custom_attributes_values",
-                                 verbose_name=_("issue"))
+    issue = models.OneToOneField(
+        "issues.Issue",
+        null=False,
+        blank=False,
+        related_name="custom_attributes_values",
+        verbose_name=_("issue"),
+    )
 
     class Meta(AbstractCustomAttributesValues.Meta):
         verbose_name = "issue custom attributes values"

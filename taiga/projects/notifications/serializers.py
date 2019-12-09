@@ -32,25 +32,31 @@ class NotifyPolicySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.NotifyPolicy
-        fields = ('id', 'project', 'project_name', 'notify_level',
-                  'live_notify_level', 'web_notify_level')
+        fields = (
+            "id",
+            "project",
+            "project_name",
+            "notify_level",
+            "live_notify_level",
+            "web_notify_level",
+        )
 
     def get_project_name(self, obj):
         return obj.project.name
 
 
 class WatcherSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source='get_full_name', required=False)
+    full_name = serializers.CharField(source="get_full_name", required=False)
 
     class Meta:
         model = get_user_model_safe()
-        fields = ('id', 'username', 'full_name')
+        fields = ("id", "username", "full_name")
 
 
 class WebNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.WebNotification
-        fields = ('id', 'event_type', 'user', 'data', 'created', 'read')
+        fields = ("id", "event_type", "user", "data", "created", "read")
 
 
 class ProjectSerializer(serializers.LightSerializer):
@@ -66,10 +72,10 @@ class ObjectSerializer(serializers.LightSerializer):
     content_type = MethodField()
 
     def get_ref(self, obj):
-        return obj.ref if hasattr(obj, 'ref') else None
+        return obj.ref if hasattr(obj, "ref") else None
 
     def get_subject(self, obj):
-        return obj.subject if hasattr(obj, 'subject') else None
+        return obj.subject if hasattr(obj, "subject") else None
 
     def get_content_type(self, obj):
         content_type = ContentType.objects.get_for_model(obj)

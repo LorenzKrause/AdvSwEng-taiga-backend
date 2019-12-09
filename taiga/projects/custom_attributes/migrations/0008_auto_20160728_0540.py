@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custom_attributes', '0007_auto_20160208_1751'),
+        ("custom_attributes", "0007_auto_20160208_1751"),
     ]
 
     operations = [
@@ -28,9 +28,8 @@ class Migration(migrations.Migration):
             """,
             reverse_sql="""
         DROP FUNCTION IF EXISTS "json_object_delete_keys"("json" json, VARIADIC "keys_to_delete" text[])
-                        CASCADE;"""
+                        CASCADE;""",
         ),
-
         # Function: Romeve a key in the json field of *_custom_attributes_values.values
         migrations.RunSQL(
             """
@@ -61,7 +60,6 @@ class Migration(migrations.Migration):
                       LANGUAGE plpgsql;
             """
         ),
-
         # Trigger: Clean userstorycustomattributes values before remove a userstorycustomattribute
         migrations.RunSQL(
             """
@@ -76,7 +74,6 @@ class Migration(migrations.Migration):
                                             'custom_attributes_userstorycustomattributesvalues');
             """
         ),
-
         # Trigger: Clean taskcustomattributes values before remove a taskcustomattribute
         migrations.RunSQL(
             """
@@ -91,7 +88,6 @@ class Migration(migrations.Migration):
                                             'custom_attributes_taskcustomattributesvalues');
             """
         ),
-
         # Trigger: Clean issuecustomattributes values before remove a issuecustomattribute
         migrations.RunSQL(
             """
@@ -107,15 +103,13 @@ class Migration(migrations.Migration):
             """
         ),
         migrations.AlterIndexTogether(
-            name='issuecustomattributesvalues',
-            index_together=set([('issue',)]),
+            name="issuecustomattributesvalues", index_together=set([("issue",)]),
         ),
         migrations.AlterIndexTogether(
-            name='taskcustomattributesvalues',
-            index_together=set([('task',)]),
+            name="taskcustomattributesvalues", index_together=set([("task",)]),
         ),
         migrations.AlterIndexTogether(
-            name='userstorycustomattributesvalues',
-            index_together=set([('user_story',)]),
+            name="userstorycustomattributesvalues",
+            index_together=set([("user_story",)]),
         ),
     ]

@@ -19,8 +19,8 @@ from taiga.external_apps.models import Application
 
 
 class Command(BaseCommand):
-    args = ''
-    help = 'Create Taiga Tribe external app information'
+    args = ""
+    help = "Create Taiga Tribe external app information"
 
     def handle(self, *args, **options):
         Application.objects.get_or_create(

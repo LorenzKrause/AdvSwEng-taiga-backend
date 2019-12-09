@@ -25,7 +25,10 @@ from taiga.base.decorators import detail_route
 
 from taiga.projects.votes import serializers
 from taiga.projects.votes import services
-from taiga.projects.votes.utils import attach_total_voters_to_queryset, attach_is_voter_to_queryset
+from taiga.projects.votes.utils import (
+    attach_total_voters_to_queryset,
+    attach_is_voter_to_queryset,
+)
 
 
 class VotedResourceMixin:
@@ -70,11 +73,11 @@ class VotersViewSetMixin:
         resource_id = kwargs.get("resource_id", None)
         resource = get_object_or_404(self.resource_model, pk=resource_id)
 
-        self.check_permissions(request, 'retrieve', resource)
+        self.check_permissions(request, "retrieve", resource)
 
         try:
             self.object = services.get_voters(resource).get(pk=pk)
-        except ObjectDoesNotExist: # or User.DoesNotExist
+        except ObjectDoesNotExist:  # or User.DoesNotExist
             return response.NotFound()
 
         serializer = self.get_serializer(self.object)
@@ -84,7 +87,7 @@ class VotersViewSetMixin:
         resource_id = kwargs.get("resource_id", None)
         resource = get_object_or_404(self.resource_model, pk=resource_id)
 
-        self.check_permissions(request, 'list', resource)
+        self.check_permissions(request, "list", resource)
 
         return super().list(request, *args, **kwargs)
 

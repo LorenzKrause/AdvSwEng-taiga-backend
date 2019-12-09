@@ -32,6 +32,7 @@ def loads(data):
         data = force_text(data)
     return json.loads(data)
 
+
 load = json.load
 
 # Some backward compatibility that should

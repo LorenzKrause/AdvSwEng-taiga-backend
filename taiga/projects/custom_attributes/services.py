@@ -31,8 +31,9 @@ def bulk_update_epic_custom_attribute_order(project, user, data):
     """
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -48,8 +49,9 @@ def bulk_update_userstory_custom_attribute_order(project, user, data):
     """
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -65,8 +67,9 @@ def bulk_update_task_custom_attribute_order(project, user, data):
     """
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()
 
@@ -82,7 +85,8 @@ def bulk_update_issue_custom_attribute_order(project, user, data):
     """
     cursor.execute(sql)
     for id, order in data:
-        cursor.execute("EXECUTE bulk_update_order (%s, %s, %s);",
-                       (order, id, project.id))
+        cursor.execute(
+            "EXECUTE bulk_update_order (%s, %s, %s);", (order, id, project.id)
+        )
     cursor.execute("DEALLOCATE bulk_update_order")
     cursor.close()

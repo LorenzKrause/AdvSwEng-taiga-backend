@@ -26,15 +26,17 @@ from . import serializers
 
 
 def _filter_recipients(project, user, recipients):
-    notify_policies = models.NotifyPolicy.objects.filter(
-        user_id__in=recipients,
-        project=project,
-        web_notify_level=True).exclude(user_id=user.id).all()
+    notify_policies = (
+        models.NotifyPolicy.objects.filter(
+            user_id__in=recipients, project=project, web_notify_level=True
+        )
+        .exclude(user_id=user.id)
+        .all()
+    )
     return [notify_policy.user_id for notify_policy in notify_policies]
 
 
-def _push_to_web_notifications(event_type, data, recipients,
-                               serializer_class=None):
+def _push_to_web_notifications(event_type, data, recipients, serializer_class=None):
     if not serializer_class:
         serializer_class = serializers.ObjectNotificationSerializer
 
@@ -48,10 +50,12 @@ def _push_to_web_notifications(event_type, data, recipients,
                 data=serializer.data,
             )
         session_id = mw.get_current_session_id()
-        events.emit_event_for_user_notification(user_id,
-                                                session_id=session_id,
-                                                event_type=event_type.value,
-                                                data=serializer.data)
+        events.emit_event_for_user_notification(
+            user_id,
+            session_id=session_id,
+            event_type=event_type.value,
+            data=serializer.data,
+        )
 
 
 def on_assigned_to(sender, user, obj, **kwargs):
@@ -61,8 +65,7 @@ def on_assigned_to(sender, user, obj, **kwargs):
         "user": user,
         "obj": obj,
     }
-    recipients = _filter_recipients(obj.project, user,
-                                    [obj.assigned_to.id])
+    recipients = _filter_recipients(obj.project, user, [obj.assigned_to.id])
     _push_to_web_notifications(event_type, data, recipients)
 
 
@@ -73,8 +76,9 @@ def on_assigned_users(sender, user, obj, new_assigned_users, **kwargs):
         "user": user,
         "obj": obj,
     }
-    recipients = _filter_recipients(obj.project, user,
-                                    [user_id for user_id in new_assigned_users])
+    recipients = _filter_recipients(
+        obj.project, user, [user_id for user_id in new_assigned_users]
+    )
     _push_to_web_notifications(event_type, data, recipients)
 
 
@@ -96,16 +100,16 @@ def on_members_added(sender, user, project, new_members, **kwargs):
         "project": project,
         "user": user,
     }
-    recipients = _filter_recipients(project, user,
-                                    [member.user_id for member in new_members
-                                     if member.user_id])
+    recipients = _filter_recipients(
+        project, user, [member.user_id for member in new_members if member.user_id]
+    )
 
     _push_to_web_notifications(event_type, data, recipients, serializer_class)
 
 
 def on_mentions(sender, user, obj, mentions, **kwargs):
     content_type = ContentType.objects.get_for_model(obj)
-    valid_content_types = ['issue', 'task', 'userstory']
+    valid_content_types = ["issue", "task", "userstory"]
     if content_type.model in valid_content_types:
         event_type = choices.WebNotificationType.mentioned
         data = {
@@ -113,8 +117,9 @@ def on_mentions(sender, user, obj, mentions, **kwargs):
             "user": user,
             "obj": obj,
         }
-        recipients = _filter_recipients(obj.project, user,
-                                        [user.id for user in mentions])
+        recipients = _filter_recipients(
+            obj.project, user, [user.id for user in mentions]
+        )
         _push_to_web_notifications(event_type, data, recipients)
 
 
@@ -125,8 +130,7 @@ def on_comment_mentions(sender, user, obj, mentions, **kwargs):
         "user": user,
         "obj": obj,
     }
-    recipients = _filter_recipients(obj.project, user,
-                                    [user.id for user in mentions])
+    recipients = _filter_recipients(obj.project, user, [user.id for user in mentions])
     _push_to_web_notifications(event_type, data, recipients)
 
 

@@ -27,7 +27,7 @@ from . import models
 
 class RolePointsInline(admin.TabularInline):
     model = models.RolePoints
-    sortable_field_name = 'role'
+    sortable_field_name = "role"
     readonly_fields = ["user_story", "role", "points"]
     can_delete = False
     extra = 0
@@ -41,8 +41,16 @@ class RolePointsAdmin(admin.ModelAdmin):
 
 
 class UserStoryAdmin(admin.ModelAdmin):
-    list_display = ["project", "milestone",  "ref", "subject",]
-    list_display_links = ["ref", "subject",]
+    list_display = [
+        "project",
+        "milestone",
+        "ref",
+        "subject",
+    ]
+    list_display_links = [
+        "ref",
+        "subject",
+    ]
     inlines = [RolePointsInline, WatchedInline, VoteInline]
     raw_id_fields = ["project"]
     search_fields = ["subject", "description", "id", "ref"]
@@ -52,26 +60,30 @@ class UserStoryAdmin(admin.ModelAdmin):
         return self.obj
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if (db_field.name in ["status", "milestone", "generated_from_issue",
-                              "generated_from_task"]
-                and getattr(self, 'obj', None)):
+        if db_field.name in [
+            "status",
+            "milestone",
+            "generated_from_issue",
+            "generated_from_task",
+        ] and getattr(self, "obj", None):
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                                      project=self.obj.project)
-        elif (db_field.name in ["owner", "assigned_to"]
-                and getattr(self, 'obj', None)):
+                project=self.obj.project
+            )
+        elif db_field.name in ["owner", "assigned_to"] and getattr(self, "obj", None):
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                         memberships__project=self.obj.project)
+                memberships__project=self.obj.project
+            )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if (db_field.name in ["watchers"]
-                and getattr(self, 'obj', None)):
+        if db_field.name in ["watchers"] and getattr(self, "obj", None):
             kwargs["queryset"] = db_field.related.parent_model.objects.filter(
-                                         memberships__project=self.obj.project)
-        elif (db_field.name in ["assigned_users"]
-                and getattr(self, 'obj', None)):
+                memberships__project=self.obj.project
+            )
+        elif db_field.name in ["assigned_users"] and getattr(self, "obj", None):
             kwargs["queryset"] = db_field.related_model.objects.filter(
-                                         memberships__project=self.obj.project)
+                memberships__project=self.obj.project
+            )
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 

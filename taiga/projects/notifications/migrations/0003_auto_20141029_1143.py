@@ -7,12 +7,12 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('notifications', '0002_historychangenotification'),
+        ("notifications", "0002_historychangenotification"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='historychangenotification',
-            unique_together=set([('key', 'owner', 'project', 'history_type')]),
+            name="historychangenotification",
+            unique_together=set([("key", "owner", "project", "history_type")]),
         ),
     ]

@@ -34,80 +34,86 @@ from taiga.projects.wiki import models as wiki_models
 from taiga.timeline import models as timeline_models
 from taiga.users import models as users_models
 
-from .fields import (FileField, UserRelatedField,
-                     ProjectRelatedField,
-                     TimelineDataField, ContentTypeField)
+from .fields import (
+    FileField,
+    UserRelatedField,
+    ProjectRelatedField,
+    TimelineDataField,
+    ContentTypeField,
+)
 from .mixins import WatcheableObjectModelValidatorMixin
-from .cache import (_custom_tasks_attributes_cache,
-                    _custom_epics_attributes_cache,
-                    _custom_userstories_attributes_cache,
-                    _custom_issues_attributes_cache)
+from .cache import (
+    _custom_tasks_attributes_cache,
+    _custom_epics_attributes_cache,
+    _custom_userstories_attributes_cache,
+    _custom_issues_attributes_cache,
+)
 
 
 class PointsExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.Points
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class EpicStatusExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.EpicStatus
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class UserStoryStatusExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.UserStoryStatus
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class UserStoryDueDateExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.UserStoryDueDate
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class TaskStatusExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.TaskStatus
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class TaskDueDateExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.TaskDueDate
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class IssueStatusExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.IssueStatus
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class IssueDueDateExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.IssueDueDate
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class PriorityExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.Priority
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class SeverityExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.Severity
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class IssueTypeExportValidator(validators.ModelValidator):
     class Meta:
         model = projects_models.IssueType
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class RoleExportValidator(validators.ModelValidator):
@@ -115,7 +121,7 @@ class RoleExportValidator(validators.ModelValidator):
 
     class Meta:
         model = users_models.Role
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class EpicCustomAttributeExportValidator(validators.ModelValidator):
@@ -123,7 +129,7 @@ class EpicCustomAttributeExportValidator(validators.ModelValidator):
 
     class Meta:
         model = custom_attributes_models.EpicCustomAttribute
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class UserStoryCustomAttributeExportValidator(validators.ModelValidator):
@@ -131,7 +137,7 @@ class UserStoryCustomAttributeExportValidator(validators.ModelValidator):
 
     class Meta:
         model = custom_attributes_models.UserStoryCustomAttribute
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class TaskCustomAttributeExportValidator(validators.ModelValidator):
@@ -139,7 +145,7 @@ class TaskCustomAttributeExportValidator(validators.ModelValidator):
 
     class Meta:
         model = custom_attributes_models.TaskCustomAttribute
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class IssueCustomAttributeExportValidator(validators.ModelValidator):
@@ -147,7 +153,7 @@ class IssueCustomAttributeExportValidator(validators.ModelValidator):
 
     class Meta:
         model = custom_attributes_models.IssueCustomAttribute
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class BaseCustomAttributesValuesExportValidator(validators.ModelValidator):
@@ -162,10 +168,10 @@ class BaseCustomAttributesValuesExportValidator(validators.ModelValidator):
         # values must be a dict
         data_values = attrs.get("attributes_values", None)
         if self.object:
-            data_values = (data_values or self.object.attributes_values)
+            data_values = data_values or self.object.attributes_values
 
         if type(data_values) is not dict:
-            raise ValidationError(_("Invalid content. It must be {\"key\": \"value\",...}"))
+            raise ValidationError(_('Invalid content. It must be {"key": "value",...}'))
 
         # Values keys must be in the container object project
         data_container = attrs.get(self._container_field, None)
@@ -177,15 +183,18 @@ class BaseCustomAttributesValuesExportValidator(validators.ModelValidator):
             project_id = None
 
         values_ids = list(data_values.keys())
-        qs = self._custom_attribute_model.objects.filter(project=project_id,
-                                                         id__in=values_ids)
+        qs = self._custom_attribute_model.objects.filter(
+            project=project_id, id__in=values_ids
+        )
         if qs.count() != len(values_ids):
             raise ValidationError(_("It contain invalid custom fields."))
 
         return attrs
 
 
-class EpicCustomAttributesValuesExportValidator(BaseCustomAttributesValuesExportValidator):
+class EpicCustomAttributesValuesExportValidator(
+    BaseCustomAttributesValuesExportValidator
+):
     _custom_attribute_model = custom_attributes_models.EpicCustomAttribute
     _container_model = "epics.Epic"
     _container_field = "epic"
@@ -194,7 +203,9 @@ class EpicCustomAttributesValuesExportValidator(BaseCustomAttributesValuesExport
         model = custom_attributes_models.EpicCustomAttributesValues
 
 
-class UserStoryCustomAttributesValuesExportValidator(BaseCustomAttributesValuesExportValidator):
+class UserStoryCustomAttributesValuesExportValidator(
+    BaseCustomAttributesValuesExportValidator
+):
     _custom_attribute_model = custom_attributes_models.UserStoryCustomAttribute
     _container_model = "userstories.UserStory"
     _container_field = "user_story"
@@ -203,7 +214,9 @@ class UserStoryCustomAttributesValuesExportValidator(BaseCustomAttributesValuesE
         model = custom_attributes_models.UserStoryCustomAttributesValues
 
 
-class TaskCustomAttributesValuesExportValidator(BaseCustomAttributesValuesExportValidator):
+class TaskCustomAttributesValuesExportValidator(
+    BaseCustomAttributesValuesExportValidator
+):
     _custom_attribute_model = custom_attributes_models.TaskCustomAttribute
     _container_field = "task"
 
@@ -211,7 +224,9 @@ class TaskCustomAttributesValuesExportValidator(BaseCustomAttributesValuesExport
         model = custom_attributes_models.TaskCustomAttributesValues
 
 
-class IssueCustomAttributesValuesExportValidator(BaseCustomAttributesValuesExportValidator):
+class IssueCustomAttributesValuesExportValidator(
+    BaseCustomAttributesValuesExportValidator
+):
     _custom_attribute_model = custom_attributes_models.IssueCustomAttribute
     _container_field = "issue"
 
@@ -226,7 +241,7 @@ class MembershipExportValidator(validators.ModelValidator):
 
     class Meta:
         model = projects_models.Membership
-        exclude = ('id', 'project', 'token')
+        exclude = ("id", "project", "token")
 
     def full_clean(self, instance):
         return instance
@@ -238,7 +253,7 @@ class RolePointsExportValidator(validators.ModelValidator):
 
     class Meta:
         model = userstories_models.RolePoints
-        exclude = ('id', 'user_story')
+        exclude = ("id", "user_story")
 
 
 class MilestoneExportValidator(WatcheableObjectModelValidatorMixin):
@@ -248,7 +263,7 @@ class MilestoneExportValidator(WatcheableObjectModelValidatorMixin):
     estimated_finish = serializers.DateField(required=False)
 
     def __init__(self, *args, **kwargs):
-        project = kwargs.pop('project', None)
+        project = kwargs.pop("project", None)
         super(MilestoneExportValidator, self).__init__(*args, **kwargs)
         if project:
             self.project = project
@@ -266,7 +281,7 @@ class MilestoneExportValidator(WatcheableObjectModelValidatorMixin):
 
     class Meta:
         model = milestones_models.Milestone
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class TaskExportValidator(WatcheableObjectModelValidatorMixin):
@@ -280,11 +295,13 @@ class TaskExportValidator(WatcheableObjectModelValidatorMixin):
 
     class Meta:
         model = tasks_models.Task
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
     def custom_attributes_queryset(self, project):
         if project.id not in _custom_tasks_attributes_cache:
-            _custom_tasks_attributes_cache[project.id] = list(project.taskcustomattributes.all().values('id', 'name'))
+            _custom_tasks_attributes_cache[project.id] = list(
+                project.taskcustomattributes.all().values("id", "name")
+            )
         return _custom_tasks_attributes_cache[project.id]
 
 
@@ -294,7 +311,7 @@ class EpicRelatedUserStoryExportValidator(validators.ModelValidator):
 
     class Meta:
         model = epics_models.RelatedUserStory
-        exclude = ('id', 'epic')
+        exclude = ("id", "epic")
 
 
 class EpicExportValidator(WatcheableObjectModelValidatorMixin):
@@ -306,12 +323,12 @@ class EpicExportValidator(WatcheableObjectModelValidatorMixin):
 
     class Meta:
         model = epics_models.Epic
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
     def custom_attributes_queryset(self, project):
         if project.id not in _custom_epics_attributes_cache:
             _custom_epics_attributes_cache[project.id] = list(
-                project.epiccustomattributes.all().values('id', 'name')
+                project.epiccustomattributes.all().values("id", "name")
             )
         return _custom_epics_attributes_cache[project.id]
 
@@ -330,12 +347,12 @@ class UserStoryExportValidator(WatcheableObjectModelValidatorMixin):
 
     class Meta:
         model = userstories_models.UserStory
-        exclude = ('id', 'project', 'points', 'tasks')
+        exclude = ("id", "project", "points", "tasks")
 
     def custom_attributes_queryset(self, project):
         if project.id not in _custom_userstories_attributes_cache:
             _custom_userstories_attributes_cache[project.id] = list(
-                project.userstorycustomattributes.all().values('id', 'name')
+                project.userstorycustomattributes.all().values("id", "name")
             )
         return _custom_userstories_attributes_cache[project.id]
 
@@ -353,11 +370,13 @@ class IssueExportValidator(WatcheableObjectModelValidatorMixin):
 
     class Meta:
         model = issues_models.Issue
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
     def custom_attributes_queryset(self, project):
         if project.id not in _custom_issues_attributes_cache:
-            _custom_issues_attributes_cache[project.id] = list(project.issuecustomattributes.all().values('id', 'name'))
+            _custom_issues_attributes_cache[project.id] = list(
+                project.issuecustomattributes.all().values("id", "name")
+            )
         return _custom_issues_attributes_cache[project.id]
 
 
@@ -368,13 +387,13 @@ class WikiPageExportValidator(WatcheableObjectModelValidatorMixin):
 
     class Meta:
         model = wiki_models.WikiPage
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class WikiLinkExportValidator(validators.ModelValidator):
     class Meta:
         model = wiki_models.WikiLink
-        exclude = ('id', 'project')
+        exclude = ("id", "project")
 
 
 class TimelineExportValidator(validators.ModelValidator):
@@ -383,7 +402,7 @@ class TimelineExportValidator(validators.ModelValidator):
 
     class Meta:
         model = timeline_models.Timeline
-        exclude = ('id', 'project', 'namespace', 'object_id', 'content_type')
+        exclude = ("id", "project", "namespace", "object_id", "content_type")
 
 
 class ProjectExportValidator(WatcheableObjectModelValidatorMixin):
@@ -405,14 +424,22 @@ class ProjectExportValidator(WatcheableObjectModelValidatorMixin):
     creation_template = serializers.SlugRelatedField(slug_field="slug", required=False)
     default_points = serializers.SlugRelatedField(slug_field="name", required=False)
     default_us_status = serializers.SlugRelatedField(slug_field="name", required=False)
-    default_task_status = serializers.SlugRelatedField(slug_field="name", required=False)
+    default_task_status = serializers.SlugRelatedField(
+        slug_field="name", required=False
+    )
     default_priority = serializers.SlugRelatedField(slug_field="name", required=False)
     default_severity = serializers.SlugRelatedField(slug_field="name", required=False)
-    default_issue_status = serializers.SlugRelatedField(slug_field="name", required=False)
+    default_issue_status = serializers.SlugRelatedField(
+        slug_field="name", required=False
+    )
     default_issue_type = serializers.SlugRelatedField(slug_field="name", required=False)
-    userstorycustomattributes = UserStoryCustomAttributeExportValidator(many=True, required=False)
+    userstorycustomattributes = UserStoryCustomAttributeExportValidator(
+        many=True, required=False
+    )
     taskcustomattributes = TaskCustomAttributeExportValidator(many=True, required=False)
-    issuecustomattributes = IssueCustomAttributeExportValidator(many=True, required=False)
+    issuecustomattributes = IssueCustomAttributeExportValidator(
+        many=True, required=False
+    )
     user_stories = UserStoryExportValidator(many=True, required=False)
     tasks = TaskExportValidator(many=True, required=False)
     milestones = MilestoneExportValidator(many=True, required=False)
@@ -422,4 +449,4 @@ class ProjectExportValidator(WatcheableObjectModelValidatorMixin):
 
     class Meta:
         model = projects_models.Project
-        exclude = ('id', 'members')
+        exclude = ("id", "members")

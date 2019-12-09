@@ -7,11 +7,11 @@ import markdown
 
 
 class SemiSaneOListProcessor(markdown.blockprocessors.OListProcessor):
-    SIBLING_TAGS = ['ol']
+    SIBLING_TAGS = ["ol"]
 
 
 class SemiSaneUListProcessor(markdown.blockprocessors.UListProcessor):
-    SIBLING_TAGS = ['ul']
+    SIBLING_TAGS = ["ul"]
 
 
 class SemiSaneListExtension(markdown.Extension):
@@ -29,5 +29,5 @@ class SemiSaneListExtension(markdown.Extension):
     """
 
     def extendMarkdown(self, md):
-        md.parser.blockprocessors['olist'] = SemiSaneOListProcessor(md.parser)
-        md.parser.blockprocessors['ulist'] = SemiSaneUListProcessor(md.parser)
+        md.parser.blockprocessors["olist"] = SemiSaneOListProcessor(md.parser)
+        md.parser.blockprocessors["ulist"] = SemiSaneUListProcessor(md.parser)

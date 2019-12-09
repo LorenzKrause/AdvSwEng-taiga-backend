@@ -45,12 +45,7 @@ def start_project_transfer(project, user, reason):
     project.save()
 
     template = mail_builder.transfer_start
-    context = {
-        "project": project,
-        "receiver": user,
-        "token": token,
-        "reason": reason
-    }
+    context = {"project": project, "receiver": user, "token": token, "reason": reason}
     email = template(user, context)
     email.send()
 
@@ -79,11 +74,7 @@ def reject_project_transfer(project, user, token, reason):
     project.save()
 
     template = mail_builder.transfer_reject
-    context = {
-        "project": project,
-        "rejecter": user,
-        "reason": reason
-    }
+    context = {"project": project, "rejecter": user, "reason": reason}
     email = template(project.owner, context)
     email.send()
 
@@ -109,7 +100,7 @@ def accept_project_transfer(project, user, token, reason):
         "project": project,
         "old_owner": old_owner,
         "new_owner": user,
-        "reason": reason
+        "reason": reason,
     }
     email = template(old_owner, context)
     email.send()

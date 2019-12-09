@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('userstories', '0012_auto_20160614_1201'),
+        ("userstories", "0012_auto_20160614_1201"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userstory',
-            name='kanban_order',
-            field=models.IntegerField(default=10000, verbose_name='kanban order'),
+            model_name="userstory",
+            name="kanban_order",
+            field=models.IntegerField(default=10000, verbose_name="kanban order"),
         ),
     ]

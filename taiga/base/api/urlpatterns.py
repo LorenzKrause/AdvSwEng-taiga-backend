@@ -59,9 +59,9 @@ def apply_suffix_patterns(urlpatterns, suffix_pattern, suffix_required):
             app_name = urlpattern.app_name
             kwargs = urlpattern.default_kwargs
             # Add in the included patterns, after applying the suffixes
-            patterns = apply_suffix_patterns(urlpattern.url_patterns,
-                                             suffix_pattern,
-                                             suffix_required)
+            patterns = apply_suffix_patterns(
+                urlpattern.url_patterns, suffix_pattern, suffix_required
+            )
             ret.append(url(regex, include(patterns, namespace, app_name), kwargs))
 
         else:

@@ -22,7 +22,7 @@ from django.conf import settings
 
 class BaseEventsPushBackend(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def emit_event(self, message:str, *, routing_key:str, channel:str="events"):
+    def emit_event(self, message: str, *, routing_key: str, channel: str = "events"):
         pass
 
 
@@ -31,7 +31,7 @@ def load_class(path):
     Load class from path.
     """
 
-    mod_name, klass_name = path.rsplit('.', 1)
+    mod_name, klass_name = path.rsplit(".", 1)
 
     try:
         mod = importlib.import_module(mod_name)
@@ -41,12 +41,14 @@ def load_class(path):
     try:
         klass = getattr(mod, klass_name)
     except AttributeError:
-        raise ImproperlyConfigured('Module "{0}" does not define a "{1}" class'.format(mod_name, klass_name))
+        raise ImproperlyConfigured(
+            'Module "{0}" does not define a "{1}" class'.format(mod_name, klass_name)
+        )
 
     return klass
 
 
-def get_events_backend(path:str=None, options:dict=None):
+def get_events_backend(path: str = None, options: dict = None):
     if path is None:
         path = getattr(settings, "EVENTS_PUSH_BACKEND", None)
 

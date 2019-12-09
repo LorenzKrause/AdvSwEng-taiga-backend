@@ -22,6 +22,7 @@ from django.db import transaction
 from taiga.projects.attachments.models import Attachment
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,4 +35,8 @@ class Command(BaseCommand):
             attachment.save()
 
             rest -= 1
-            logger.debug("[{} / {} remaining] - Generate sha1 for attach {}".format(rest, total, attachment.id))
+            logger.debug(
+                "[{} / {} remaining] - Generate sha1 for attach {}".format(
+                    rest, total, attachment.id
+                )
+            )

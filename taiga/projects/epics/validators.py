@@ -39,25 +39,31 @@ class EpicExistsValidator:
         return attrs
 
 
-class EpicValidator(AssignedToValidator, WatchersValidator, EditableWatchedResourceSerializer,
-                    validators.ModelValidator):
+class EpicValidator(
+    AssignedToValidator,
+    WatchersValidator,
+    EditableWatchedResourceSerializer,
+    validators.ModelValidator,
+):
     tags = TagsAndTagsColorsField(default=[], required=False)
     external_reference = PgArrayField(required=False)
 
     class Meta:
         model = models.Epic
-        read_only_fields = ('id', 'ref', 'created_date', 'modified_date', 'owner')
+        read_only_fields = ("id", "ref", "created_date", "modified_date", "owner")
 
 
-class EpicsBulkValidator(ProjectExistsValidator, EpicExistsValidator,
-                         validators.Validator):
+class EpicsBulkValidator(
+    ProjectExistsValidator, EpicExistsValidator, validators.Validator
+):
     project_id = serializers.IntegerField()
     status_id = serializers.IntegerField(required=False)
     bulk_epics = serializers.CharField()
 
 
-class CreateRelatedUserStoriesBulkValidator(ProjectExistsValidator, EpicExistsValidator,
-                                            validators.Validator):
+class CreateRelatedUserStoriesBulkValidator(
+    ProjectExistsValidator, EpicExistsValidator, validators.Validator
+):
     project_id = serializers.IntegerField()
     bulk_userstories = serializers.CharField()
 
@@ -65,4 +71,4 @@ class CreateRelatedUserStoriesBulkValidator(ProjectExistsValidator, EpicExistsVa
 class EpicRelatedUserStoryValidator(validators.ModelValidator):
     class Meta:
         model = models.RelatedUserStory
-        read_only_fields = ('id',)
+        read_only_fields = ("id",)

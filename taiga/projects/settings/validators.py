@@ -25,11 +25,9 @@ from . import models
 
 
 class UserProjectSettingsValidator(validators.ModelValidator):
-
     class Meta:
         model = models.UserProjectSettings
-        read_only_fields = ('id', 'created_at', 'modified_at', 'project',
-                            'user')
+        read_only_fields = ("id", "created_at", "modified_at", "project", "user")
 
     def validate_homepage(self, attrs, source):
         if attrs[source] not in get_allowed_sections(self.object):

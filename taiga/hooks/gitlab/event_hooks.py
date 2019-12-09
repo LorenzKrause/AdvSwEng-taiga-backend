@@ -19,10 +19,14 @@
 import re
 import os
 
-from taiga.hooks.event_hooks import BaseNewIssueEventHook, BaseIssueCommentEventHook, BasePushEventHook
+from taiga.hooks.event_hooks import (
+    BaseNewIssueEventHook,
+    BaseIssueCommentEventHook,
+    BasePushEventHook,
+)
 
 
-class BaseGitLabEventHook():
+class BaseGitLabEventHook:
     platform = "GitLab"
     platform_slug = "gitlab"
 
@@ -36,40 +40,49 @@ class BaseGitLabEventHook():
 
 class IssuesEventHook(BaseGitLabEventHook, BaseNewIssueEventHook):
     def ignore(self):
-        return self.payload.get('object_attributes', {}).get("action", "") != "open"
+        return self.payload.get("object_attributes", {}).get("action", "") != "open"
 
     def get_data(self):
-        description = self.payload.get('object_attributes', {}).get('description', None)
-        project_url = self.payload.get('repository', {}).get('homepage', "")
-        user_name = self.payload.get('user', {}).get('username', None)
+        description = self.payload.get("object_attributes", {}).get("description", None)
+        project_url = self.payload.get("repository", {}).get("homepage", "")
+        user_name = self.payload.get("user", {}).get("username", None)
         return {
-            "number": self.payload.get('object_attributes', {}).get('iid', None),
-            "subject": self.payload.get('object_attributes', {}).get('title', None),
-            "url": self.payload.get('object_attributes', {}).get('url', None),
+            "number": self.payload.get("object_attributes", {}).get("iid", None),
+            "subject": self.payload.get("object_attributes", {}).get("title", None),
+            "url": self.payload.get("object_attributes", {}).get("url", None),
             "user_id": None,
             "user_name": user_name,
-            "user_url": os.path.join(os.path.dirname(os.path.dirname(project_url)), "u", user_name),
+            "user_url": os.path.join(
+                os.path.dirname(os.path.dirname(project_url)), "u", user_name
+            ),
             "description": self.replace_gitlab_references(project_url, description),
         }
 
 
 class IssueCommentEventHook(BaseGitLabEventHook, BaseIssueCommentEventHook):
     def ignore(self):
-        return self.payload.get('object_attributes', {}).get("noteable_type", None) != "Issue"
+        return (
+            self.payload.get("object_attributes", {}).get("noteable_type", None)
+            != "Issue"
+        )
 
     def get_data(self):
-        comment_message = self.payload.get('object_attributes', {}).get('note', None)
-        project_url = self.payload.get('repository', {}).get('homepage', "")
-        number = self.payload.get('issue', {}).get('iid', None)
-        user_name = self.payload.get('user', {}).get('username', None)
+        comment_message = self.payload.get("object_attributes", {}).get("note", None)
+        project_url = self.payload.get("repository", {}).get("homepage", "")
+        number = self.payload.get("issue", {}).get("iid", None)
+        user_name = self.payload.get("user", {}).get("username", None)
         return {
             "number": number,
             "url": os.path.join(project_url, "issues", str(number)),
             "user_id": None,
             "user_name": user_name,
-            "user_url": os.path.join(os.path.dirname(os.path.dirname(project_url)), "u", user_name),
-            "comment_url": self.payload.get('object_attributes', {}).get('url', None),
-            "comment_message": self.replace_gitlab_references(project_url, comment_message),
+            "user_url": os.path.join(
+                os.path.dirname(os.path.dirname(project_url)), "u", user_name
+            ),
+            "comment_url": self.payload.get("object_attributes", {}).get("url", None),
+            "comment_message": self.replace_gitlab_references(
+                project_url, comment_message
+            ),
         }
 
 
@@ -77,14 +90,18 @@ class PushEventHook(BaseGitLabEventHook, BasePushEventHook):
     def get_data(self):
         result = []
         for commit in self.payload.get("commits", []):
-            user_name = commit.get('author', {}).get('name', None)
-            result.append({
-                "user_id": None,
-                "user_name": user_name,
-                "user_url": None,
-                "commit_id": commit.get("id", None),
-                "commit_url": commit.get("url", None),
-                "commit_message": commit.get("message").strip(),
-                "commit_short_message": commit.get("message").split("\n")[0].strip(),
-            })
+            user_name = commit.get("author", {}).get("name", None)
+            result.append(
+                {
+                    "user_id": None,
+                    "user_name": user_name,
+                    "user_url": None,
+                    "commit_id": commit.get("id", None),
+                    "commit_url": commit.get("url", None),
+                    "commit_message": commit.get("message").strip(),
+                    "commit_short_message": commit.get("message")
+                    .split("\n")[0]
+                    .strip(),
+                }
+            )
         return result

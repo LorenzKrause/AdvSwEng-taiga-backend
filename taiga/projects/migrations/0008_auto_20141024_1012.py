@@ -8,6 +8,7 @@ from django.template.defaultfilters import slugify
 
 from taiga.projects.models import UserStoryStatus, TaskStatus, IssueStatus
 
+
 def update_many(objects, fields=[], using="default"):
     """Update list of Django objects in one SQL query, optionally only
     overwrite the given fields (as names, e.g. fields=["foo"]).
@@ -18,11 +19,17 @@ def update_many(objects, fields=[], using="default"):
 
     import django.db.models
     from django.db import connections
+
     con = connections[using]
 
     names = fields
     meta = objects[0]._meta
-    fields = [f for f in meta.fields if not isinstance(f, django.db.models.AutoField) and (not names or f.name in names)]
+    fields = [
+        f
+        for f in meta.fields
+        if not isinstance(f, django.db.models.AutoField)
+        and (not names or f.name in names)
+    ]
 
     if not fields:
         raise ValueError("No fields to update, field names are %s." % names)
@@ -30,13 +37,20 @@ def update_many(objects, fields=[], using="default"):
     fields_with_pk = fields + [meta.pk]
     parameters = []
     for o in objects:
-        parameters.append(tuple(f.get_db_prep_save(f.pre_save(o, True), connection=con) for f in fields_with_pk))
+        parameters.append(
+            tuple(
+                f.get_db_prep_save(f.pre_save(o, True), connection=con)
+                for f in fields_with_pk
+            )
+        )
 
     table = meta.db_table
-    assignments = ",".join(("%s=%%s"% con.ops.quote_name(f.column)) for f in fields)
+    assignments = ",".join(("%s=%%s" % con.ops.quote_name(f.column)) for f in fields)
     con.cursor().executemany(
-        "update %s set %s where %s=%%s" % (table, assignments, con.ops.quote_name(meta.pk.column)),
-        parameters)
+        "update %s set %s where %s=%%s"
+        % (table, assignments, con.ops.quote_name(meta.pk.column)),
+        parameters,
+    )
 
 
 def update_slug(apps, schema_editor):
@@ -62,9 +76,7 @@ def update_slug(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0007_auto_20141024_1011'),
+        ("projects", "0007_auto_20141024_1011"),
     ]
 
-    operations = [
-        migrations.RunPython(update_slug)
-    ]
+    operations = [migrations.RunPython(update_slug)]

@@ -28,5 +28,8 @@ class LocalesViewSet(ReadOnlyListViewSet):
     permission_classes = (permissions.LocalesPermission,)
 
     def list(self, request, *args, **kwargs):
-        locales = [{"code": c, "name": n, "bidi": c in settings.LANGUAGES_BIDI} for c, n in settings.LANGUAGES]
+        locales = [
+            {"code": c, "name": n, "bidi": c in settings.LANGUAGES_BIDI}
+            for c, n in settings.LANGUAGES
+        ]
         return response.Ok(locales)

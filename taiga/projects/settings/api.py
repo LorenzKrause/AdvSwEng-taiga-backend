@@ -38,13 +38,13 @@ class UserProjectSettingsViewSet(ModelCrudViewSet):
 
     def _build_user_project_settings(self):
         projects = Project.objects.filter(
-            Q(owner=self.request.user) |
-            Q(memberships__user=self.request.user)
+            Q(owner=self.request.user) | Q(memberships__user=self.request.user)
         ).distinct()
 
         for project in projects:
             services.create_user_project_settings_if_not_exists(
-                project, self.request.user)
+                project, self.request.user
+            )
 
     def get_queryset(self):
         if self.request.user.is_anonymous():
@@ -52,9 +52,11 @@ class UserProjectSettingsViewSet(ModelCrudViewSet):
 
         self._build_user_project_settings()
 
-        return models.UserProjectSettings.objects.filter(user=self.request.user)\
-            .filter(project__memberships__user=self.request.user)\
-            .order_by('project__memberships__user_order')
+        return (
+            models.UserProjectSettings.objects.filter(user=self.request.user)
+            .filter(project__memberships__user=self.request.user)
+            .order_by("project__memberships__user_order")
+        )
 
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()

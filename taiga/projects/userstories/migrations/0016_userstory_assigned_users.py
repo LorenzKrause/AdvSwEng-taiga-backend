@@ -10,13 +10,19 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('userstories', '0015_add_due_date'),
+        ("userstories", "0015_add_due_date"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userstory',
-            name='assigned_users',
-            field=models.ManyToManyField(blank=True, default=None, related_name='assigned_userstories', to=settings.AUTH_USER_MODEL, verbose_name='assigned users'),
+            model_name="userstory",
+            name="assigned_users",
+            field=models.ManyToManyField(
+                blank=True,
+                default=None,
+                related_name="assigned_userstories",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="assigned users",
+            ),
         ),
     ]

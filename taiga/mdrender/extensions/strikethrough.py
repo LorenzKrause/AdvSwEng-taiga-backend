@@ -5,7 +5,7 @@
 
 import markdown
 
-STRIKE_RE = r'(~{2})(.+?)(~{2})'  # ~~strike~~
+STRIKE_RE = r"(~{2})(.+?)(~{2})"  # ~~strike~~
 
 
 class StrikethroughExtension(markdown.Extension):
@@ -15,5 +15,5 @@ class StrikethroughExtension(markdown.Extension):
     """
 
     def extendMarkdown(self, md):
-        pattern = markdown.inlinepatterns.SimpleTagPattern(STRIKE_RE, 'del')
-        md.inlinePatterns.add('gfm-strikethrough', pattern, '_end')
+        pattern = markdown.inlinepatterns.SimpleTagPattern(STRIKE_RE, "del")
+        md.inlinePatterns.add("gfm-strikethrough", pattern, "_end")

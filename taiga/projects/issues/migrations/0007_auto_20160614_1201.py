@@ -9,18 +9,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issues', '0006_remove_issue_watchers'),
+        ("issues", "0006_remove_issue_watchers"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='issue',
-            name='external_reference',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(blank=False, null=False), blank=True, default=None, null=True, size=None, verbose_name='external reference'),
+            model_name="issue",
+            name="external_reference",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(blank=False, null=False),
+                blank=True,
+                default=None,
+                null=True,
+                size=None,
+                verbose_name="external reference",
+            ),
         ),
         migrations.AlterField(
-            model_name='issue',
-            name='tags',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(), blank=True, default=[], null=True, size=None, verbose_name='tags'),
+            model_name="issue",
+            name="tags",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(),
+                blank=True,
+                default=[],
+                null=True,
+                size=None,
+                verbose_name="tags",
+            ),
         ),
     ]

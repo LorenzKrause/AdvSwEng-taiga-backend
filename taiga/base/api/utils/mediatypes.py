@@ -90,9 +90,11 @@ def order_by_precedence(media_type_lst):
 class _MediaType(object):
     def __init__(self, media_type_str):
         if media_type_str is None:
-            media_type_str = ''
+            media_type_str = ""
         self.orig = media_type_str
-        self.full_type, self.params = parse_header(media_type_str.encode(HTTP_HEADER_ENCODING))
+        self.full_type, self.params = parse_header(
+            media_type_str.encode(HTTP_HEADER_ENCODING)
+        )
         self.main_type, sep, self.sub_type = self.full_type.partition("/")
 
     def match(self, other):
@@ -101,10 +103,18 @@ class _MediaType(object):
             if key != "q" and other.params.get(key, None) != self.params.get(key, None):
                 return False
 
-        if self.sub_type != "*" and other.sub_type != "*"  and other.sub_type != self.sub_type:
+        if (
+            self.sub_type != "*"
+            and other.sub_type != "*"
+            and other.sub_type != self.sub_type
+        ):
             return False
 
-        if self.main_type != "*" and other.main_type != "*" and other.main_type != self.main_type:
+        if (
+            self.main_type != "*"
+            and other.main_type != "*"
+            and other.main_type != self.main_type
+        ):
             return False
 
         return True

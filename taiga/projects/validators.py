@@ -21,7 +21,10 @@ from django.utils.translation import ugettext as _
 
 from taiga.base.api import serializers
 from taiga.base.api import validators
-from taiga.base.api.fields import validate_user_email_allowed_domains, InvalidEmailValidationError
+from taiga.base.api.fields import (
+    validate_user_email_allowed_domains,
+    InvalidEmailValidationError,
+)
 from taiga.base.exceptions import ValidationError
 from taiga.base.fields import JSONField
 from taiga.base.fields import PgArrayField
@@ -44,8 +47,8 @@ class DuplicatedNameInProjectValidator:
         # If the object exists:
         if self.object and attrs.get(source, None):
             qs = model.objects.filter(
-                project=self.object.project,
-                name=attrs[source]).exclude(id=self.object.id)
+                project=self.object.project, name=attrs[source]
+            ).exclude(id=self.object.id)
 
         if not self.object and attrs.get("project", None) and attrs.get(source, None):
             qs = model.objects.filter(project=attrs["project"], name=attrs[source])
@@ -69,12 +72,15 @@ class ProjectExistsValidator:
 # Custom values for selectors
 ######################################################
 
+
 class EpicStatusValidator(DuplicatedNameInProjectValidator, validators.ModelValidator):
     class Meta:
         model = models.EpicStatus
 
 
-class UserStoryStatusValidator(DuplicatedNameInProjectValidator, validators.ModelValidator):
+class UserStoryStatusValidator(
+    DuplicatedNameInProjectValidator, validators.ModelValidator
+):
     class Meta:
         model = models.UserStoryStatus
 
@@ -84,7 +90,9 @@ class PointsValidator(DuplicatedNameInProjectValidator, validators.ModelValidato
         model = models.Points
 
 
-class UserStoryDueDateValidator(DuplicatedNameInProjectValidator, validators.ModelValidator):
+class UserStoryDueDateValidator(
+    DuplicatedNameInProjectValidator, validators.ModelValidator
+):
     class Meta:
         model = models.UserStoryDueDate
 
@@ -119,7 +127,9 @@ class IssueTypeValidator(DuplicatedNameInProjectValidator, validators.ModelValid
         model = models.IssueType
 
 
-class IssueDueDateValidator(DuplicatedNameInProjectValidator, validators.ModelValidator):
+class IssueDueDateValidator(
+    DuplicatedNameInProjectValidator, validators.ModelValidator
+):
     class Meta:
         model = models.IssueDueDate
 
@@ -131,6 +141,7 @@ class DueDatesCreationValidator(ProjectExistsValidator, validators.Validator):
 ######################################################
 # Members
 ######################################################
+
 
 class MembershipValidator(validators.ModelValidator):
     username = serializers.CharField(required=True)
@@ -146,7 +157,9 @@ class MembershipValidator(validators.ModelValidator):
         return obj
 
     def _validate_member_doesnt_exist(self, attrs, email):
-        project = attrs.get("project", None if self.object is None else self.object.project)
+        project = attrs.get(
+            "project", None if self.object is None else self.object.project
+        )
         if project is None:
             return attrs
 
@@ -157,14 +170,18 @@ class MembershipValidator(validators.ModelValidator):
         if self.object:
             qs = qs.exclude(pk=self.object.pk)
 
-        qs = qs.filter(Q(project_id=project.id, user__email=email) |
-                       Q(project_id=project.id, email=email))
+        qs = qs.filter(
+            Q(project_id=project.id, user__email=email)
+            | Q(project_id=project.id, email=email)
+        )
 
         if qs.count() > 0:
             raise ValidationError(_("The user yet exists in the project"))
 
     def validate_role(self, attrs, source):
-        project = attrs.get("project", None if self.object is None else self.object.project)
+        project = attrs.get(
+            "project", None if self.object is None else self.object.project
+        )
         if project is None:
             return attrs
 
@@ -184,7 +201,9 @@ class MembershipValidator(validators.ModelValidator):
             # If the validation comes from a request let's check the user is a valid contact
             request = self.context.get("request", None)
             if request is not None and request.user.is_authenticated():
-                valid_usernames = request.user.contacts_visible_by_user(request.user).values_list("username", flat=True)
+                valid_usernames = request.user.contacts_visible_by_user(
+                    request.user
+                ).values_list("username", flat=True)
                 if username not in valid_usernames:
                     raise ValidationError(_("The user must be a valid contact"))
 
@@ -201,15 +220,19 @@ class MembershipValidator(validators.ModelValidator):
         return attrs
 
     def validate_is_admin(self, attrs, source):
-        project = attrs.get("project", None if self.object is None else self.object.project)
+        project = attrs.get(
+            "project", None if self.object is None else self.object.project
+        )
         if project is None:
             return attrs
 
-        if (self.object and self.object.user):
+        if self.object and self.object.user:
             if self.object.user.id == project.owner_id and not attrs[source]:
                 raise ValidationError(_("The project owner must be admin."))
 
-            if not services.project_has_valid_admins(project, exclude_user=self.object.user):
+            if not services.project_has_valid_admins(
+                project, exclude_user=self.object.user
+            ):
                 raise ValidationError(
                     _("At least one user must be an active admin for this project.")
                 )
@@ -239,7 +262,11 @@ class _MemberBulkValidator(validators.Validator):
             # If the validation comes from a request let's check the user is a valid contact
             request = self.context.get("request", None)
             if request is not None and request.user.is_authenticated():
-                valid_usernames = set(request.user.contacts_visible_by_user(request.user).values_list("username", flat=True))
+                valid_usernames = set(
+                    request.user.contacts_visible_by_user(request.user).values_list(
+                        "username", flat=True
+                    )
+                )
                 if username not in valid_usernames:
                     raise ValidationError(_("The user must be a valid contact"))
 
@@ -255,8 +282,12 @@ class MembersBulkValidator(ProjectExistsValidator, validators.Validator):
         project_id = attrs["project_id"]
         role_ids = [r["role_id"] for r in attrs["bulk_memberships"]]
 
-        if Role.objects.filter(project_id=project_id, id__in=role_ids).count() != len(set(role_ids)):
-            raise ValidationError(_("Invalid role ids. All roles must belong to the same project."))
+        if Role.objects.filter(project_id=project_id, id__in=role_ids).count() != len(
+            set(role_ids)
+        ):
+            raise ValidationError(
+                _("Invalid role ids. All roles must belong to the same project.")
+            )
 
         return attrs
 
@@ -265,6 +296,7 @@ class MembersBulkValidator(ProjectExistsValidator, validators.Validator):
 # Projects
 ######################################################
 
+
 class ProjectValidator(validators.ModelValidator):
     anon_permissions = PgArrayField(required=False)
     public_permissions = PgArrayField(required=False)
@@ -272,12 +304,19 @@ class ProjectValidator(validators.ModelValidator):
 
     class Meta:
         model = models.Project
-        read_only_fields = ("created_date", "modified_date", "slug", "blocked_code", "owner")
+        read_only_fields = (
+            "created_date",
+            "modified_date",
+            "slug",
+            "blocked_code",
+            "owner",
+        )
 
 
 ######################################################
 # Project Templates
 ######################################################
+
 
 class ProjectTemplateValidator(validators.ModelValidator):
     default_options = JSONField(required=False, label=_("Default options"))
@@ -298,6 +337,7 @@ class ProjectTemplateValidator(validators.ModelValidator):
 ######################################################
 # Project order bulk validators
 ######################################################
+
 
 class UpdateProjectOrderBulkValidator(ProjectExistsValidator, validators.Validator):
     project_id = serializers.IntegerField()

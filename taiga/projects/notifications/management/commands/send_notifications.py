@@ -25,8 +25,8 @@ from taiga.projects.notifications.services import send_sync_notifications
 
 from django_pglocks import advisory_lock
 
-class Command(BaseCommand):
 
+class Command(BaseCommand):
     def handle(self, *args, **options):
         with advisory_lock("send-notifications-command", wait=False) as acquired:
             if acquired:

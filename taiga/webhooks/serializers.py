@@ -61,6 +61,7 @@ class WebhookLogSerializer(serializers.LightSerializer):
 # User
 ########################################################################
 
+
 class UserSerializer(serializers.LightSerializer):
     id = Field(attr="pk")
     permalink = MethodField()
@@ -95,6 +96,7 @@ class UserSerializer(serializers.LightSerializer):
 # Project
 ########################################################################
 
+
 class ProjectSerializer(serializers.LightSerializer):
     id = Field(attr="pk")
     permalink = MethodField()
@@ -114,6 +116,7 @@ class ProjectSerializer(serializers.LightSerializer):
 ########################################################################
 # History Serializer
 ########################################################################
+
 
 class HistoryDiffField(Field):
     def to_value(self, value):
@@ -145,6 +148,7 @@ class HistoryEntrySerializer(serializers.LightSerializer):
 # _Misc_
 ########################################################################
 
+
 class CustomAttributesValuesWebhookSerializerMixin(serializers.LightSerializer):
     custom_attributes_values = MethodField()
 
@@ -152,7 +156,9 @@ class CustomAttributesValuesWebhookSerializerMixin(serializers.LightSerializer):
         raise NotImplementedError()
 
     def get_custom_attributes_values(self, obj):
-        def _use_name_instead_id_as_key_in_custom_attributes_values(custom_attributes, values):
+        def _use_name_instead_id_as_key_in_custom_attributes_values(
+            custom_attributes, values
+        ):
             ret = {}
             for attr in custom_attributes:
                 value = values.get(str(attr["id"]), None)
@@ -163,9 +169,13 @@ class CustomAttributesValuesWebhookSerializerMixin(serializers.LightSerializer):
 
         try:
             values = obj.custom_attributes_values.attributes_values
-            custom_attributes = self.custom_attributes_queryset(obj.project).values('id', 'name')
+            custom_attributes = self.custom_attributes_queryset(obj.project).values(
+                "id", "name"
+            )
 
-            return _use_name_instead_id_as_key_in_custom_attributes_values(custom_attributes, values)
+            return _use_name_instead_id_as_key_in_custom_attributes_values(
+                custom_attributes, values
+            )
         except ObjectDoesNotExist:
             return None
 
@@ -309,6 +319,7 @@ class SeveritySerializer(serializers.LightSerializer):
 # Milestone
 ########################################################################
 
+
 class MilestoneSerializer(serializers.LightSerializer):
     id = Field()
     name = Field()
@@ -337,7 +348,10 @@ class MilestoneSerializer(serializers.LightSerializer):
 # User Story
 ########################################################################
 
-class UserStorySerializer(CustomAttributesValuesWebhookSerializerMixin, serializers.LightSerializer):
+
+class UserStorySerializer(
+    CustomAttributesValuesWebhookSerializerMixin, serializers.LightSerializer
+):
     id = Field()
     ref = Field()
     project = ProjectSerializer()
@@ -391,7 +405,10 @@ class UserStorySerializer(CustomAttributesValuesWebhookSerializerMixin, serializ
 # Task
 ########################################################################
 
-class TaskSerializer(CustomAttributesValuesWebhookSerializerMixin, serializers.LightSerializer):
+
+class TaskSerializer(
+    CustomAttributesValuesWebhookSerializerMixin, serializers.LightSerializer
+):
     id = Field()
     ref = Field()
     created_date = Field()
@@ -431,7 +448,10 @@ class TaskSerializer(CustomAttributesValuesWebhookSerializerMixin, serializers.L
 # Issue
 ########################################################################
 
-class IssueSerializer(CustomAttributesValuesWebhookSerializerMixin, serializers.LightSerializer):
+
+class IssueSerializer(
+    CustomAttributesValuesWebhookSerializerMixin, serializers.LightSerializer
+):
     id = Field()
     ref = Field()
     created_date = Field()
@@ -468,6 +488,7 @@ class IssueSerializer(CustomAttributesValuesWebhookSerializerMixin, serializers.
 # Wiki Page
 ########################################################################
 
+
 class WikiPageSerializer(serializers.LightSerializer):
     id = Field()
     slug = Field()
@@ -487,7 +508,10 @@ class WikiPageSerializer(serializers.LightSerializer):
 # Epic
 ########################################################################
 
-class EpicSerializer(CustomAttributesValuesWebhookSerializerMixin, serializers.LightSerializer):
+
+class EpicSerializer(
+    CustomAttributesValuesWebhookSerializerMixin, serializers.LightSerializer
+):
     id = Field()
     ref = Field()
     created_date = Field()

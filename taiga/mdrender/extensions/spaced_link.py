@@ -10,16 +10,20 @@ NOIMG = markdown.inlinepatterns.NOIMG
 SPACE = r"(?:\s*(?:\r\n|\r|\n)?\s*)"
 
 SPACED_LINK_RE = markdown.inlinepatterns.LINK_RE.replace(
-    NOIMG + BRK, NOIMG + BRK + SPACE)
+    NOIMG + BRK, NOIMG + BRK + SPACE
+)
 
 SPACED_REFERENCE_RE = markdown.inlinepatterns.REFERENCE_RE.replace(
-    NOIMG + BRK, NOIMG + BRK + SPACE)
+    NOIMG + BRK, NOIMG + BRK + SPACE
+)
 
 SPACED_IMAGE_LINK_RE = markdown.inlinepatterns.IMAGE_LINK_RE.replace(
-    r'\!' + BRK, r'\!' + BRK + SPACE)
+    r"\!" + BRK, r"\!" + BRK + SPACE
+)
 
 SPACED_IMAGE_REFERENCE_RE = markdown.inlinepatterns.IMAGE_REFERENCE_RE.replace(
-    r'\!' + BRK, r'\!' + BRK + SPACE)
+    r"\!" + BRK, r"\!" + BRK + SPACE
+)
 
 
 class SpacedLinkExtension(markdown.Extension):
@@ -32,12 +36,15 @@ class SpacedLinkExtension(markdown.Extension):
     """
 
     def extendMarkdown(self, md):
-        md.inlinePatterns["link"] = \
-            markdown.inlinepatterns.LinkPattern(SPACED_LINK_RE, md)
-        md.inlinePatterns["reference"] = \
-            markdown.inlinepatterns.ReferencePattern(SPACED_REFERENCE_RE, md)
-        md.inlinePatterns["image_link"] = \
-            markdown.inlinepatterns.ImagePattern(SPACED_IMAGE_LINK_RE, md)
-        md.inlinePatterns["image_reference"] = \
-            markdown.inlinepatterns.ImageReferencePattern(
-                SPACED_IMAGE_REFERENCE_RE, md)
+        md.inlinePatterns["link"] = markdown.inlinepatterns.LinkPattern(
+            SPACED_LINK_RE, md
+        )
+        md.inlinePatterns["reference"] = markdown.inlinepatterns.ReferencePattern(
+            SPACED_REFERENCE_RE, md
+        )
+        md.inlinePatterns["image_link"] = markdown.inlinepatterns.ImagePattern(
+            SPACED_IMAGE_LINK_RE, md
+        )
+        md.inlinePatterns[
+            "image_reference"
+        ] = markdown.inlinepatterns.ImageReferencePattern(SPACED_IMAGE_REFERENCE_RE, md)

@@ -55,8 +55,12 @@ class RolePointsField(serializers.WritableField):
         return json.loads(obj)
 
 
-class UserStoryValidator(AssignedToValidator, WatchersValidator,
-                         EditableWatchedResourceSerializer, validators.ModelValidator):
+class UserStoryValidator(
+    AssignedToValidator,
+    WatchersValidator,
+    EditableWatchedResourceSerializer,
+    validators.ModelValidator,
+):
     tags = TagsAndTagsColorsField(default=[], required=False)
     external_reference = PgArrayField(required=False)
     points = RolePointsField(source="role_points", required=False)
@@ -65,7 +69,7 @@ class UserStoryValidator(AssignedToValidator, WatchersValidator,
     class Meta:
         model = models.UserStory
         depth = 0
-        read_only_fields = ('id', 'ref', 'created_date', 'modified_date', 'owner')
+        read_only_fields = ("id", "ref", "created_date", "modified_date", "owner")
 
 
 class UserStoriesBulkValidator(ProjectExistsValidator, validators.Validator):
@@ -74,19 +78,21 @@ class UserStoriesBulkValidator(ProjectExistsValidator, validators.Validator):
     bulk_stories = serializers.CharField()
 
     def validate_status_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
 
         if not UserStoryStatus.objects.filter(**filters).exists():
-            raise ValidationError(_("Invalid user story status id. The status must belong to "
-                                    "the same project."))
+            raise ValidationError(
+                _(
+                    "Invalid user story status id. The status must belong to "
+                    "the same project."
+                )
+            )
 
         return attrs
 
 
 # Order bulk validators
+
 
 class _UserStoryOrderBulkValidator(validators.Validator):
     us_id = serializers.IntegerField()
@@ -100,26 +106,28 @@ class UpdateUserStoriesOrderBulkValidator(ProjectExistsValidator, validators.Val
     bulk_stories = _UserStoryOrderBulkValidator(many=True)
 
     def validate_status_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
 
         if not UserStoryStatus.objects.filter(**filters).exists():
-            raise ValidationError(_("Invalid user story status id. The status must belong "
-                                    "to the same project."))
+            raise ValidationError(
+                _(
+                    "Invalid user story status id. The status must belong "
+                    "to the same project."
+                )
+            )
 
         return attrs
 
     def validate_milestone_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
 
         if not Milestone.objects.filter(**filters).exists():
-            raise ValidationError(_("Invalid milestone id. The milistone must belong to the "
-                                    "same project."))
+            raise ValidationError(
+                _(
+                    "Invalid milestone id. The milistone must belong to the "
+                    "same project."
+                )
+            )
 
         return attrs
 
@@ -131,13 +139,18 @@ class UpdateUserStoriesOrderBulkValidator(ProjectExistsValidator, validators.Val
         filters["id__in"] = [us["us_id"] for us in attrs[source]]
 
         if models.UserStory.objects.filter(**filters).count() != len(filters["id__in"]):
-            raise ValidationError(_("Invalid user story ids. All stories must belong to the same project "
-                                    "and, if it exists, to the same status and milestone."))
+            raise ValidationError(
+                _(
+                    "Invalid user story ids. All stories must belong to the same project "
+                    "and, if it exists, to the same status and milestone."
+                )
+            )
 
         return attrs
 
 
 # Milestone bulk validators
+
 
 class _UserStoryMilestoneBulkValidator(validators.Validator):
     us_id = serializers.IntegerField()
@@ -150,10 +163,7 @@ class UpdateMilestoneBulkValidator(ProjectExistsValidator, validators.Validator)
     bulk_stories = _UserStoryMilestoneBulkValidator(many=True)
 
     def validate_milestone_id(self, attrs, source):
-        filters = {
-            "project__id": attrs["project_id"],
-            "id": attrs[source]
-        }
+        filters = {"project__id": attrs["project_id"], "id": attrs[source]}
         if not Milestone.objects.filter(**filters).exists():
             raise ValidationError(_("The milestone isn't valid for the project"))
         return attrs
@@ -161,10 +171,12 @@ class UpdateMilestoneBulkValidator(ProjectExistsValidator, validators.Validator)
     def validate_bulk_stories(self, attrs, source):
         filters = {
             "project__id": attrs["project_id"],
-            "id__in": [us["us_id"] for us in attrs[source]]
+            "id__in": [us["us_id"] for us in attrs[source]],
         }
 
         if UserStory.objects.filter(**filters).count() != len(filters["id__in"]):
-            raise ValidationError(_("All the user stories must be from the same project"))
+            raise ValidationError(
+                _("All the user stories must be from the same project")
+            )
 
         return attrs

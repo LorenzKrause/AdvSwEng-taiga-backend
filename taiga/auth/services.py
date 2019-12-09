@@ -63,7 +63,7 @@ def send_register_email(user) -> bool:
     return bool(email.send())
 
 
-def is_user_already_registered(*, username:str, email:str) -> (bool, str):
+def is_user_already_registered(*, username: str, email: str) -> (bool, str):
     """
     Checks if a specified user is already registred.
 
@@ -81,7 +81,7 @@ def is_user_already_registered(*, username:str, email:str) -> (bool, str):
     return (False, None)
 
 
-def get_membership_by_token(token:str):
+def get_membership_by_token(token: str):
     """
     Given a token, returns a membership instance
     that matches with specified token.
@@ -97,7 +97,7 @@ def get_membership_by_token(token:str):
 
 
 @tx.atomic
-def public_register(username:str, password:str, email:str, full_name:str):
+def public_register(username: str, password: str, email: str, full_name: str):
     """
     Given a parsed parameters, try register a new user
     knowing that it follows a public register flow.
@@ -113,10 +113,9 @@ def public_register(username:str, password:str, email:str, full_name:str):
         raise exc.WrongArguments(reason)
 
     user_model = get_user_model()
-    user = user_model(username=username,
-                      email=email,
-                      full_name=full_name,
-                      read_new_terms=True)
+    user = user_model(
+        username=username, email=email, full_name=full_name, read_new_terms=True
+    )
     user.set_password(password)
     try:
         user.save()
@@ -129,7 +128,7 @@ def public_register(username:str, password:str, email:str, full_name:str):
 
 
 @tx.atomic
-def accept_invitation_by_existing_user(token:str, user_id:int):
+def accept_invitation_by_existing_user(token: str, user_id: int):
     user_model = get_user_model()
     user = user_model.objects.get(id=user_id)
     membership = get_membership_by_token(token)
@@ -143,8 +142,9 @@ def accept_invitation_by_existing_user(token:str, user_id:int):
 
 
 @tx.atomic
-def private_register_for_new_user(token:str, username:str, email:str,
-                                  full_name:str, password:str):
+def private_register_for_new_user(
+    token: str, username: str, email: str, full_name: str, password: str
+):
     """
     Given a inviation token, try register new user matching
     the invitation token.
@@ -154,9 +154,7 @@ def private_register_for_new_user(token:str, username:str, email:str,
         raise exc.WrongArguments(reason)
 
     user_model = get_user_model()
-    user = user_model(username=username,
-                      email=email,
-                      full_name=full_name)
+    user = user_model(username=username, email=email, full_name=full_name)
 
     user.set_password(password)
     try:
@@ -186,8 +184,8 @@ def make_auth_response_data(user) -> dict:
 
 
 def normal_login_func(request):
-    username = request.DATA.get('username', None)
-    password = request.DATA.get('password', None)
+    username = request.DATA.get("username", None)
+    password = request.DATA.get("password", None)
 
     user = get_and_validate_user(username=username, password=password)
     data = make_auth_response_data(user)

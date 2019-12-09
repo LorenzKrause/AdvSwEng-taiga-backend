@@ -67,6 +67,7 @@ class APIException(Exception):
     Base class for REST framework exceptions.
     Subclasses should provide `.status_code` and `.default_detail` properties.
     """
+
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = ""
 
@@ -161,6 +162,7 @@ class BadRequest(BaseException):
     Exception used on bad arguments detected
     on api view.
     """
+
     default_detail = _("Wrong arguments.")
 
 
@@ -169,6 +171,7 @@ class WrongArguments(BadRequest):
     Exception used on bad arguments detected
     on service. This is same as `BadRequest`.
     """
+
     default_detail = _("Wrong arguments.")
 
 
@@ -181,6 +184,7 @@ class PermissionDenied(PermissionDenied):
     Compatibility subclass of restframework `PermissionDenied`
     exception.
     """
+
     pass
 
 
@@ -192,6 +196,7 @@ class PreconditionError(BadRequest):
     """
     Error raised on precondition method on viewset.
     """
+
     default_detail = _("Precondition error")
 
 
@@ -200,6 +205,7 @@ class NotAuthenticated(NotAuthenticated):
     Compatibility subclass of restframework `NotAuthenticated`
     exception.
     """
+
     pass
 
 
@@ -207,6 +213,7 @@ class Blocked(APIException):
     """
     Exception used on blocked projects
     """
+
     status_code = status.HTTP_451_BLOCKED
     default_detail = _("Blocked element")
 
@@ -216,13 +223,14 @@ class NotEnoughSlotsForProject(BaseException):
     Exception used on import/edition/creation project errors where the user
     hasn't slots enough
     """
+
     default_detail = _("No room left for more projects.")
 
     def __init__(self, is_private, total_memberships, detail=None):
         self.detail = detail or self.default_detail
         self.project_data = {
             "is_private": is_private,
-            "total_memberships": total_memberships
+            "total_memberships": total_memberships,
         }
 
 
@@ -234,7 +242,7 @@ def format_exception(exc):
         class_module = exc.__class__.__module__
         detail = {
             "_error_message": force_text(exc.detail),
-            "_error_type": "{0}.{1}".format(class_module, class_name)
+            "_error_type": "{0}.{1}".format(class_module, class_name),
         }
 
     return detail
@@ -259,13 +267,15 @@ def exception_handler(exc):
         if getattr(exc, "wait", None):
             res["X-Throttle-Wait-Seconds"] = "%d" % exc.wait
         if getattr(exc, "project_data", None):
-            res["Taiga-Info-Project-Memberships"] = exc.project_data["total_memberships"]
+            res["Taiga-Info-Project-Memberships"] = exc.project_data[
+                "total_memberships"
+            ]
             res["Taiga-Info-Project-Is-Private"] = exc.project_data["is_private"]
 
         return res
 
     elif isinstance(exc, Http404):
-        return response.NotFound({'_error_message': str(exc)})
+        return response.NotFound({"_error_message": str(exc)})
 
     elif isinstance(exc, DjangoPermissionDenied):
         return response.Forbidden({"_error_message": str(exc)})

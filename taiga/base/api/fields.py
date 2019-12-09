@@ -80,8 +80,7 @@ import warnings
 
 
 def is_non_str_iterable(obj):
-    if (isinstance(obj, str) or
-        (isinstance(obj, Promise) and obj._delegate_text)):
+    if isinstance(obj, str) or (isinstance(obj, Promise) and obj._delegate_text):
         return False
     return hasattr(obj, "__iter__")
 
@@ -118,8 +117,9 @@ def get_component(obj, attr_name):
 
 
 def readable_datetime_formats(formats):
-    format = ", ".join(formats).replace(ISO_8601,
-             "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HHMM|-HHMM|Z]")
+    format = ", ".join(formats).replace(
+        ISO_8601, "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HHMM|-HHMM|Z]"
+    )
     return humanize_strptime(format)
 
 
@@ -151,7 +151,7 @@ def humanize_strptime(format_string):
         "%a": "[Mon-Sun]",
         "%A": "[Monday-Sunday]",
         "%p": "[AM|PM]",
-        "%z": "[+HHMM|-HHMM]"
+        "%z": "[+HHMM|-HHMM]",
     }
     for key, val in mapping.items():
         format_string = format_string.replace(key, val)
@@ -199,7 +199,7 @@ class Field(object):
         return self.widget.render(self._name, self._value)
 
     def label_tag(self):
-        return "<label for=\"%s\">%s:</label>" % (self._name, self.label)
+        return '<label for="%s">%s:</label>' % (self._name, self.label)
 
     def initialize(self, parent, field_name):
         """
@@ -252,8 +252,9 @@ class Field(object):
 
         if is_protected_type(value):
             return value
-        elif (is_non_str_iterable(value) and
-              not isinstance(value, (dict, six.string_types))):
+        elif is_non_str_iterable(value) and not isinstance(
+            value, (dict, six.string_types)
+        ):
             return [self.to_native(item) for item in value]
         elif isinstance(value, dict):
             # Make sure we preserve field ordering, if it exists
@@ -275,8 +276,7 @@ class Field(object):
         metadata = OrderedDict()
         metadata["type"] = self.type_label
         metadata["required"] = getattr(self, "required", False)
-        optional_attrs = ["read_only", "label", "help_text",
-                          "min_length", "max_length"]
+        optional_attrs = ["read_only", "label", "help_text", "min_length", "max_length"]
         for attr in optional_attrs:
             value = getattr(self, attr, None)
             if value is not None and value != "":
@@ -288,6 +288,7 @@ class WritableField(Field):
     """
     Base for read/write fields.
     """
+
     write_only = False
     default_validators = []
     default_error_messages = {
@@ -297,30 +298,49 @@ class WritableField(Field):
     widget = widgets.TextInput
     default = None
 
-    def __init__(self, source=None, label=None, help_text=None,
-                 read_only=False, write_only=False, required=None,
-                 validators=[], error_messages=None, widget=None,
-                 default=None, blank=None, i18n=False):
+    def __init__(
+        self,
+        source=None,
+        label=None,
+        help_text=None,
+        read_only=False,
+        write_only=False,
+        required=None,
+        validators=[],
+        error_messages=None,
+        widget=None,
+        default=None,
+        blank=None,
+        i18n=False,
+    ):
 
         # "blank" is to be deprecated in favor of "required"
         if blank is not None:
-            warnings.warn("The `blank` keyword argument is deprecated. "
-                          "Use the `required` keyword argument instead.",
-                          DeprecationWarning, stacklevel=2)
-            required = not(blank)
+            warnings.warn(
+                "The `blank` keyword argument is deprecated. "
+                "Use the `required` keyword argument instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            required = not (blank)
 
-        super(WritableField, self).__init__(source=source, label=label,
-                help_text=help_text, i18n=i18n)
+        super(WritableField, self).__init__(
+            source=source, label=label, help_text=help_text, i18n=i18n
+        )
 
         self.read_only = read_only
         self.write_only = write_only
 
-        assert not (read_only and write_only), "Cannot set read_only=True and write_only=True"
+        assert not (
+            read_only and write_only
+        ), "Cannot set read_only=True and write_only=True"
 
         if required is None:
-            self.required = not(read_only)
+            self.required = not (read_only)
         else:
-            assert not (read_only and required), "Cannot set required=True and read_only=True"
+            assert not (
+                read_only and required
+            ), "Cannot set required=True and read_only=True"
             self.required = required
 
         messages = {}
@@ -423,20 +443,25 @@ class ModelField(WritableField):
     """
     A generic field that can be used against an arbitrary model field.
     """
+
     def __init__(self, *args, **kwargs):
         try:
             self.model_field = kwargs.pop("model_field")
         except KeyError:
             raise ValueError("ModelField requires 'model_field' kwarg")
 
-        self.min_length = kwargs.pop("min_length",
-                                     getattr(self.model_field, "min_length", None))
-        self.max_length = kwargs.pop("max_length",
-                                     getattr(self.model_field, "max_length", None))
-        self.min_value = kwargs.pop("min_value",
-                                    getattr(self.model_field, "min_value", None))
-        self.max_value = kwargs.pop("max_value",
-                                    getattr(self.model_field, "max_value", None))
+        self.min_length = kwargs.pop(
+            "min_length", getattr(self.model_field, "min_length", None)
+        )
+        self.max_length = kwargs.pop(
+            "max_length", getattr(self.model_field, "max_length", None)
+        )
+        self.min_value = kwargs.pop(
+            "min_value", getattr(self.model_field, "min_value", None)
+        )
+        self.max_value = kwargs.pop(
+            "max_value", getattr(self.model_field, "max_value", None)
+        )
 
         super(ModelField, self).__init__(*args, **kwargs)
 
@@ -463,17 +488,16 @@ class ModelField(WritableField):
         return self.model_field.value_to_string(obj)
 
     def attributes(self):
-        return {
-            "type": self.model_field.get_internal_type()
-        }
+        return {"type": self.model_field.get_internal_type()}
 
     def validate(self, value):
         super(ModelField, self).validate(value)
         if value is None and not self.model_field.null:
-            raise ValidationError(self.error_messages['invalid'])
+            raise ValidationError(self.error_messages["invalid"])
 
 
 ##### Typed Fields #####
+
 
 class BooleanField(WritableField):
     type_name = "BooleanField"
@@ -519,7 +543,7 @@ class CharField(WritableField):
     def from_native(self, value):
         if value in validators.EMPTY_VALUES:
             return ""
-            
+
         return smart_text(value)
 
     def to_native(self, value):
@@ -546,8 +570,10 @@ class SlugField(CharField):
     form_field_class = forms.SlugField
 
     default_error_messages = {
-        "invalid": _("Enter a valid 'slug' consisting of letters, numbers,"
-                     " underscores or hyphens."),
+        "invalid": _(
+            "Enter a valid 'slug' consisting of letters, numbers,"
+            " underscores or hyphens."
+        ),
     }
     default_validators = [validators.validate_slug]
 
@@ -561,8 +587,9 @@ class ChoiceField(WritableField):
     form_field_class = forms.ChoiceField
     widget = widgets.Select
     default_error_messages = {
-        "invalid_choice": _("Select a valid choice. %(value)s is not one of "
-                            "the available choices."),
+        "invalid_choice": _(
+            "Select a valid choice. %(value)s is not one of " "the available choices."
+        ),
     }
 
     def __init__(self, choices=(), *args, **kwargs):
@@ -594,7 +621,9 @@ class ChoiceField(WritableField):
         """
         super(ChoiceField, self).validate(value)
         if value and not self.valid_value(value):
-            raise ValidationError(self.error_messages["invalid_choice"] % {"value": value})
+            raise ValidationError(
+                self.error_messages["invalid_choice"] % {"value": value}
+            )
 
     def valid_value(self, value):
         """
@@ -634,7 +663,10 @@ def validate_user_email_allowed_domains(value):
 
     domain_name = value.split("@")[1]
 
-    if settings.USER_EMAIL_ALLOWED_DOMAINS and domain_name not in settings.USER_EMAIL_ALLOWED_DOMAINS:
+    if (
+        settings.USER_EMAIL_ALLOWED_DOMAINS
+        and domain_name not in settings.USER_EMAIL_ALLOWED_DOMAINS
+    ):
         raise InvalidDomainValidationError(_("You email domain is not allowed"))
 
 
@@ -671,7 +703,10 @@ class RegexField(CharField):
         if isinstance(regex, six.string_types):
             regex = re.compile(regex)
         self._regex = regex
-        if hasattr(self, "_regex_validator") and self._regex_validator in self.validators:
+        if (
+            hasattr(self, "_regex_validator")
+            and self._regex_validator in self.validators
+        ):
             self.validators.remove(self._regex_validator)
         self._regex_validator = validators.RegexValidator(regex=regex)
         self.validators.append(self._regex_validator)
@@ -693,7 +728,9 @@ class DateField(WritableField):
     format = api_settings.DATE_FORMAT
 
     def __init__(self, input_formats=None, format=None, *args, **kwargs):
-        self.input_formats = input_formats if input_formats is not None else self.input_formats
+        self.input_formats = (
+            input_formats if input_formats is not None else self.input_formats
+        )
         self.format = format if format is not None else self.format
         super(DateField, self).__init__(*args, **kwargs)
 
@@ -757,7 +794,9 @@ class DateTimeField(WritableField):
     format = api_settings.DATETIME_FORMAT
 
     def __init__(self, input_formats=None, format=None, *args, **kwargs):
-        self.input_formats = input_formats if input_formats is not None else self.input_formats
+        self.input_formats = (
+            input_formats if input_formats is not None else self.input_formats
+        )
         self.format = format if format is not None else self.format
         super(DateTimeField, self).__init__(*args, **kwargs)
 
@@ -774,9 +813,11 @@ class DateTimeField(WritableField):
                 # local time. This won't work during DST change, but we can"t
                 # do much about it, so we let the exceptions percolate up the
                 # call stack.
-                warnings.warn("DateTimeField received a naive datetime (%s)"
-                              " while time zone support is active." % value,
-                              RuntimeWarning)
+                warnings.warn(
+                    "DateTimeField received a naive datetime (%s)"
+                    " while time zone support is active." % value,
+                    RuntimeWarning,
+                )
                 default_timezone = timezone.get_default_timezone()
                 value = timezone.make_aware(value, default_timezone)
             return value
@@ -798,7 +839,9 @@ class DateTimeField(WritableField):
                 else:
                     return parsed
 
-        msg = self.error_messages["invalid"] % readable_datetime_formats(self.input_formats)
+        msg = self.error_messages["invalid"] % readable_datetime_formats(
+            self.input_formats
+        )
         raise ValidationError(msg)
 
     def to_native(self, value):
@@ -827,7 +870,9 @@ class TimeField(WritableField):
     format = api_settings.TIME_FORMAT
 
     def __init__(self, input_formats=None, format=None, *args, **kwargs):
-        self.input_formats = input_formats if input_formats is not None else self.input_formats
+        self.input_formats = (
+            input_formats if input_formats is not None else self.input_formats
+        )
         self.format = format if format is not None else self.format
         super(TimeField, self).__init__(*args, **kwargs)
 
@@ -879,7 +924,9 @@ class IntegerField(WritableField):
     default_error_messages = {
         "invalid": _("Enter a whole number."),
         "max_value": _("Ensure this value is less than or equal to %(limit_value)s."),
-        "min_value": _("Ensure this value is greater than or equal to %(limit_value)s."),
+        "min_value": _(
+            "Ensure this value is greater than or equal to %(limit_value)s."
+        ),
     }
 
     def __init__(self, max_value=None, min_value=None, *args, **kwargs):
@@ -932,13 +979,27 @@ class DecimalField(WritableField):
     default_error_messages = {
         "invalid": _("Enter a number."),
         "max_value": _("Ensure this value is less than or equal to %(limit_value)s."),
-        "min_value": _("Ensure this value is greater than or equal to %(limit_value)s."),
+        "min_value": _(
+            "Ensure this value is greater than or equal to %(limit_value)s."
+        ),
         "max_digits": _("Ensure that there are no more than %s digits in total."),
-        "max_decimal_places": _("Ensure that there are no more than %s decimal places."),
-        "max_whole_digits": _("Ensure that there are no more than %s digits before the decimal point.")
+        "max_decimal_places": _(
+            "Ensure that there are no more than %s decimal places."
+        ),
+        "max_whole_digits": _(
+            "Ensure that there are no more than %s digits before the decimal point."
+        ),
     }
 
-    def __init__(self, max_value=None, min_value=None, max_digits=None, decimal_places=None, *args, **kwargs):
+    def __init__(
+        self,
+        max_value=None,
+        min_value=None,
+        max_digits=None,
+        decimal_places=None,
+        *args,
+        **kwargs
+    ):
         self.max_value, self.min_value = max_value, min_value
         self.max_digits, self.decimal_places = max_digits, decimal_places
         super(DecimalField, self).__init__(*args, **kwargs)
@@ -988,9 +1049,18 @@ class DecimalField(WritableField):
         if self.max_digits is not None and digits > self.max_digits:
             raise ValidationError(self.error_messages["max_digits"] % self.max_digits)
         if self.decimal_places is not None and decimals > self.decimal_places:
-            raise ValidationError(self.error_messages["max_decimal_places"] % self.decimal_places)
-        if self.max_digits is not None and self.decimal_places is not None and whole_digits > (self.max_digits - self.decimal_places):
-            raise ValidationError(self.error_messages["max_whole_digits"] % (self.max_digits - self.decimal_places))
+            raise ValidationError(
+                self.error_messages["max_decimal_places"] % self.decimal_places
+            )
+        if (
+            self.max_digits is not None
+            and self.decimal_places is not None
+            and whole_digits > (self.max_digits - self.decimal_places)
+        ):
+            raise ValidationError(
+                self.error_messages["max_whole_digits"]
+                % (self.max_digits - self.decimal_places)
+            )
         return value
 
 
@@ -1005,8 +1075,12 @@ class FileField(WritableField):
         "invalid": _("No file was submitted. Check the encoding type on the form."),
         "missing": _("No file was submitted."),
         "empty": _("The submitted file is empty."),
-        "max_length": _("Ensure this filename has at most %(max)d characters (it has %(length)d)."),
-        "contradiction": _("Please either submit a file or check the clear checkbox, not both.")
+        "max_length": _(
+            "Ensure this filename has at most %(max)d characters (it has %(length)d)."
+        ),
+        "contradiction": _(
+            "Please either submit a file or check the clear checkbox, not both."
+        ),
     }
 
     def __init__(self, *args, **kwargs):
@@ -1046,8 +1120,10 @@ class ImageField(FileField):
     form_field_class = forms.ImageField
 
     default_error_messages = {
-        "invalid_image": _("Upload a valid image. The file you uploaded was "
-                           "either not an image or a corrupted image."),
+        "invalid_image": _(
+            "Upload a valid image. The file you uploaded was "
+            "either not an image or a corrupted image."
+        ),
     }
 
     def from_native(self, data):
@@ -1068,7 +1144,9 @@ class ImageField(FileField):
             except ImportError:
                 Image = None
 
-        assert Image is not None, "Either Pillow or PIL must be installed for ImageField support."
+        assert (
+            Image is not None
+        ), "Either Pillow or PIL must be installed for ImageField support."
 
         # We need to get a file object for PIL. We might have a path or we might
         # have to read the data into memory.

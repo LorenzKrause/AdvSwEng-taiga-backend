@@ -34,14 +34,24 @@ class ResolverValidator(validators.Validator):
     def validate(self, attrs):
         if "ref" in attrs:
             if "epic" in attrs:
-                raise ValidationError("'epic' param is incompatible with 'ref' in the same request")
+                raise ValidationError(
+                    "'epic' param is incompatible with 'ref' in the same request"
+                )
             if "us" in attrs:
-                raise ValidationError("'us' param is incompatible with 'ref' in the same request")
+                raise ValidationError(
+                    "'us' param is incompatible with 'ref' in the same request"
+                )
             if "task" in attrs:
-                raise ValidationError("'task' param is incompatible with 'ref' in the same request")
+                raise ValidationError(
+                    "'task' param is incompatible with 'ref' in the same request"
+                )
             if "issue" in attrs:
-                raise ValidationError("'issue' param is incompatible with 'ref' in the same request")
+                raise ValidationError(
+                    "'issue' param is incompatible with 'ref' in the same request"
+                )
             if "wikipage" in attrs:
-                raise ValidationError("'wikipage' param is incompatible with 'ref' in the same request")
+                raise ValidationError(
+                    "'wikipage' param is incompatible with 'ref' in the same request"
+                )
 
         return attrs

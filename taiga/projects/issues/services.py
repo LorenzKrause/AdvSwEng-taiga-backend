@@ -29,9 +29,7 @@ from taiga.base.utils import db, text
 from taiga.events import events
 
 from taiga.projects.history.services import take_snapshot
-from taiga.projects.issues.apps import (
-    connect_issues_signals,
-    disconnect_issues_signals)
+from taiga.projects.issues.apps import connect_issues_signals, disconnect_issues_signals
 from taiga.projects.votes.utils import attach_total_voters_to_queryset
 from taiga.projects.notifications.utils import attach_watchers_to_queryset
 
@@ -42,6 +40,7 @@ from . import models
 # Bulk actions
 #####################################################
 
+
 def get_issues_from_bulk(bulk_data, **additional_fields):
     """Convert `bulk_data` into a list of issues.
 
@@ -50,8 +49,10 @@ def get_issues_from_bulk(bulk_data, **additional_fields):
 
     :return: List of `Issue` instances.
     """
-    return [models.Issue(subject=line, **additional_fields)
-            for line in text.split_in_lines(bulk_data)]
+    return [
+        models.Issue(subject=line, **additional_fields)
+        for line in text.split_in_lines(bulk_data)
+    ]
 
 
 def create_issues_in_bulk(bulk_data, callback=None, precall=None, **additional_fields):
@@ -78,7 +79,7 @@ def create_issues_in_bulk(bulk_data, callback=None, precall=None, **additional_f
 def snapshot_issues_in_bulk(bulk_data, user):
     for issue_data in bulk_data:
         try:
-            issue = models.Issue.objects.get(pk=issue_data['issue_id'])
+            issue = models.Issue.objects.get(pk=issue_data["issue_id"])
             take_snapshot(issue, user=user)
         except models.Issue.DoesNotExist:
             pass
@@ -93,14 +94,14 @@ def update_issues_milestone_in_bulk(bulk_data: list, milestone: object):
     issue_milestones = {e["issue_id"]: milestone.id for e in bulk_data}
     issue_ids = issue_milestones.keys()
 
-    events.emit_event_for_ids(ids=issue_ids,
-                              content_type="issues.issues",
-                              projectid=milestone.project.pk)
+    events.emit_event_for_ids(
+        ids=issue_ids, content_type="issues.issues", projectid=milestone.project.pk
+    )
 
-    db.update_attr_in_bulk_for_ids(issue_milestones, "milestone_id",
-                                   model=models.Issue)
+    db.update_attr_in_bulk_for_ids(issue_milestones, "milestone_id", model=models.Issue)
 
     return issue_milestones
+
 
 #####################################################
 # CSV
@@ -109,25 +110,44 @@ def update_issues_milestone_in_bulk(bulk_data: list, milestone: object):
 
 def issues_to_csv(project, queryset):
     csv_data = io.StringIO()
-    fieldnames = ["id", "ref", "subject", "description", "sprint_id", "sprint",
-                  "sprint_estimated_start", "sprint_estimated_finish", "owner",
-                  "owner_full_name", "assigned_to", "assigned_to_full_name",
-                  "status", "severity", "priority", "type", "is_closed",
-                  "attachments", "external_reference", "tags",  "watchers",
-                  "voters", "created_date", "modified_date", "finished_date",
-                  "due_date", "due_date_reason"]
+    fieldnames = [
+        "id",
+        "ref",
+        "subject",
+        "description",
+        "sprint_id",
+        "sprint",
+        "sprint_estimated_start",
+        "sprint_estimated_finish",
+        "owner",
+        "owner_full_name",
+        "assigned_to",
+        "assigned_to_full_name",
+        "status",
+        "severity",
+        "priority",
+        "type",
+        "is_closed",
+        "attachments",
+        "external_reference",
+        "tags",
+        "watchers",
+        "voters",
+        "created_date",
+        "modified_date",
+        "finished_date",
+        "due_date",
+        "due_date_reason",
+    ]
 
     custom_attrs = project.issuecustomattributes.all()
     for custom_attr in custom_attrs:
         fieldnames.append(custom_attr.name)
 
-    queryset = queryset.prefetch_related("attachments",
-                                         "generated_user_stories",
-                                         "custom_attributes_values")
-    queryset = queryset.select_related("owner",
-                                       "assigned_to",
-                                       "status",
-                                       "project")
+    queryset = queryset.prefetch_related(
+        "attachments", "generated_user_stories", "custom_attributes_values"
+    )
+    queryset = queryset.select_related("owner", "assigned_to", "status", "project")
     queryset = attach_total_voters_to_queryset(queryset)
     queryset = attach_watchers_to_queryset(queryset)
 
@@ -141,12 +161,18 @@ def issues_to_csv(project, queryset):
             "description": issue.description,
             "sprint_id": issue.milestone.id if issue.milestone else None,
             "sprint": issue.milestone.name if issue.milestone else None,
-            "sprint_estimated_start": issue.milestone.estimated_start if issue.milestone else None,
-            "sprint_estimated_finish": issue.milestone.estimated_finish if issue.milestone else None,
+            "sprint_estimated_start": issue.milestone.estimated_start
+            if issue.milestone
+            else None,
+            "sprint_estimated_finish": issue.milestone.estimated_finish
+            if issue.milestone
+            else None,
             "owner": issue.owner.username if issue.owner else None,
             "owner_full_name": issue.owner.get_full_name() if issue.owner else None,
             "assigned_to": issue.assigned_to.username if issue.assigned_to else None,
-            "assigned_to_full_name": issue.assigned_to.get_full_name() if issue.assigned_to else None,
+            "assigned_to_full_name": issue.assigned_to.get_full_name()
+            if issue.assigned_to
+            else None,
             "status": issue.status.name if issue.status else None,
             "severity": issue.severity.name,
             "priority": issue.priority.name,
@@ -167,7 +193,9 @@ def issues_to_csv(project, queryset):
         for custom_attr in custom_attrs:
             if not hasattr(issue, "custom_attributes_values"):
                 continue
-            value = issue.custom_attributes_values.attributes_values.get(str(custom_attr.id), None)
+            value = issue.custom_attributes_values.attributes_values.get(
+                str(custom_attr.id), None
+            )
             issue_data[custom_attr.name] = value
 
         writer.writerow(issue_data)
@@ -179,8 +207,11 @@ def issues_to_csv(project, queryset):
 # Api filter data
 #####################################################
 
+
 def _get_issues_statuses(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -203,7 +234,9 @@ def _get_issues_statuses(project, queryset):
         LEFT OUTER JOIN counters ON counters.status_id = projects_issuestatus.id
                   WHERE "projects_issuestatus"."project_id" = %s
                ORDER BY "projects_issuestatus"."order";
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -211,18 +244,16 @@ def _get_issues_statuses(project, queryset):
 
     result = []
     for id, name, color, order, count in rows:
-        result.append({
-            "id": id,
-            "name": _(name),
-            "color": color,
-            "order": order,
-            "count": count,
-        })
+        result.append(
+            {"id": id, "name": _(name), "color": color, "order": order, "count": count,}
+        )
     return sorted(result, key=itemgetter("order"))
 
 
 def _get_issues_types(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -245,7 +276,9 @@ def _get_issues_types(project, queryset):
         LEFT OUTER JOIN counters ON counters.type_id = projects_issuetype.id
                   WHERE "projects_issuetype"."project_id" = %s
                ORDER BY "projects_issuetype"."order";
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -253,18 +286,16 @@ def _get_issues_types(project, queryset):
 
     result = []
     for id, name, color, order, count in rows:
-        result.append({
-            "id": id,
-            "name": _(name),
-            "color": color,
-            "order": order,
-            "count": count,
-        })
+        result.append(
+            {"id": id, "name": _(name), "color": color, "order": order, "count": count,}
+        )
     return sorted(result, key=itemgetter("order"))
 
 
 def _get_issues_priorities(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -287,7 +318,9 @@ def _get_issues_priorities(project, queryset):
         LEFT OUTER JOIN counters ON counters.priority_id = projects_priority.id
                   WHERE "projects_priority"."project_id" = %s
                ORDER BY "projects_priority"."order";
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -295,18 +328,16 @@ def _get_issues_priorities(project, queryset):
 
     result = []
     for id, name, color, order, count in rows:
-        result.append({
-            "id": id,
-            "name": _(name),
-            "color": color,
-            "order": order,
-            "count": count,
-        })
+        result.append(
+            {"id": id, "name": _(name), "color": color, "order": order, "count": count,}
+        )
     return sorted(result, key=itemgetter("order"))
 
 
 def _get_issues_severities(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -329,7 +360,9 @@ def _get_issues_severities(project, queryset):
         LEFT OUTER JOIN counters ON counters.severity_id = projects_severity.id
                   WHERE "projects_severity"."project_id" = %s
                ORDER BY "projects_severity"."order";
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -337,18 +370,16 @@ def _get_issues_severities(project, queryset):
 
     result = []
     for id, name, color, order, count in rows:
-        result.append({
-            "id": id,
-            "name": _(name),
-            "color": color,
-            "order": order,
-            "count": count,
-        })
+        result.append(
+            {"id": id, "name": _(name), "color": color, "order": order, "count": count,}
+        )
     return sorted(result, key=itemgetter("order"))
 
 
 def _get_issues_assigned_to(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -379,7 +410,9 @@ def _get_issues_assigned_to(project, queryset):
              INNER JOIN "projects_project" ON ("issues_issue"."project_id" = "projects_project"."id")
                   WHERE {where} AND "issues_issue"."assigned_to_id" IS NULL
                GROUP BY assigned_to_id
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id] + where_params)
@@ -388,28 +421,26 @@ def _get_issues_assigned_to(project, queryset):
     result = []
     none_valued_added = False
     for id, full_name, username, count in rows:
-        result.append({
-            "id": id,
-            "full_name": full_name or username or "",
-            "count": count,
-        })
+        result.append(
+            {"id": id, "full_name": full_name or username or "", "count": count,}
+        )
 
         if id is None:
             none_valued_added = True
 
     # If there was no issue with null assigned_to we manually add it
     if not none_valued_added:
-        result.append({
-            "id": None,
-            "full_name": "",
-            "count": 0,
-        })
+        result.append(
+            {"id": None, "full_name": "", "count": 0,}
+        )
 
     return sorted(result, key=itemgetter("full_name"))
 
 
 def _get_issues_owners(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -442,7 +473,9 @@ def _get_issues_owners(project, queryset):
                    FROM users_user
         LEFT OUTER JOIN counters ON ("users_user"."id" = "counters"."owner_id")
                   WHERE ("users_user"."is_system" IS TRUE)
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -451,16 +484,16 @@ def _get_issues_owners(project, queryset):
     result = []
     for id, full_name, username, count in rows:
         if count > 0:
-            result.append({
-                "id": id,
-                "full_name": full_name or username or "",
-                "count": count,
-            })
+            result.append(
+                {"id": id, "full_name": full_name or username or "", "count": count,}
+            )
     return sorted(result, key=itemgetter("full_name"))
 
 
 def _get_issues_roles(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -493,7 +526,9 @@ def _get_issues_roles(project, queryset):
                      ON "counters"."role_id" = "users_role"."id"
                   WHERE "users_role"."project_id" = %s
                ORDER BY "users_role"."order";
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -501,17 +536,16 @@ def _get_issues_roles(project, queryset):
 
     result = []
     for id, name, order, count in rows:
-        result.append({
-            "id": id,
-            "name": _(name),
-            "color": None,
-            "order": order,
-            "count": count,
-        })
+        result.append(
+            {"id": id, "name": _(name), "color": None, "order": order, "count": count,}
+        )
     return sorted(result, key=itemgetter("order"))
 
+
 def _get_issues_tags(project, queryset):
-    compiler = connection.ops.compiler(queryset.query.compiler)(queryset.query, connection, None)
+    compiler = connection.ops.compiler(queryset.query.compiler)(
+        queryset.query, connection, None
+    )
     queryset_where_tuple = queryset.query.where.as_sql(compiler, connection)
     where = queryset_where_tuple[0]
     where_params = queryset_where_tuple[1]
@@ -539,7 +573,9 @@ def _get_issues_tags(project, queryset):
         FROM project_tags
    LEFT JOIN "issues_tags" ON "project_tags"."tag_color"[1] = "issues_tags"."tag"
     ORDER BY "tag"
-    """.format(where=where)
+    """.format(
+        where=where
+    )
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(extra_sql, where_params + [project.id])
@@ -547,11 +583,9 @@ def _get_issues_tags(project, queryset):
 
     result = []
     for name, color, count in rows:
-        result.append({
-            "name": name,
-            "color": color,
-            "count": count,
-        })
+        result.append(
+            {"name": name, "color": color, "count": count,}
+        )
     return sorted(result, key=itemgetter("name"))
 
 
@@ -560,15 +594,17 @@ def get_issues_filters_data(project, querysets):
     Given a project and an issues queryset, return a simple data structure
     of all possible filters for the issues in the queryset.
     """
-    data = OrderedDict([
-        ("types", _get_issues_types(project, querysets["types"])),
-        ("statuses", _get_issues_statuses(project, querysets["statuses"])),
-        ("priorities", _get_issues_priorities(project, querysets["priorities"])),
-        ("severities", _get_issues_severities(project, querysets["severities"])),
-        ("assigned_to", _get_issues_assigned_to(project, querysets["assigned_to"])),
-        ("owners", _get_issues_owners(project, querysets["owners"])),
-        ("tags", _get_issues_tags(project, querysets["tags"])),
-        ("roles", _get_issues_roles(project, querysets["roles"])),
-    ])
+    data = OrderedDict(
+        [
+            ("types", _get_issues_types(project, querysets["types"])),
+            ("statuses", _get_issues_statuses(project, querysets["statuses"])),
+            ("priorities", _get_issues_priorities(project, querysets["priorities"])),
+            ("severities", _get_issues_severities(project, querysets["severities"])),
+            ("assigned_to", _get_issues_assigned_to(project, querysets["assigned_to"])),
+            ("owners", _get_issues_owners(project, querysets["owners"])),
+            ("tags", _get_issues_tags(project, querysets["tags"])),
+            ("roles", _get_issues_roles(project, querysets["roles"])),
+        ]
+    )
 
     return data

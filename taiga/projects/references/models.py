@@ -36,8 +36,9 @@ class Reference(models.Model):
     ref = models.BigIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
     created_at = models.DateTimeField(default=timezone.now)
-    project = models.ForeignKey("projects.Project", null=False,
-                                blank=False, related_name="references")
+    project = models.ForeignKey(
+        "projects.Project", null=False, blank=False, related_name="references"
+    )
 
     class Meta:
         ordering = ["created_at"]
@@ -61,19 +62,23 @@ def make_unique_reference_id(project, *, create=False):
 def make_reference(instance, project, create=False):
     refval = make_unique_reference_id(project, create=create)
     ct = ContentType.objects.get_for_model(instance.__class__)
-    refinstance = Reference.objects.create(content_type=ct,
-                                           object_id=instance.pk,
-                                           ref=refval,
-                                           project=project)
+    refinstance = Reference.objects.create(
+        content_type=ct, object_id=instance.pk, ref=refval, project=project
+    )
     return refval, refinstance
 
 
 def recalc_reference_counter(project):
     seqname = make_sequence_name(project)
-    max_ref_us = project.user_stories.all().aggregate(max=models.Max('ref'))
-    max_ref_task = project.tasks.all().aggregate(max=models.Max('ref'))
-    max_ref_issue = project.issues.all().aggregate(max=models.Max('ref'))
-    max_references = list(filter(lambda x: x is not None, [max_ref_us['max'], max_ref_task['max'], max_ref_issue['max']]))
+    max_ref_us = project.user_stories.all().aggregate(max=models.Max("ref"))
+    max_ref_task = project.tasks.all().aggregate(max=models.Max("ref"))
+    max_ref_issue = project.issues.all().aggregate(max=models.Max("ref"))
+    max_references = list(
+        filter(
+            lambda x: x is not None,
+            [max_ref_us["max"], max_ref_task["max"], max_ref_issue["max"]],
+        )
+    )
 
     max_value = 0
     if len(max_references) > 0:
@@ -114,25 +119,39 @@ def attach_sequence(sender, instance, created, **kwargs):
 
             # Additionally, attach sequence number to instance as ref
             instance.ref = refval
-            instance.save(update_fields=['ref'])
+            instance.save(update_fields=["ref"])
 
 
 # Project
-models.signals.post_save.connect(create_sequence, sender=Project, dispatch_uid="refproj")
-models.signals.post_delete.connect(delete_sequence, sender=Project, dispatch_uid="refprojdel")
+models.signals.post_save.connect(
+    create_sequence, sender=Project, dispatch_uid="refproj"
+)
+models.signals.post_delete.connect(
+    delete_sequence, sender=Project, dispatch_uid="refprojdel"
+)
 
 # Epic
-models.signals.pre_save.connect(store_previous_project, sender=Epic, dispatch_uid="refepic")
+models.signals.pre_save.connect(
+    store_previous_project, sender=Epic, dispatch_uid="refepic"
+)
 models.signals.post_save.connect(attach_sequence, sender=Epic, dispatch_uid="refepic")
 
 # User Story
-models.signals.pre_save.connect(store_previous_project, sender=UserStory, dispatch_uid="refus")
-models.signals.post_save.connect(attach_sequence, sender=UserStory, dispatch_uid="refus")
+models.signals.pre_save.connect(
+    store_previous_project, sender=UserStory, dispatch_uid="refus"
+)
+models.signals.post_save.connect(
+    attach_sequence, sender=UserStory, dispatch_uid="refus"
+)
 
 # Task
-models.signals.pre_save.connect(store_previous_project, sender=Task, dispatch_uid="reftask")
+models.signals.pre_save.connect(
+    store_previous_project, sender=Task, dispatch_uid="reftask"
+)
 models.signals.post_save.connect(attach_sequence, sender=Task, dispatch_uid="reftask")
 
 # Issue
-models.signals.pre_save.connect(store_previous_project, sender=Issue, dispatch_uid="refissue")
+models.signals.pre_save.connect(
+    store_previous_project, sender=Issue, dispatch_uid="refissue"
+)
 models.signals.post_save.connect(attach_sequence, sender=Issue, dispatch_uid="refissue")

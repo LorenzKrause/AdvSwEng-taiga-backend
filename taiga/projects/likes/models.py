@@ -27,10 +27,16 @@ class Like(models.Model):
     content_type = models.ForeignKey("contenttypes.ContentType")
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=False, blank=False,
-                             related_name="likes", verbose_name=_("user"))
-    created_date = models.DateTimeField(null=False, blank=False, auto_now_add=True,
-                                        verbose_name=_("created date"))
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=False,
+        blank=False,
+        related_name="likes",
+        verbose_name=_("user"),
+    )
+    created_date = models.DateTimeField(
+        null=False, blank=False, auto_now_add=True, verbose_name=_("created date")
+    )
 
     class Meta:
         verbose_name = _("Like")
@@ -39,7 +45,7 @@ class Like(models.Model):
 
     @property
     def project(self):
-        if hasattr(self.content_object, 'project'):
+        if hasattr(self.content_object, "project"):
             return self.content_object.project
         return None
 

@@ -9,18 +9,23 @@ import taiga.base.utils.time
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0010_auto_20160614_1201'),
+        ("tasks", "0010_auto_20160614_1201"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='task',
-            name='taskboard_order',
-            field=models.BigIntegerField(default=taiga.base.utils.time.timestamp_ms, verbose_name='taskboard order'),
+            model_name="task",
+            name="taskboard_order",
+            field=models.BigIntegerField(
+                default=taiga.base.utils.time.timestamp_ms,
+                verbose_name="taskboard order",
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='us_order',
-            field=models.BigIntegerField(default=taiga.base.utils.time.timestamp_ms, verbose_name='us order'),
+            model_name="task",
+            name="us_order",
+            field=models.BigIntegerField(
+                default=taiga.base.utils.time.timestamp_ms, verbose_name="us order"
+            ),
         ),
     ]

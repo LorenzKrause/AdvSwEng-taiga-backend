@@ -37,10 +37,10 @@ class TaigaReferencesExtension(Extension):
         return super().__init__(*args, **kwargs)
 
     def extendMarkdown(self, md):
-        TAIGA_REFERENCE_RE = r'(?<=^|(?<=[^a-zA-Z0-9-\[]))#(\d+)'
+        TAIGA_REFERENCE_RE = r"(?<=^|(?<=[^a-zA-Z0-9-\[]))#(\d+)"
         referencesPattern = TaigaReferencesPattern(TAIGA_REFERENCE_RE, self.project)
         referencesPattern.md = md
-        md.inlinePatterns.add('taiga-references', referencesPattern, '_begin')
+        md.inlinePatterns.add("taiga-references", referencesPattern, "_begin")
 
 
 class TaigaReferencesPattern(Pattern):
@@ -72,12 +72,12 @@ class TaigaReferencesPattern(Pattern):
 
         link_text = "&num;{}".format(obj_ref)
 
-        a = etree.Element('a')
+        a = etree.Element("a")
         a.text = link_text
-        a.set('href', url)
-        a.set('title', "#{} {}".format(obj_ref, subject))
-        a.set('class', html_classes)
+        a.set("href", url)
+        a.set("title", "#{} {}".format(obj_ref, subject))
+        a.set("class", html_classes)
 
-        self.md.extracted_data['references'].append(instance.content_object)
+        self.md.extracted_data["references"].append(instance.content_object)
 
         return a

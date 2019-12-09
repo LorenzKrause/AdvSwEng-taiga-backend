@@ -50,13 +50,13 @@ class MentionsPattern(Pattern):
 
         link_text = "@{}".format(username)
 
-        a = etree.Element('a')
+        a = etree.Element("a")
         a.text = AtomicString(link_text)
 
-        a.set('href', url)
-        a.set('title', user.get_full_name())
-        a.set('class', "mention")
+        a.set("href", url)
+        a.set("title", user.get_full_name())
+        a.set("class", "mention")
 
-        self.md.extracted_data['mentions'].append(user)
+        self.md.extracted_data["mentions"].append(user)
 
         return a

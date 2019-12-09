@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 
 from django.db import connection, migrations, models
 
+
 def set_finished_date_for_tasks(apps, schema_editor):
     # Updates the finished date from tasks according to the history_entries associated
     # It takes the last history change updateing the status of a task and if it's a closed
     # one it updates the finished_date attribute
-    sql="""
+    sql = """
 WITH status_update AS(
 	WITH status_update AS(
 		WITH history_entries AS (
@@ -39,10 +40,11 @@ WHERE tasks_task.id = status_update.object_id::int
     cursor = connection.cursor()
     cursor.execute(sql)
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0008_remove_task_watchers'),
+        ("tasks", "0008_remove_task_watchers"),
     ]
 
     operations = [

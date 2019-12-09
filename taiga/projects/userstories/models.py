@@ -34,15 +34,27 @@ from taiga.projects.mixins.blocked import BlockedMixin
 
 
 class RolePoints(models.Model):
-    user_story = models.ForeignKey("UserStory", null=False, blank=False,
-                                   related_name="role_points",
-                                   verbose_name=_("user story"))
-    role = models.ForeignKey("users.Role", null=False, blank=False,
-                             related_name="role_points",
-                             verbose_name=_("role"))
-    points = models.ForeignKey("projects.Points", null=True, blank=False,
-                               related_name="role_points",
-                               verbose_name=_("points"))
+    user_story = models.ForeignKey(
+        "UserStory",
+        null=False,
+        blank=False,
+        related_name="role_points",
+        verbose_name=_("user story"),
+    )
+    role = models.ForeignKey(
+        "users.Role",
+        null=False,
+        blank=False,
+        related_name="role_points",
+        verbose_name=_("role"),
+    )
+    points = models.ForeignKey(
+        "projects.Points",
+        null=True,
+        blank=False,
+        related_name="role_points",
+        verbose_name=_("points"),
+    )
 
     class Meta:
         verbose_name = "role points"
@@ -58,66 +70,130 @@ class RolePoints(models.Model):
         return self.user_story.project
 
 
-class UserStory(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, DueDateMixin, models.Model):
-    ref = models.BigIntegerField(db_index=True, null=True, blank=True, default=None,
-                                 verbose_name=_("ref"))
-    milestone = models.ForeignKey("milestones.Milestone", null=True, blank=True,
-                                  default=None, related_name="user_stories",
-                                  on_delete=models.SET_NULL, verbose_name=_("milestone"))
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="user_stories", verbose_name=_("project"))
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
-                              related_name="owned_user_stories", verbose_name=_("owner"),
-                              on_delete=models.SET_NULL)
-    status = models.ForeignKey("projects.UserStoryStatus", null=True, blank=True,
-                               related_name="user_stories", verbose_name=_("status"),
-                               on_delete=models.SET_NULL)
+class UserStory(
+    OCCModelMixin,
+    WatchedModelMixin,
+    BlockedMixin,
+    TaggedMixin,
+    DueDateMixin,
+    models.Model,
+):
+    ref = models.BigIntegerField(
+        db_index=True, null=True, blank=True, default=None, verbose_name=_("ref")
+    )
+    milestone = models.ForeignKey(
+        "milestones.Milestone",
+        null=True,
+        blank=True,
+        default=None,
+        related_name="user_stories",
+        on_delete=models.SET_NULL,
+        verbose_name=_("milestone"),
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="user_stories",
+        verbose_name=_("project"),
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="owned_user_stories",
+        verbose_name=_("owner"),
+        on_delete=models.SET_NULL,
+    )
+    status = models.ForeignKey(
+        "projects.UserStoryStatus",
+        null=True,
+        blank=True,
+        related_name="user_stories",
+        verbose_name=_("status"),
+        on_delete=models.SET_NULL,
+    )
     is_closed = models.BooleanField(default=False)
-    points = models.ManyToManyField("projects.Points", blank=False,
-                                    related_name="userstories", through="RolePoints",
-                                    verbose_name=_("points"))
+    points = models.ManyToManyField(
+        "projects.Points",
+        blank=False,
+        related_name="userstories",
+        through="RolePoints",
+        verbose_name=_("points"),
+    )
 
-    backlog_order = models.BigIntegerField(null=False, blank=False, default=timestamp_ms,
-                                        verbose_name=_("backlog order"))
-    sprint_order = models.BigIntegerField(null=False, blank=False, default=timestamp_ms,
-                                       verbose_name=_("sprint order"))
-    kanban_order = models.BigIntegerField(null=False, blank=False, default=timestamp_ms,
-                                       verbose_name=_("kanban order"))
+    backlog_order = models.BigIntegerField(
+        null=False, blank=False, default=timestamp_ms, verbose_name=_("backlog order")
+    )
+    sprint_order = models.BigIntegerField(
+        null=False, blank=False, default=timestamp_ms, verbose_name=_("sprint order")
+    )
+    kanban_order = models.BigIntegerField(
+        null=False, blank=False, default=timestamp_ms, verbose_name=_("kanban order")
+    )
 
-    created_date = models.DateTimeField(null=False, blank=False,
-                                        verbose_name=_("created date"),
-                                        default=timezone.now)
-    modified_date = models.DateTimeField(null=False, blank=False,
-                                         verbose_name=_("modified date"))
-    finish_date = models.DateTimeField(null=True, blank=True,
-                                       verbose_name=_("finish date"))
-    subject = models.TextField(null=False, blank=False,
-                               verbose_name=_("subject"))
-    description = models.TextField(null=False, blank=True, verbose_name=_("description"))
-    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
-                                    default=None, related_name="userstories_assigned_to_me",
-                                    verbose_name=_("assigned to"))
-    assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
-                                    default=None, related_name="assigned_userstories",
-                                    verbose_name=_("assigned users"))
-    client_requirement = models.BooleanField(default=False, null=False, blank=True,
-                                             verbose_name=_("is client requirement"))
-    team_requirement = models.BooleanField(default=False, null=False, blank=True,
-                                           verbose_name=_("is team requirement"))
+    created_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("created date"), default=timezone.now
+    )
+    modified_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("modified date")
+    )
+    finish_date = models.DateTimeField(
+        null=True, blank=True, verbose_name=_("finish date")
+    )
+    subject = models.TextField(null=False, blank=False, verbose_name=_("subject"))
+    description = models.TextField(
+        null=False, blank=True, verbose_name=_("description")
+    )
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        default=None,
+        related_name="userstories_assigned_to_me",
+        verbose_name=_("assigned to"),
+    )
+    assigned_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        default=None,
+        related_name="assigned_userstories",
+        verbose_name=_("assigned users"),
+    )
+    client_requirement = models.BooleanField(
+        default=False, null=False, blank=True, verbose_name=_("is client requirement")
+    )
+    team_requirement = models.BooleanField(
+        default=False, null=False, blank=True, verbose_name=_("is team requirement")
+    )
     attachments = GenericRelation("attachments.Attachment")
-    generated_from_issue = models.ForeignKey("issues.Issue", null=True, blank=True,
-                                             on_delete=models.SET_NULL,
-                                             related_name="generated_user_stories",
-                                             verbose_name=_("generated from issue"))
-    generated_from_task = models.ForeignKey("tasks.Task", null=True, blank=True,
-                                             on_delete=models.SET_NULL,
-                                             related_name="generated_user_stories",
-                                             verbose_name=_("generated from task"))
-    external_reference = ArrayField(models.TextField(null=False, blank=False),
-                                    null=True, blank=True, default=None, verbose_name=_("external reference"))
+    generated_from_issue = models.ForeignKey(
+        "issues.Issue",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="generated_user_stories",
+        verbose_name=_("generated from issue"),
+    )
+    generated_from_task = models.ForeignKey(
+        "tasks.Task",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="generated_user_stories",
+        verbose_name=_("generated from task"),
+    )
+    external_reference = ArrayField(
+        models.TextField(null=False, blank=False),
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name=_("external reference"),
+    )
 
-    tribe_gig = PickledObjectField(null=True, blank=True, default=None,
-                                   verbose_name="taiga tribe gig")
+    tribe_gig = PickledObjectField(
+        null=True, blank=True, default=None, verbose_name="taiga tribe gig"
+    )
 
     _importing = None
 
@@ -137,9 +213,9 @@ class UserStory(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, Due
 
         if not self.role_points.all():
             for role in self.get_roles():
-                RolePoints.objects.create(role=role,
-                                          points=self.project.default_points,
-                                          user_story=self)
+                RolePoints.objects.create(
+                    role=role, points=self.project.default_points, user_story=self
+                )
 
     def __str__(self):
         return "({1}) {0}".format(self.ref, self.subject)
@@ -155,9 +231,9 @@ class UserStory(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, Due
             rp.points.value
             for rp in self.role_points.all()
             if rp.points.value is not None
-       ]
+        ]
 
-        #If we only have None values the sum should be None
+        # If we only have None values the sum should be None
         if not not_null_role_points:
             return None
 

@@ -36,8 +36,9 @@ import os
 # Values
 ####################
 
+
 @as_dict
-def _get_generic_values(ids: tuple, *, typename=None, attr: str="name") -> tuple:
+def _get_generic_values(ids: tuple, *, typename=None, attr: str = "name") -> tuple:
     app_label, model_name = typename.split(".", 1)
     content_type = ContentType.objects.get(app_label=app_label, model=model_name)
     model_cls = content_type.model_class()
@@ -68,7 +69,9 @@ def _get_user_story_values(ids: set) -> dict:
         yield str(userstory.pk), "#{} {}".format(userstory.ref, userstory.subject)
 
 
-_get_us_status_values = partial(_get_generic_values, typename="projects.userstorystatus")
+_get_us_status_values = partial(
+    _get_generic_values, typename="projects.userstorystatus"
+)
 _get_task_status_values = partial(_get_generic_values, typename="projects.taskstatus")
 _get_epic_status_values = partial(_get_generic_values, typename="projects.epicstatus")
 _get_issue_status_values = partial(_get_generic_values, typename="projects.issuestatus")
@@ -93,8 +96,7 @@ def _common_users_values(diff):
     if "assigned_to" in diff:
         users.update(diff["assigned_to"])
     if "assigned_users" in diff:
-        [users.update(usrs_ids) for usrs_ids in diff["assigned_users"] if
-         usrs_ids]
+        [users.update(usrs_ids) for usrs_ids in diff["assigned_users"] if usrs_ids]
 
     user_ids = [user_id for user_id in users if isinstance(user_id, int)]
     values["users"] = _get_users_values(set(user_ids)) if users else {}
@@ -189,7 +191,8 @@ def wikipage_values(diff):
 # Freezes
 ####################
 
-def _generic_extract(obj:object, fields:list, default=None) -> dict:
+
+def _generic_extract(obj: object, fields: list, default=None) -> dict:
     result = {}
     for fieldname in fields:
         result[fieldname] = getattr(obj, fieldname, default)
@@ -202,14 +205,16 @@ def extract_attachments(obj) -> list:
         # Force the creation of a thumbnail for the timeline
         thumbnail_file = get_timeline_image_thumbnail_name(attach)
 
-        yield {"id": attach.id,
-               "filename": os.path.basename(attach.attached_file.name),
-               "url": attach.attached_file.url,
-               "attached_file": str(attach.attached_file),
-               "thumbnail_file": thumbnail_file,
-               "is_deprecated": attach.is_deprecated,
-               "description": attach.description,
-               "order": attach.order}
+        yield {
+            "id": attach.id,
+            "filename": os.path.basename(attach.attached_file.name),
+            "url": attach.attached_file.url,
+            "attached_file": str(attach.attached_file),
+            "thumbnail_file": thumbnail_file,
+            "is_deprecated": attach.is_deprecated,
+            "description": attach.description,
+            "order": attach.order,
+        }
 
 
 @as_tuple
@@ -219,67 +224,77 @@ def extract_epic_custom_attributes(obj) -> list:
         for attr in obj.project.epiccustomattributes.all():
             with suppress(KeyError):
                 value = custom_attributes_values[str(attr.id)]
-                yield {"id": attr.id,
-                       "name": attr.name,
-                       "value": value,
-                       "type": attr.type}
+                yield {
+                    "id": attr.id,
+                    "name": attr.name,
+                    "value": value,
+                    "type": attr.type,
+                }
 
 
 @as_tuple
 def extract_user_story_custom_attributes(obj) -> list:
     with suppress(ObjectDoesNotExist):
-        custom_attributes_values =  obj.custom_attributes_values.attributes_values
+        custom_attributes_values = obj.custom_attributes_values.attributes_values
         for attr in obj.project.userstorycustomattributes.all():
             with suppress(KeyError):
                 value = custom_attributes_values[str(attr.id)]
-                yield {"id": attr.id,
-                       "name": attr.name,
-                       "value": value,
-                       "type": attr.type}
+                yield {
+                    "id": attr.id,
+                    "name": attr.name,
+                    "value": value,
+                    "type": attr.type,
+                }
 
 
 @as_tuple
 def extract_task_custom_attributes(obj) -> list:
     with suppress(ObjectDoesNotExist):
-        custom_attributes_values =  obj.custom_attributes_values.attributes_values
+        custom_attributes_values = obj.custom_attributes_values.attributes_values
         for attr in obj.project.taskcustomattributes.all():
             with suppress(KeyError):
                 value = custom_attributes_values[str(attr.id)]
-                yield {"id": attr.id,
-                       "name": attr.name,
-                       "value": value,
-                       "type": attr.type}
+                yield {
+                    "id": attr.id,
+                    "name": attr.name,
+                    "value": value,
+                    "type": attr.type,
+                }
 
 
 @as_tuple
 def extract_issue_custom_attributes(obj) -> list:
     with suppress(ObjectDoesNotExist):
-        custom_attributes_values =  obj.custom_attributes_values.attributes_values
+        custom_attributes_values = obj.custom_attributes_values.attributes_values
         for attr in obj.project.issuecustomattributes.all():
             with suppress(KeyError):
                 value = custom_attributes_values[str(attr.id)]
-                yield {"id": attr.id,
-                       "name": attr.name,
-                       "value": value,
-                       "type": attr.type}
+                yield {
+                    "id": attr.id,
+                    "name": attr.name,
+                    "value": value,
+                    "type": attr.type,
+                }
 
 
 def project_freezer(project) -> dict:
-    fields = ("name",
-              "slug",
-              "created_at",
-              "owner_id",
-              "is_private",
-              "anon_permissions",
-              "public_permissions",
-              "total_milestones",
-              "total_story_points",
-              "tags",
-              "is_epics_activated",
-              "is_backlog_activated",
-              "is_kanban_activated",
-              "is_wiki_activated",
-              "is_issues_activated")
+    fields = (
+        "name",
+        "slug",
+        "created_at",
+        "owner_id",
+        "is_private",
+        "anon_permissions",
+        "public_permissions",
+        "total_milestones",
+        "total_story_points",
+        "tags",
+        "is_epics_activated",
+        "is_backlog_activated",
+        "is_kanban_activated",
+        "is_wiki_activated",
+        "is_issues_activated",
+    )
     return _generic_extract(project, fields)
 
 
@@ -291,7 +306,7 @@ def milestone_freezer(milestone) -> dict:
         "estimated_start": milestone.estimated_start,
         "estimated_finish": milestone.estimated_finish,
         "closed": milestone.closed,
-        "disponibility": milestone.disponibility
+        "disponibility": milestone.disponibility,
     }
 
     return snapshot
@@ -315,7 +330,7 @@ def epic_freezer(epic) -> dict:
         "is_blocked": epic.is_blocked,
         "blocked_note": epic.blocked_note,
         "blocked_note_html": mdrender(epic.project, epic.blocked_note),
-        "custom_attributes": extract_epic_custom_attributes(epic)
+        "custom_attributes": extract_epic_custom_attributes(epic),
     }
 
     return snapshot
@@ -325,7 +340,7 @@ def epic_related_userstory_freezer(related_us) -> dict:
     snapshot = {
         "user_story": related_us.user_story.id,
         "epic": related_us.epic.id,
-        "order": related_us.order
+        "order": related_us.order,
     }
 
     return snapshot
@@ -372,7 +387,7 @@ def userstory_freezer(us) -> dict:
         "blocked_note_html": mdrender(us.project, us.blocked_note),
         "custom_attributes": extract_user_story_custom_attributes(us),
         "tribe_gig": us.tribe_gig,
-        "due_date": str(us.due_date) if us.due_date else None
+        "due_date": str(us.due_date) if us.due_date else None,
     }
 
     return snapshot
@@ -397,7 +412,7 @@ def issue_freezer(issue) -> dict:
         "blocked_note": issue.blocked_note,
         "blocked_note_html": mdrender(issue.project, issue.blocked_note),
         "custom_attributes": extract_issue_custom_attributes(issue),
-        "due_date": str(issue.due_date) if issue.due_date else None
+        "due_date": str(issue.due_date) if issue.due_date else None,
     }
 
     return snapshot
@@ -423,7 +438,7 @@ def task_freezer(task) -> dict:
         "blocked_note": task.blocked_note,
         "blocked_note_html": mdrender(task.project, task.blocked_note),
         "custom_attributes": extract_task_custom_attributes(task),
-        "due_date": str(task.due_date) if task.due_date else None
+        "due_date": str(task.due_date) if task.due_date else None,
     }
 
     return snapshot

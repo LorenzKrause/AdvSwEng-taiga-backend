@@ -34,33 +34,55 @@ def get_attachment_file_path(instance, filename):
 
 
 class Attachment(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
-                              related_name="change_attachments",
-                              verbose_name=_("owner"))
-    project = models.ForeignKey("projects.Project", null=False, blank=False,
-                                related_name="attachments", verbose_name=_("project"))
-    content_type = models.ForeignKey(ContentType, null=False, blank=False,
-                                     verbose_name=_("content type"))
-    object_id = models.PositiveIntegerField(null=False, blank=False,
-                                            verbose_name=_("object id"))
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="change_attachments",
+        verbose_name=_("owner"),
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=False,
+        blank=False,
+        related_name="attachments",
+        verbose_name=_("project"),
+    )
+    content_type = models.ForeignKey(
+        ContentType, null=False, blank=False, verbose_name=_("content type")
+    )
+    object_id = models.PositiveIntegerField(
+        null=False, blank=False, verbose_name=_("object id")
+    )
     content_object = GenericForeignKey("content_type", "object_id")
-    created_date = models.DateTimeField(null=False, blank=False,
-                                        verbose_name=_("created date"),
-                                        default=timezone.now)
-    modified_date = models.DateTimeField(null=False, blank=False,
-                                         verbose_name=_("modified date"))
+    created_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("created date"), default=timezone.now
+    )
+    modified_date = models.DateTimeField(
+        null=False, blank=False, verbose_name=_("modified date")
+    )
     name = models.CharField(blank=True, default="", max_length=500)
     size = models.IntegerField(null=True, blank=True, editable=False, default=None)
-    attached_file = models.FileField(max_length=500, null=True, blank=True,
-                                     upload_to=get_attachment_file_path,
-                                     verbose_name=_("attached file"))
+    attached_file = models.FileField(
+        max_length=500,
+        null=True,
+        blank=True,
+        upload_to=get_attachment_file_path,
+        verbose_name=_("attached file"),
+    )
 
-    sha1 = models.CharField(default="", max_length=40, verbose_name=_("sha1"), blank=True)
+    sha1 = models.CharField(
+        default="", max_length=40, verbose_name=_("sha1"), blank=True
+    )
 
     is_deprecated = models.BooleanField(default=False, verbose_name=_("is deprecated"))
     from_comment = models.BooleanField(default=False, verbose_name=_("from comment"))
-    description = models.TextField(null=False, blank=True, verbose_name=_("description"))
-    order = models.IntegerField(default=0, null=False, blank=False, verbose_name=_("order"))
+    description = models.TextField(
+        null=False, blank=True, verbose_name=_("description")
+    )
+    order = models.IntegerField(
+        default=0, null=False, blank=False, verbose_name=_("order")
+    )
 
     _importing = None
 
@@ -68,9 +90,7 @@ class Attachment(models.Model):
         verbose_name = "attachment"
         verbose_name_plural = "attachments"
         ordering = ["project", "created_date", "id"]
-        permissions = (
-            ("view_attachment", "Can view attachment"),
-        )
+        permissions = (("view_attachment", "Can view attachment"),)
         index_together = [("content_type", "object_id")]
 
     def __init__(self, *args, **kwargs):

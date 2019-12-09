@@ -5,10 +5,11 @@ from __future__ import unicode_literals
 from django.db import migrations
 from django.contrib.postgres.fields import JSONField
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custom_attributes', '0010_auto_20160928_0540'),
+        ("custom_attributes", "0010_auto_20160928_0540"),
     ]
 
     operations = [
@@ -22,7 +23,7 @@ class Migration(migrations.Migration):
                 table_name="custom_attributes_epiccustomattributesvalues",
                 column_name="attributes_values",
             ),
-            reverse_sql=migrations.RunSQL.noop
+            reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
             """
@@ -34,7 +35,7 @@ class Migration(migrations.Migration):
                 table_name="custom_attributes_userstorycustomattributesvalues",
                 column_name="attributes_values",
             ),
-            reverse_sql=migrations.RunSQL.noop
+            reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
             """
@@ -46,7 +47,7 @@ class Migration(migrations.Migration):
                 table_name="custom_attributes_taskcustomattributesvalues",
                 column_name="attributes_values",
             ),
-            reverse_sql=migrations.RunSQL.noop
+            reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
             """
@@ -58,9 +59,8 @@ class Migration(migrations.Migration):
                 table_name="custom_attributes_issuecustomattributesvalues",
                 column_name="attributes_values",
             ),
-            reverse_sql=migrations.RunSQL.noop
+            reverse_sql=migrations.RunSQL.noop,
         ),
-
         # Function: Remove a key in a json field
         migrations.RunSQL(
             """
@@ -85,6 +85,6 @@ class Migration(migrations.Migration):
                    SELECT COALESCE ((SELECT ('{' || string_agg(to_json("key") || ':' || "value", ',') || '}')
                                        FROM json_each("json")
                                       WHERE "key" <> ALL ("keys_to_delete")),
-                                    '{}')::json $function$;"""
+                                    '{}')::json $function$;""",
         ),
     ]

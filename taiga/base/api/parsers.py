@@ -161,6 +161,7 @@ class FileUploadParser(BaseParser):
     """
     Parser for file upload data.
     """
+
     media_type = "*/*"
 
     def parse(self, stream, media_type=None, parser_context=None):
@@ -181,21 +182,19 @@ class FileUploadParser(BaseParser):
 
         # Note that this code is extracted from Django's handling of
         # file uploads in MultiPartParser.
-        content_type = meta.get("HTTP_CONTENT_TYPE",
-                                meta.get("CONTENT_TYPE", ""))
+        content_type = meta.get("HTTP_CONTENT_TYPE", meta.get("CONTENT_TYPE", ""))
         try:
-            content_length = int(meta.get("HTTP_CONTENT_LENGTH",
-                                          meta.get("CONTENT_LENGTH", 0)))
+            content_length = int(
+                meta.get("HTTP_CONTENT_LENGTH", meta.get("CONTENT_LENGTH", 0))
+            )
         except (ValueError, TypeError):
             content_length = None
 
         # See if the handler will want to take care of the parsing.
         for handler in upload_handlers:
-            result = handler.handle_raw_input(None,
-                                              meta,
-                                              content_length,
-                                              None,
-                                              encoding)
+            result = handler.handle_raw_input(
+                None, meta, content_length, None, encoding
+            )
             if result is not None:
                 return DataAndFiles(None, {"file": result[1]})
 
@@ -207,8 +206,7 @@ class FileUploadParser(BaseParser):
 
         for handler in upload_handlers:
             try:
-                handler.new_file(None, filename, content_type,
-                                 content_length, encoding)
+                handler.new_file(None, filename, content_type, content_length, encoding)
             except StopFutureHandlers:
                 break
 
@@ -224,8 +222,9 @@ class FileUploadParser(BaseParser):
             file_obj = handler.file_complete(counters[i])
             if file_obj:
                 return DataAndFiles(None, {"file": file_obj})
-        raise ParseError("FileUpload parse error - "
-                         "none of upload handlers can handle the stream")
+        raise ParseError(
+            "FileUpload parse error - " "none of upload handlers can handle the stream"
+        )
 
     def get_filename(self, stream, media_type, parser_context):
         """

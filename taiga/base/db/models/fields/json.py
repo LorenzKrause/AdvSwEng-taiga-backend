@@ -25,5 +25,7 @@ __all__ = ["JSONField"]
 
 
 class JSONField(DjangoJSONField):
-    def __init__(self, verbose_name=None, name=None, encoder=DjangoJSONEncoder, **kwargs):
+    def __init__(
+        self, verbose_name=None, name=None, encoder=DjangoJSONEncoder, **kwargs
+    ):
         super().__init__(verbose_name, name, encoder, **kwargs)

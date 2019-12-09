@@ -25,13 +25,11 @@ class BaseCustomAttributeAdmin:
     list_display = ["id", "name", "type", "project", "order"]
     list_display_links = ["id", "name"]
     fieldsets = (
-        (None, {
-            "fields": ("name", "type", "description", ("project", "order"))
-        }),
-        ("Advanced options", {
-            "classes": ("collapse",),
-            "fields": (("created_date", "modified_date"),)
-        })
+        (None, {"fields": ("name", "type", "description", ("project", "order"))}),
+        (
+            "Advanced options",
+            {"classes": ("collapse",), "fields": (("created_date", "modified_date"),)},
+        ),
     )
     readonly_fields = ("created_date", "modified_date")
     search_fields = ["id", "name", "project__name", "project__slug"]

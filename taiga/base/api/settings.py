@@ -74,89 +74,59 @@ USER_SETTINGS = getattr(settings, "REST_FRAMEWORK", None)
 
 DEFAULTS = {
     # Base API policies
-    "DEFAULT_RENDERER_CLASSES": (
-        "taiga.base.api.renderers.JSONRenderer",
-    ),
+    "DEFAULT_RENDERER_CLASSES": ("taiga.base.api.renderers.JSONRenderer",),
     "DEFAULT_PARSER_CLASSES": (
         "taiga.base.api.parsers.JSONParser",
         "taiga.base.api.parsers.FormParser",
-        "taiga.base.api.parsers.MultiPartParser"
+        "taiga.base.api.parsers.MultiPartParser",
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "taiga.base.api.authentication.SessionAuthentication",
-        "taiga.base.api.authentication.BasicAuthentication"
+        "taiga.base.api.authentication.BasicAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "taiga.base.api.permissions.AllowAny",
-    ),
-    "DEFAULT_THROTTLE_CLASSES": (
-    ),
-    "DEFAULT_CONTENT_NEGOTIATION_CLASS":
-        "taiga.base.api.negotiation.DefaultContentNegotiation",
-
+    "DEFAULT_PERMISSION_CLASSES": ("taiga.base.api.permissions.AllowAny",),
+    "DEFAULT_THROTTLE_CLASSES": (),
+    "DEFAULT_CONTENT_NEGOTIATION_CLASS": "taiga.base.api.negotiation.DefaultContentNegotiation",
     # Genric view behavior
-    "DEFAULT_MODEL_SERIALIZER_CLASS":
-        "taiga.base.api.serializers.ModelSerializer",
-    "DEFAULT_MODEL_VALIDATOR_CLASS":
-        "taiga.base.api.validators.ModelValidator",
+    "DEFAULT_MODEL_SERIALIZER_CLASS": "taiga.base.api.serializers.ModelSerializer",
+    "DEFAULT_MODEL_VALIDATOR_CLASS": "taiga.base.api.validators.ModelValidator",
     "DEFAULT_FILTER_BACKENDS": (),
-
     # Throttling
-    "DEFAULT_THROTTLE_RATES": {
-        "user": None,
-        "anon": None,
-    },
+    "DEFAULT_THROTTLE_RATES": {"user": None, "anon": None,},
     "DEFAULT_THROTTLE_WHITELIST": [],
-
     # Pagination
     "PAGINATE_BY": None,
     "PAGINATE_BY_PARAM": None,
     "MAX_PAGINATE_BY": None,
-
     # Authentication
     "UNAUTHENTICATED_USER": "django.contrib.auth.models.AnonymousUser",
     "UNAUTHENTICATED_TOKEN": None,
-
     # View configuration
     "VIEW_NAME_FUNCTION": "taiga.base.api.views.get_view_name",
     "VIEW_DESCRIPTION_FUNCTION": "taiga.base.api.views.get_view_description",
-
     # Exception handling
     "EXCEPTION_HANDLER": "taiga.base.api.views.exception_handler",
-
     # Testing
     "TEST_REQUEST_RENDERER_CLASSES": (
         "taiga.base.api.renderers.MultiPartRenderer",
-        "taiga.base.api.renderers.JSONRenderer"
+        "taiga.base.api.renderers.JSONRenderer",
     ),
     "TEST_REQUEST_DEFAULT_FORMAT": "multipart",
-
     # Browser enhancements
     "FORM_METHOD_OVERRIDE": "_method",
     "FORM_CONTENT_OVERRIDE": "_content",
     "FORM_CONTENTTYPE_OVERRIDE": "_content_type",
     "URL_ACCEPT_OVERRIDE": "accept",
     "URL_FORMAT_OVERRIDE": "format",
-
     "FORMAT_SUFFIX_KWARG": "format",
     "URL_FIELD_NAME": "url",
-
     # Input and output formats
-    "DATE_INPUT_FORMATS": (
-        ISO_8601,
-    ),
+    "DATE_INPUT_FORMATS": (ISO_8601,),
     "DATE_FORMAT": ISO_8601,
-
-    "DATETIME_INPUT_FORMATS": (
-        ISO_8601,
-    ),
+    "DATETIME_INPUT_FORMATS": (ISO_8601,),
     "DATETIME_FORMAT": None,
-
-    "TIME_INPUT_FORMATS": (
-        ISO_8601,
-    ),
+    "TIME_INPUT_FORMATS": (ISO_8601,),
     "TIME_FORMAT": None,
-
     # Pending deprecation
     "FILTER_BACKEND": None,
 }
@@ -178,7 +148,7 @@ IMPORT_STRINGS = (
     "UNAUTHENTICATED_USER",
     "UNAUTHENTICATED_TOKEN",
     "VIEW_NAME_FUNCTION",
-    "VIEW_DESCRIPTION_FUNCTION"
+    "VIEW_DESCRIPTION_FUNCTION",
 )
 
 
@@ -200,12 +170,17 @@ def import_from_string(val, setting_name):
     """
     try:
         # Nod to tastypie's use of importlib.
-        parts = val.split('.')
-        module_path, class_name = '.'.join(parts[:-1]), parts[-1]
+        parts = val.split(".")
+        module_path, class_name = ".".join(parts[:-1]), parts[-1]
         module = importlib.import_module(module_path)
         return getattr(module, class_name)
     except ImportError as e:
-        msg = "Could not import '%s' for API setting '%s'. %s: %s." % (val, setting_name, e.__class__.__name__, e)
+        msg = "Could not import '%s' for API setting '%s'. %s: %s." % (
+            val,
+            setting_name,
+            e.__class__.__name__,
+            e,
+        )
         raise ImportError(msg)
 
 
@@ -220,6 +195,7 @@ class APISettings(object):
     Any setting with string import paths will be automatically resolved
     and return the class, rather than the string literal.
     """
+
     def __init__(self, user_settings=None, defaults=None, import_strings=None):
         self.user_settings = user_settings or {}
         self.defaults = defaults or {}
@@ -250,5 +226,6 @@ class APISettings(object):
         if attr == "FILTER_BACKEND" and val is not None:
             # Make sure we can initialize the class
             val()
+
 
 api_settings = APISettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS)

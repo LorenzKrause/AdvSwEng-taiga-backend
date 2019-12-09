@@ -25,16 +25,21 @@ def connect_epics_signals():
     from taiga.projects.tagging import signals as tagging_handlers
 
     # Tags
-    signals.pre_save.connect(tagging_handlers.tags_normalization,
-                             sender=apps.get_model("epics", "Epic"),
-                             dispatch_uid="tags_normalization_epic")
+    signals.pre_save.connect(
+        tagging_handlers.tags_normalization,
+        sender=apps.get_model("epics", "Epic"),
+        dispatch_uid="tags_normalization_epic",
+    )
 
 
 def connect_epics_custom_attributes_signals():
     from taiga.projects.custom_attributes import signals as custom_attributes_handlers
-    signals.post_save.connect(custom_attributes_handlers.create_custom_attribute_value_when_create_epic,
-                              sender=apps.get_model("epics", "Epic"),
-                              dispatch_uid="create_custom_attribute_value_when_create_epic")
+
+    signals.post_save.connect(
+        custom_attributes_handlers.create_custom_attribute_value_when_create_epic,
+        sender=apps.get_model("epics", "Epic"),
+        dispatch_uid="create_custom_attribute_value_when_create_epic",
+    )
 
 
 def connect_all_epics_signals():
@@ -43,13 +48,16 @@ def connect_all_epics_signals():
 
 
 def disconnect_epics_signals():
-    signals.pre_save.disconnect(sender=apps.get_model("epics", "Epic"),
-                                dispatch_uid="tags_normalization")
+    signals.pre_save.disconnect(
+        sender=apps.get_model("epics", "Epic"), dispatch_uid="tags_normalization"
+    )
 
 
 def disconnect_epics_custom_attributes_signals():
-    signals.post_save.disconnect(sender=apps.get_model("epics", "Epic"),
-                                 dispatch_uid="create_custom_attribute_value_when_create_epic")
+    signals.post_save.disconnect(
+        sender=apps.get_model("epics", "Epic"),
+        dispatch_uid="create_custom_attribute_value_when_create_epic",
+    )
 
 
 def disconnect_all_epics_signals():

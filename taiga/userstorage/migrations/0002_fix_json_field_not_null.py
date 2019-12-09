@@ -9,11 +9,11 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('userstorage', '0001_initial'),
+        ("userstorage", "0001_initial"),
     ]
 
     operations = [
         migrations.RunSQL(
-            sql='ALTER TABLE userstorage_storageentry ALTER COLUMN value DROP NOT NULL;',
+            sql="ALTER TABLE userstorage_storageentry ALTER COLUMN value DROP NOT NULL;",
         ),
     ]

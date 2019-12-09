@@ -44,8 +44,9 @@ class UserStorySearchResultsSerializer(serializers.LightSerializer):
         return obj.milestone.slug if obj.milestone else None
 
     def get_total_points(self, obj):
-        assert hasattr(obj, "total_points_attr"), \
-            "instance must have a total_points_attr attribute"
+        assert hasattr(
+            obj, "total_points_attr"
+        ), "instance must have a total_points_attr attribute"
 
         return obj.total_points_attr
 

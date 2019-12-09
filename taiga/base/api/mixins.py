@@ -79,7 +79,7 @@ def _get_validation_exclusions(obj, pk=None, slug_field=None, lookup_field=None)
         # Pending deprecation
         include.append(slug_field)
 
-    if lookup_field and lookup_field != 'pk':
+    if lookup_field and lookup_field != "pk":
         include.append(lookup_field)
 
     return [field.name for field in obj._meta.fields if field.name not in include]
@@ -89,11 +89,12 @@ class CreateModelMixin:
     """
     Create a model instance.
     """
+
     def create(self, request, *args, **kwargs):
         validator = self.get_validator(data=request.DATA, files=request.FILES)
 
         if validator.is_valid():
-            self.check_permissions(request, 'create', validator.object)
+            self.check_permissions(request, "create", validator.object)
 
             self.pre_save(validator.object)
             self.pre_conditions_on_save(validator.object)
@@ -108,7 +109,7 @@ class CreateModelMixin:
 
     def get_success_headers(self, data):
         try:
-            return {'Location': data[api_settings.URL_FIELD_NAME]}
+            return {"Location": data[api_settings.URL_FIELD_NAME]}
         except (TypeError, KeyError):
             return {}
 
@@ -117,6 +118,7 @@ class ListModelMixin:
     """
     List a queryset.
     """
+
     empty_error = "Empty list and '%(class_name)s.allow_empty' is False."
 
     def list(self, request, *args, **kwargs):
@@ -125,12 +127,14 @@ class ListModelMixin:
         # Default is to allow empty querysets.  This can be altered by setting
         # `.allow_empty = False`, to raise 404 errors on empty querysets.
         if not self.allow_empty and not self.object_list:
-            warnings.warn('The `allow_empty` parameter is due to be deprecated. '
-                          'To use `allow_empty=False` style behavior, You should override '
-                          '`get_queryset()` and explicitly raise a 404 on empty querysets.',
-                          PendingDeprecationWarning)
+            warnings.warn(
+                "The `allow_empty` parameter is due to be deprecated. "
+                "To use `allow_empty=False` style behavior, You should override "
+                "`get_queryset()` and explicitly raise a 404 on empty querysets.",
+                PendingDeprecationWarning,
+            )
             class_name = self.__class__.__name__
-            error_msg = self.empty_error % {'class_name': class_name}
+            error_msg = self.empty_error % {"class_name": class_name}
             raise Http404(error_msg)
 
         # Switch between paginated or standard style responses
@@ -147,10 +151,11 @@ class RetrieveModelMixin:
     """
     Retrieve a model instance.
     """
+
     def retrieve(self, request, *args, **kwargs):
         self.object = get_object_or_404(self.get_queryset(), **kwargs)
 
-        self.check_permissions(request, 'retrieve', self.object)
+        self.check_permissions(request, "retrieve", self.object)
 
         if self.object is None:
             raise Http404
@@ -167,19 +172,20 @@ class UpdateModelMixin:
     @tx.atomic
     @model_pk_lock
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        if not getattr(self, 'object', None):
+        partial = kwargs.pop("partial", False)
+        if not getattr(self, "object", None):
             self.object = self.get_object_or_none()
-        self.check_permissions(request, 'update', self.object)
+        self.check_permissions(request, "update", self.object)
 
         if self.object is None:
             raise Http404
 
-        if hasattr(self, 'pre_validate'):
+        if hasattr(self, "pre_validate"):
             self.pre_validate()
 
-        validator = self.get_validator(self.object, data=request.DATA,
-                                       files=request.FILES, partial=partial)
+        validator = self.get_validator(
+            self.object, data=request.DATA, files=request.FILES, partial=partial
+        )
 
         if not validator.is_valid():
             return response.BadRequest(validator.errors)
@@ -200,7 +206,7 @@ class UpdateModelMixin:
         return response.Ok(serializer.data)
 
     def partial_update(self, request, *args, **kwargs):
-        kwargs['partial'] = True
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     def pre_save(self, obj):
@@ -218,14 +224,14 @@ class UpdateModelMixin:
         ##    setattr(obj, self.lookup_field, lookup)
 
         if pk:
-            setattr(obj, 'pk', pk)
+            setattr(obj, "pk", pk)
 
         if slug:
             setattr(obj, slug_field, slug)
 
         # Ensure we clean the attributes so that we don't eg return integer
         # pk using a string representation, as provided by the url conf kwarg.
-        if hasattr(obj, 'full_clean'):
+        if hasattr(obj, "full_clean"):
             exclude = _get_validation_exclusions(obj, pk, slug_field, self.lookup_field)
             obj.full_clean(exclude)
 
@@ -234,11 +240,12 @@ class DestroyModelMixin:
     """
     Destroy a model instance.
     """
+
     @tx.atomic
     @model_pk_lock
     def destroy(self, request, *args, **kwargs):
         obj = self.get_object_or_none()
-        self.check_permissions(request, 'destroy', obj)
+        self.check_permissions(request, "destroy", obj)
 
         if obj is None:
             raise Http404
@@ -271,6 +278,7 @@ class NestedViewSetMixin(object):
 
 ## TODO: Move blocked mixind out of the base module because is related to project
 
+
 class BlockeableModelMixin:
     def is_blocked(self, obj):
         raise NotImplementedError("is_blocked must be overridden")
@@ -288,7 +296,7 @@ class BlockeableSaveMixin(BlockeableModelMixin):
         super().pre_conditions_on_save(obj)
 
 
-class BlockeableDeleteMixin():
+class BlockeableDeleteMixin:
     def pre_conditions_on_delete(self, obj):
         # Called on destroy call
         self.pre_conditions_blocked(obj)

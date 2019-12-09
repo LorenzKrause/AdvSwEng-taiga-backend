@@ -37,7 +37,9 @@ class MilestoneExistsValidator:
         return attrs
 
 
-class MilestoneValidator(WatchersValidator, DuplicatedNameInProjectValidator, validators.ModelValidator):
+class MilestoneValidator(
+    WatchersValidator, DuplicatedNameInProjectValidator, validators.ModelValidator
+):
     class Meta:
         model = models.Milestone
         read_only_fields = ("id", "created_date", "modified_date")
@@ -49,9 +51,9 @@ class _UserStoryMilestoneBulkValidator(validators.Validator):
     order = serializers.IntegerField()
 
 
-class UpdateMilestoneBulkValidator(MilestoneExistsValidator,
-                                   ProjectExistsValidator,
-                                   validators.Validator):
+class UpdateMilestoneBulkValidator(
+    MilestoneExistsValidator, ProjectExistsValidator, validators.Validator
+):
     project_id = serializers.IntegerField()
     milestone_id = serializers.IntegerField()
     bulk_stories = _UserStoryMilestoneBulkValidator(many=True)
@@ -59,10 +61,12 @@ class UpdateMilestoneBulkValidator(MilestoneExistsValidator,
     def validate_bulk_stories(self, attrs, source):
         filters = {
             "project__id": attrs["project_id"],
-            "id__in": [us["us_id"] for us in attrs[source]]
+            "id__in": [us["us_id"] for us in attrs[source]],
         }
 
         if UserStory.objects.filter(**filters).count() != len(filters["id__in"]):
-            raise ValidationError(_("All the user stories must be from the same project"))
+            raise ValidationError(
+                _("All the user stories must be from the same project")
+            )
 
         return attrs

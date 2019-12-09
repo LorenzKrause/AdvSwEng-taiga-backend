@@ -41,7 +41,6 @@ try:
             return fetch(url, resource_type)
         return b""
 
-
     def svg_image_factory(fp, filename):
         mime_type = magic.from_buffer(fp.read(1024), mime=True)
         if mime_type != "image/svg+xml":
@@ -78,7 +77,7 @@ def get_thumbnail(file_obj, thumbnailer_size):
         relative_name = file_obj.name
 
     source_extension = os.path.splitext(relative_name)[1][1:]
-    if source_extension not in ('png', 'svg', 'gif', 'bmp', 'jpeg', 'jpg'):
+    if source_extension not in ("png", "svg", "gif", "bmp", "jpeg", "jpg"):
         return None
 
     try:

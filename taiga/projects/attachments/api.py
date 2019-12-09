@@ -18,6 +18,7 @@
 
 import os.path as path
 import mimetypes
+
 mimetypes.init()
 
 from django.utils.translation import ugettext as _
@@ -38,8 +39,9 @@ from . import validators
 from . import models
 
 
-class BaseAttachmentViewSet(HistoryResourceMixin, WatchedResourceMixin,
-                            BlockedByProjectMixin, ModelCrudViewSet):
+class BaseAttachmentViewSet(
+    HistoryResourceMixin, WatchedResourceMixin, BlockedByProjectMixin, ModelCrudViewSet
+):
 
     model = models.Attachment
     serializer_class = serializers.AttachmentSerializer
@@ -69,7 +71,9 @@ class BaseAttachmentViewSet(HistoryResourceMixin, WatchedResourceMixin,
             raise exc.WrongArguments(_("Object id issue isn't exists"))
 
         if obj.project_id != obj.content_object.project_id:
-            raise exc.WrongArguments(_("Project ID not matches between object and project"))
+            raise exc.WrongArguments(
+                _("Project ID not matches between object and project")
+            )
 
         super().pre_save(obj)
 

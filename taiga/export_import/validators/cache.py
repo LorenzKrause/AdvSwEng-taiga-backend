@@ -34,6 +34,7 @@ def cached_get_user_by_pk(pk):
             _cache_user_by_pk[pk] = users_models.User.objects.get(pk=pk)
     return _cache_user_by_pk[pk]
 
+
 def cached_get_user_by_email(email):
     if email not in _cache_user_by_email:
         try:

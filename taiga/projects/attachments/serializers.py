@@ -65,18 +65,23 @@ class BasicAttachmentsInfoSerializerMixin(serializers.LightSerializer):
     - The method attach_basic_attachments has been used to include the necessary
         json data about the attachments in the "attachments_attr" column
     """
+
     attachments = MethodField()
 
     def get_attachments(self, obj):
         include_attachments = getattr(obj, "include_attachments", False)
 
         if include_attachments:
-            assert hasattr(obj, "attachments_attr"), "instance must have a attachments_attr attribute"
+            assert hasattr(
+                obj, "attachments_attr"
+            ), "instance must have a attachments_attr attribute"
 
         if not include_attachments or obj.attachments_attr is None:
             return []
 
         for at in obj.attachments_attr:
-            at["thumbnail_card_url"] = get_thumbnail_url(at["attached_file"], settings.THN_ATTACHMENT_CARD)
+            at["thumbnail_card_url"] = get_thumbnail_url(
+                at["attached_file"], settings.THN_ATTACHMENT_CARD
+            )
 
         return obj.attachments_attr

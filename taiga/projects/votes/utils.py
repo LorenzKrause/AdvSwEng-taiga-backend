@@ -68,14 +68,14 @@ def attach_is_voter_to_queryset(queryset, user, as_field="is_voter"):
     if user is None or user.is_anonymous():
         sql = """SELECT false"""
     else:
-        sql = ("""SELECT CASE WHEN (SELECT count(*)
+        sql = """SELECT CASE WHEN (SELECT count(*)
                                       FROM votes_vote
                                      WHERE votes_vote.content_type_id = {type_id}
                                        AND votes_vote.object_id = {tbl}.id
                                        AND votes_vote.user_id = {user_id}) > 0
                               THEN TRUE
                               ELSE FALSE
-                         END""")
+                         END"""
         sql = sql.format(type_id=type.id, tbl=model._meta.db_table, user_id=user.id)
 
     qs = queryset.extra(select={as_field: sql})

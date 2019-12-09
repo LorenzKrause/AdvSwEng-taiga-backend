@@ -30,11 +30,20 @@ from .choices import HistoryType
 from .choices import HISTORY_TYPE_CHOICES
 
 from taiga.base.utils.diff import make_diff as make_diff_from_dicts
-from taiga.projects.custom_attributes.choices import CHECKBOX_TYPE, NUMBER_TYPE, TEXT_TYPE
+from taiga.projects.custom_attributes.choices import (
+    CHECKBOX_TYPE,
+    NUMBER_TYPE,
+    TEXT_TYPE,
+)
 
 # This keys has been removed from freeze_impl so we can have objects where the
 # previous diff has value for the attribute and we want to prevent their propagation
-IGNORE_DIFF_FIELDS = ["watchers", "description_diff", "content_diff", "blocked_note_diff"]
+IGNORE_DIFF_FIELDS = [
+    "watchers",
+    "description_diff",
+    "content_diff",
+    "blocked_note_diff",
+]
 
 
 def _generate_uuid():
@@ -49,14 +58,22 @@ class HistoryEntry(models.Model):
     It is used for store object changes and
     comments.
     """
-    id = models.CharField(primary_key=True, max_length=255, unique=True,
-                          editable=False, default=_generate_uuid)
+
+    id = models.CharField(
+        primary_key=True,
+        max_length=255,
+        unique=True,
+        editable=False,
+        default=_generate_uuid,
+    )
     project = models.ForeignKey("projects.Project")
 
     user = JSONField(null=True, blank=True, default=None)
     created_at = models.DateTimeField(default=timezone.now)
     type = models.SmallIntegerField(choices=HISTORY_TYPE_CHOICES)
-    key = models.CharField(max_length=255, null=True, default=None, blank=True, db_index=True)
+    key = models.CharField(
+        max_length=255, null=True, default=None, blank=True, db_index=True
+    )
 
     # Stores the last diff
     diff = JSONField(null=True, blank=True, default=None)
@@ -131,8 +148,14 @@ class HistoryEntry(models.Model):
 
         from taiga.users.serializers import UserSerializer
 
-        user_ids = [v["user"]["id"] for v in self.comment_versions if "user" in v and "id" in v["user"]]
-        users_by_id = {u.id: u for u in get_user_model().objects.filter(id__in=user_ids)}
+        user_ids = [
+            v["user"]["id"]
+            for v in self.comment_versions
+            if "user" in v and "id" in v["user"]
+        ]
+        users_by_id = {
+            u.id: u for u in get_user_model().objects.filter(id__in=user_ids)
+        }
 
         for version in self.comment_versions:
             user = users_by_id.get(version["user"]["id"], None)
@@ -149,10 +172,7 @@ class HistoryEntry(models.Model):
 
         def resolve_diff_value(key):
             value = None
-            diff = get_diff_of_htmls(
-                self.diff[key][0] or "",
-                self.diff[key][1] or ""
-            )
+            diff = get_diff_of_htmls(self.diff[key][0] or "", self.diff[key][1] or "")
 
             if diff:
                 key = "{}_diff".format(key)
@@ -172,7 +192,7 @@ class HistoryEntry(models.Model):
             value = None
             if key in IGNORE_DIFF_FIELDS:
                 continue
-            elif key in["description", "content", "blocked_note"]:
+            elif key in ["description", "content", "blocked_note"]:
                 (key, value) = resolve_diff_value(key)
             elif key in users_keys:
                 value = [resolve_value("users", x) for x in self.diff[key]]
@@ -204,8 +224,10 @@ class HistoryEntry(models.Model):
                     for role_id, point_id in pointsnew.items():
                         role_name = resolve_value("roles", role_id)
                         oldpoint_id = pointsold.get(role_id, None)
-                        points[role_name] = [resolve_value("points", oldpoint_id),
-                                             resolve_value("points", point_id)]
+                        points[role_name] = [
+                            resolve_value("points", oldpoint_id),
+                            resolve_value("points", point_id),
+                        ]
 
                 # Process that removes points entries with
                 # duplicate value.
@@ -229,15 +251,20 @@ class HistoryEntry(models.Model):
 
                 for aid in set(tuple(oldattachs.keys()) + tuple(newattachs.keys())):
                     if aid in oldattachs and aid in newattachs:
-                        changes = make_diff_from_dicts(oldattachs[aid], newattachs[aid],
-                                                       excluded_keys=("filename", "url", "thumb_url"))
+                        changes = make_diff_from_dicts(
+                            oldattachs[aid],
+                            newattachs[aid],
+                            excluded_keys=("filename", "url", "thumb_url"),
+                        )
 
                         if changes:
                             change = {
                                 "filename": newattachs.get(aid, {}).get("filename", ""),
                                 "url": newattachs.get(aid, {}).get("url", ""),
-                                "thumb_url": newattachs.get(aid, {}).get("thumb_url", ""),
-                                "changes": changes
+                                "thumb_url": newattachs.get(aid, {}).get(
+                                    "thumb_url", ""
+                                ),
+                                "changes": changes,
                             }
                             attachments["changed"].append(change)
                     elif aid in oldattachs and aid not in newattachs:
@@ -245,7 +272,11 @@ class HistoryEntry(models.Model):
                     elif aid not in oldattachs and aid in newattachs:
                         attachments["new"].append(newattachs[aid])
 
-                if attachments["new"] or attachments["changed"] or attachments["deleted"]:
+                if (
+                    attachments["new"]
+                    or attachments["changed"]
+                    or attachments["deleted"]
+                ):
                     value = attachments
 
             elif key == "custom_attributes":
@@ -255,13 +286,20 @@ class HistoryEntry(models.Model):
                     "deleted": [],
                 }
 
-                oldcustattrs = {x["id"]: x for x in self.diff["custom_attributes"][0] or []}
-                newcustattrs = {x["id"]: x for x in self.diff["custom_attributes"][1] or []}
+                oldcustattrs = {
+                    x["id"]: x for x in self.diff["custom_attributes"][0] or []
+                }
+                newcustattrs = {
+                    x["id"]: x for x in self.diff["custom_attributes"][1] or []
+                }
 
                 for aid in set(tuple(oldcustattrs.keys()) + tuple(newcustattrs.keys())):
                     if aid in oldcustattrs and aid in newcustattrs:
-                        changes = make_diff_from_dicts(oldcustattrs[aid], newcustattrs[aid],
-                                                       excluded_keys=("name", "type"))
+                        changes = make_diff_from_dicts(
+                            oldcustattrs[aid],
+                            newcustattrs[aid],
+                            excluded_keys=("name", "type"),
+                        )
                         newcustattr = newcustattrs.get(aid, {})
                         if changes:
                             change_type = newcustattr.get("type", TEXT_TYPE)
@@ -273,13 +311,12 @@ class HistoryEntry(models.Model):
                             else:
                                 old_value = oldcustattrs[aid].get("value", "")
                                 new_value = newcustattrs[aid].get("value", "")
-                                value_diff = get_diff_of_htmls(old_value,
-                                                               new_value)
+                                value_diff = get_diff_of_htmls(old_value, new_value)
                             change = {
                                 "name": newcustattr.get("name", ""),
                                 "changes": changes,
                                 "type": change_type,
-                                "value_diff": value_diff
+                                "value_diff": value_diff,
                             }
                             custom_attributes["changed"].append(change)
                     elif aid in oldcustattrs and aid not in newcustattrs:
@@ -297,7 +334,11 @@ class HistoryEntry(models.Model):
                         newcustattrs[aid]["value_diff"] = value_diff
                         custom_attributes["new"].append(newcustattrs[aid])
 
-                if custom_attributes["new"] or custom_attributes["changed"] or custom_attributes["deleted"]:
+                if (
+                    custom_attributes["new"]
+                    or custom_attributes["changed"]
+                    or custom_attributes["deleted"]
+                ):
                     value = custom_attributes
 
             elif key == "user_stories":
@@ -330,7 +371,9 @@ class HistoryEntry(models.Model):
 
         self.values_diff_cache = result
         # Update values_diff_cache without dispatching signals
-        HistoryEntry.objects.filter(pk=self.pk).update(values_diff_cache=self.values_diff_cache)
+        HistoryEntry.objects.filter(pk=self.pk).update(
+            values_diff_cache=self.values_diff_cache
+        )
         return self.values_diff_cache
 
     class Meta:

@@ -29,11 +29,9 @@ from . import tasks
 def _get_project_webhooks(project):
     webhooks = []
     for webhook in project.webhooks.all():
-        webhooks.append({
-            "id": webhook.pk,
-            "url": webhook.url,
-            "key": webhook.key,
-        })
+        webhooks.append(
+            {"id": webhook.pk, "url": webhook.url, "key": webhook.key,}
+        )
     return webhooks
 
 
@@ -69,7 +67,14 @@ def on_new_history_entry(sender, instance, created, **kwargs):
 
     webhooks_args = []
     for webhook in webhooks:
-        args = [webhook["id"], webhook["url"], webhook["key"], by, date, obj] + extra_args
+        args = [
+            webhook["id"],
+            webhook["url"],
+            webhook["key"],
+            by,
+            date,
+            obj,
+        ] + extra_args
         webhooks_args.append(args)
 
     connection.on_commit(lambda: _execute_task(task, webhooks_args))

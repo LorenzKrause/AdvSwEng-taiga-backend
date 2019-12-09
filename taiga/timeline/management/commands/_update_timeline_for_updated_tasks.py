@@ -41,7 +41,9 @@ def update_timeline(initial_date, final_date):
     print("Generating tasks indexed by id dict")
     task_ids = timelines.values_list("object_id", flat=True)
 
-    tasks_iterator = Task.objects.filter(id__in=task_ids).select_related("user_story").iterator()
+    tasks_iterator = (
+        Task.objects.filter(id__in=task_ids).select_related("user_story").iterator()
+    )
     tasks_per_id = {task.id: task for task in tasks_iterator}
     del task_ids
 
@@ -49,7 +51,7 @@ def update_timeline(initial_date, final_date):
     total = timelines.count()
     print("Updating timelines")
     for timeline in timelines.iterator():
-        print("%s/%s"%(counter, total))
+        print("%s/%s" % (counter, total))
         task_id = timeline.object_id
         task = tasks_per_id.get(task_id, None)
         if not task:
@@ -67,20 +69,28 @@ def update_timeline(initial_date, final_date):
 
 
 class Command(BaseCommand):
-    help = 'Regenerate project timeline'
-    option_list = BaseCommand.option_list + (
-        make_option('--initial_date',
-                    action='store',
-                    dest='initial_date',
-                    default=None,
-                    help='Initial date for timeline update'),
-        ) + (
-        make_option('--final_date',
-                    action='store',
-                    dest='final_date',
-                    default=None,
-                    help='Final date for timeline update'),
+    help = "Regenerate project timeline"
+    option_list = (
+        BaseCommand.option_list
+        + (
+            make_option(
+                "--initial_date",
+                action="store",
+                dest="initial_date",
+                default=None,
+                help="Initial date for timeline update",
+            ),
         )
+        + (
+            make_option(
+                "--final_date",
+                action="store",
+                dest="final_date",
+                default=None,
+                help="Final date for timeline update",
+            ),
+        )
+    )
 
     @override_settings(DEBUG=False)
     def handle(self, *args, **options):

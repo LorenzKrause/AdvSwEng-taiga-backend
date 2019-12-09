@@ -69,7 +69,6 @@ from taiga.base.response import Forbidden
 from taiga.base.utils.iterators import as_tuple
 
 
-
 def get_view_name(view_cls, suffix=None):
     """
     Given a view class, return a textual name to represent the view.
@@ -78,11 +77,11 @@ def get_view_name(view_cls, suffix=None):
     This function is the default for the `VIEW_NAME_FUNCTION` setting.
     """
     name = view_cls.__name__
-    name = formatting.remove_trailing_string(name, 'View')
-    name = formatting.remove_trailing_string(name, 'ViewSet')
+    name = formatting.remove_trailing_string(name, "View")
+    name = formatting.remove_trailing_string(name, "ViewSet")
     name = formatting.camelcase_to_spaces(name)
     if suffix:
-        name += ' ' + suffix
+        name += " " + suffix
 
     return name
 
@@ -94,7 +93,7 @@ def get_view_description(view_cls, html=False):
 
     This function is the default for the `VIEW_DESCRIPTION_FUNCTION` setting.
     """
-    description = view_cls.__doc__ or ''
+    description = view_cls.__doc__ or ""
     description = formatting.dedent(smart_text(description))
     if html:
         return formatting.markup_description(description)
@@ -113,20 +112,18 @@ def exception_handler(exc):
     """
     if isinstance(exc, exceptions.APIException):
         headers = {}
-        if getattr(exc, 'auth_header', None):
-            headers['WWW-Authenticate'] = exc.auth_header
-        if getattr(exc, 'wait', None):
-            headers['X-Throttle-Wait-Seconds'] = '%d' % exc.wait
+        if getattr(exc, "auth_header", None):
+            headers["WWW-Authenticate"] = exc.auth_header
+        if getattr(exc, "wait", None):
+            headers["X-Throttle-Wait-Seconds"] = "%d" % exc.wait
 
-        return Response({'detail': exc.detail},
-                        status=exc.status_code,
-                        headers=headers)
+        return Response({"detail": exc.detail}, status=exc.status_code, headers=headers)
 
     elif isinstance(exc, Http404):
-        return NotFound({'detail': _('Not found')})
+        return NotFound({"detail": _("Not found")})
 
     elif isinstance(exc, PermissionDenied):
-        return Forbidden({'detail': _('Permission denied')})
+        return Forbidden({"detail": _("Permission denied")})
 
     # Note: Unhandled exceptions will raise a 500 error.
     return None
@@ -168,10 +165,10 @@ class APIView(View):
     @property
     def default_response_headers(self):
         headers = {
-            'Allow': ', '.join(self.allowed_methods),
+            "Allow": ", ".join(self.allowed_methods),
         }
         if len(self.renderer_classes) > 1:
-            headers['Vary'] = 'Accept'
+            headers["Vary"] = "Accept"
         return headers
 
     def http_method_not_allowed(self, request, *args, **kwargs):
@@ -212,9 +209,9 @@ class APIView(View):
         # Note: Additionally `request` and `encoding` will also be added
         #       to the context by the Request object.
         return {
-            'view': self,
-            'args': getattr(self, 'args', ()),
-            'kwargs': getattr(self, 'kwargs', {})
+            "view": self,
+            "args": getattr(self, "args", ()),
+            "kwargs": getattr(self, "kwargs", {}),
         }
 
     def get_renderer_context(self):
@@ -225,10 +222,10 @@ class APIView(View):
         # Note: Additionally 'response' will also be added to the context,
         #       by the Response object.
         return {
-            'view': self,
-            'args': getattr(self, 'args', ()),
-            'kwargs': getattr(self, 'kwargs', {}),
-            'request': getattr(self, 'request', None)
+            "view": self,
+            "args": getattr(self, "args", ()),
+            "kwargs": getattr(self, "kwargs", {}),
+            "request": getattr(self, "request", None),
         }
 
     def get_view_name(self):
@@ -237,7 +234,7 @@ class APIView(View):
         browsable API.
         """
         func = self.settings.VIEW_NAME_FUNCTION
-        return func(self.__class__, getattr(self, 'suffix', None))
+        return func(self.__class__, getattr(self, "suffix", None))
 
     def get_view_description(self, html=False):
         """
@@ -280,8 +277,7 @@ class APIView(View):
         Instantiates and returns the list of permissions that this view requires.
         """
         for permcls in self.permission_classes:
-            instance = permcls(request=self.request,
-                               view=self)
+            instance = permcls(request=self.request, view=self)
             yield instance
 
     def get_throttles(self):
@@ -296,7 +292,7 @@ class APIView(View):
         """
         Instantiate and return the content negotiation class to use.
         """
-        if not getattr(self, '_negotiator', None):
+        if not getattr(self, "_negotiator", None):
             self._negotiator = self.content_negotiation_class()
         return self._negotiator
 
@@ -326,7 +322,7 @@ class APIView(View):
         """
         request.user
 
-    def check_permissions(self, request, action:str=None, obj=None):
+    def check_permissions(self, request, action: str = None, obj=None):
         if action is None:
             self.permission_denied(request)
 
@@ -363,11 +359,13 @@ class APIView(View):
         """
         parser_context = self.get_parser_context(request)
 
-        return Request(request,
-                       parsers=self.get_parsers(),
-                       authenticators=self.get_authenticators(),
-                       negotiator=self.get_content_negotiator(),
-                       parser_context=parser_context)
+        return Request(
+            request,
+            parsers=self.get_parsers(),
+            authenticators=self.get_authenticators(),
+            negotiator=self.get_content_negotiator(),
+            parser_context=parser_context,
+        )
 
     def initial(self, request, *args, **kwargs):
         """
@@ -388,12 +386,14 @@ class APIView(View):
         Returns the final response object.
         """
         # Make the error obvious if a proper response is not returned
-        assert isinstance(response, HttpResponseBase), ('Expected a `Response`, `HttpResponse` or '
-                                                        '`HttpStreamingResponse` to be returned from the view, '
-                                                        'but received a `%s`' % type(response))
+        assert isinstance(response, HttpResponseBase), (
+            "Expected a `Response`, `HttpResponse` or "
+            "`HttpStreamingResponse` to be returned from the view, "
+            "but received a `%s`" % type(response)
+        )
 
         if isinstance(response, Response):
-            if not getattr(request, 'accepted_renderer', None):
+            if not getattr(request, "accepted_renderer", None):
                 neg = self.perform_content_negotiation(request, force=True)
                 request.accepted_renderer, request.accepted_media_type = neg
 
@@ -413,8 +413,9 @@ class APIView(View):
         Handle any exception that occurs, by returning an appropriate response,
         or re-raising the error.
         """
-        if isinstance(exc, (exceptions.NotAuthenticated,
-                            exceptions.AuthenticationFailed)):
+        if isinstance(
+            exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
+        ):
             # WWW-Authenticate header for 401 responses, else coerce to 403
             auth_header = self.get_authenticate_header(self.request)
 
@@ -450,8 +451,9 @@ class APIView(View):
 
             # Get the appropriate handler method
             if request.method.lower() in self.http_method_names:
-                handler = getattr(self, request.method.lower(),
-                                  self.http_method_not_allowed)
+                handler = getattr(
+                    self, request.method.lower(), self.http_method_not_allowed
+                )
             else:
                 handler = self.http_method_not_allowed
 
@@ -479,15 +481,20 @@ class APIView(View):
         # generic views override this implementation and add additional
         # information for POST and PUT methods, based on the serializer.
         ret = OrderedDict()
-        ret['name'] = self.get_view_name()
-        ret['description'] = self.get_view_description()
-        ret['renders'] = [renderer.media_type for renderer in self.renderer_classes]
-        ret['parses'] = [parser.media_type for parser in self.parser_classes]
+        ret["name"] = self.get_view_name()
+        ret["description"] = self.get_view_description()
+        ret["renders"] = [renderer.media_type for renderer in self.renderer_classes]
+        ret["parses"] = [parser.media_type for parser in self.parser_classes]
         return ret
 
 
 def api_server_error(request, *args, **kwargs):
-    if settings.DEBUG is False and request.META.get('CONTENT_TYPE', None) == "application/json":
-        return HttpResponse(json.dumps({"error": _("Server application error")}),
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    if (
+        settings.DEBUG is False
+        and request.META.get("CONTENT_TYPE", None) == "application/json"
+    ):
+        return HttpResponse(
+            json.dumps({"error": _("Server application error")}),
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
     return server_error(request, *args, **kwargs)
