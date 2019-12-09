@@ -52,6 +52,7 @@
            name: run unit tests
            command: |
              pip install flake8
+             mkdir test-results
              flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/TEST_FLAKE8_JUNIT.xml
        - store_test_results:
            path: test-results
