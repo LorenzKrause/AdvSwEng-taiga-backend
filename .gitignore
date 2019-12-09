@@ -1,4 +1,7 @@
 .*.sw*
+build
+venv
+*.egg-info
 .#*
 *.log
 taiga/search
