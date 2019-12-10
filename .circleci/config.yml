@@ -33,8 +33,13 @@
        - run: 
            command: |
              pip install -r requirements.txt
-             python manage.py runserver --settings=settings.testing
-             python manage.py migrate --noinput
+             #python manage.py runserver --settings=settings.testing
+             python manage.py migrate --noinput --settings=settings.testing
+             python manage.py loaddata initial_user --settings=settings.testing
+             python manage.py loaddata initial_project_templates --settings=settings.testing
+             python manage.py compilemessages --settings=settings.testing
+             python manage.py collectstatic --noinput --settings=settings.testing
+             python manage.py sample_data --settings=settings.testing
        - save_cache:
            key: taiga-back-{{ checksum "requirements.txt" }}
            paths:
