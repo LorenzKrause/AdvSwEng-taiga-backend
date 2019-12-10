@@ -30,14 +30,13 @@ ADMINS = (
 
 DEBUG = False
 
-#DATABASES = {
-#    "default": {
-#        "ENGINE": "django.db.backends.postgresql",
-#        "NAME": "taiga",
-#        "HOST": "$DATABASE_URL",
-#    }
-#}
-DATABASES['default'] =  dj_database_url.config()
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "taiga",
+        "HOST": "postgres://jptlwbqfsaeahw:00384d531924938a6e62553cc15438de75cbba9260e4e86806f40791ca0b8022@ec2-176-34-183-20.eu-west-1.compute.amazonaws.com:5432/d7d47uvlet8nih",
+    }
+}
 
 CACHES = {
     "default": {
