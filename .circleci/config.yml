@@ -128,6 +128,14 @@
            name: deploy to master
            command: |
              git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
+   deploy-check:
+    executor: production-environment
+    steps:
+      - run:
+          name: check weather deployment is working correctly
+          command: |
+            sudo apt-get install -y curl jq
+            curl https://$HEROKU_APP_NAME.herokuapp.com/api/v1/ | jq
 
  workflows:
    version: 2.1
