@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os.path, sys, os
+import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -29,13 +30,14 @@ ADMINS = (
 
 DEBUG = False
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "taiga",
-        "HOST": "$DATABASE_URL",
-    }
-}
+#DATABASES = {
+#    "default": {
+#        "ENGINE": "django.db.backends.postgresql",
+#        "NAME": "taiga",
+#        "HOST": "$DATABASE_URL",
+#    }
+#}
+DATABASES['default'] =  dj_database_url.config()
 
 CACHES = {
     "default": {
