@@ -55,12 +55,14 @@
              mkdir test-results
              mkdir test-results/junit
              mkdir test-results/jest
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/junit/TEST_FLAKE8_JUNIT.xml
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/jest/TEST_FLAKE8_JUNIT.xml
+             mkdir test-results/mocha
+             mkdir test-results/rspec
+             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/junit/reseult.xml
+             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/jest/reseult.xml
+             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/mocha/reseult.xml
+             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/rspec/reseult.xml
        - store_test_results:
            path: test-results
-       - store_artifacts:
-           path: test-results/TEST_FLAKE8_JUNIT.xml
    unit-test:
      executor: test-environment
      steps:
