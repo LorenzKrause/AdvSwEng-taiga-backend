@@ -19,6 +19,7 @@ cssselect==1.1.0
 cssutils==1.0.2
 diff-match-patch==20121119
 Django==1.11.25
+django-heroku
 django-ipware==1.1.6
 django-jinja==2.3.1
 django-pglocks==1.0.2

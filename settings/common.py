@@ -33,6 +33,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "taiga",
+        "HOST": "$DATABASE_URL",
     }
 }
 
