@@ -33,6 +33,7 @@
        - run: 
            command: |
              pip install -r requirements.txt
+             python manage.py runserver       
        - save_cache:
            key: taiga-back-{{ checksum "requirements.txt" }}
            paths:
