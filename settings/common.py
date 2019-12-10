@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os.path, sys, os
-import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -29,8 +28,6 @@ ADMINS = (
 )
 
 DEBUG = False
-
-DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
 DATABASES = {
     "default": {
@@ -604,3 +601,5 @@ if "test" in sys.argv:
     print ("\033[1;91mNo django tests.\033[0m")
     print ("Try: \033[1;33mpy.test\033[0m")
     sys.exit(0)
+import dj_database_url
+DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
