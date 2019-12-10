@@ -1,10 +1,10 @@
 repos:
 - repo: local
   hooks:
-    - id: flask8
-      name: flask8
-      description: "flask8"
-      entry: flask8 --config setup.cfg
+    - id: flake8
+      name: flake8
+      description: "flake8"
+      entry: flake8 --config setup.cfg
       verbose: true
       language: python
       language_version: python3
