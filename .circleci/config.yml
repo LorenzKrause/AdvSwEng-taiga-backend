@@ -43,6 +43,8 @@
              - "/usr/local/lib/python3.6/site-packages"
              - "/usr/local/bin"
    smoke-test:
+     executor: test-environment
+     steps:
         - checkout 
         - run:
            command: |
