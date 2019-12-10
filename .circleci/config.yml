@@ -33,7 +33,7 @@
        - run: 
            command: |
              pip install -r requirements.txt
-             python manage.py runserver --settings=settings/testing.py
+             python manage.py runserver --settings=settings.testing
              python manage.py migrate --noinput
        - save_cache:
            key: taiga-back-{{ checksum "requirements.txt" }}
