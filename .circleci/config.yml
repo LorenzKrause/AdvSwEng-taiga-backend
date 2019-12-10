@@ -25,7 +25,6 @@
              sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
        - run:
            command: |
-             #python3.6 -m venv venv
              sudo apt-get update
              sudo apt-get install -y postgresql-client-9.6
              psql -d $TEST_DATABASE_URL -c 'create database taiga;' -U root
@@ -53,17 +52,12 @@
            name: run unit tests
            command: |
              pip install flake8
-             mkdir test-results
-             mkdir test-results/junit
-             mkdir test-results/jest
-             mkdir test-results/mocha
-             mkdir test-results/rspec
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/junit/reseult.xml
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/jest/reseult.xml
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/mocha/reseult.xml
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/rspec/reseult.xml
+             mkdir -p test-results
+             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/junit.xml
        - store_test_results:
            path: test-results
+       - store_artifacts:
+          path: test-reports
    unit-test:
      executor: test-environment
      steps:
@@ -79,7 +73,6 @@
            command: |
              mkdir test-reports
              coverage run --source=taiga --omit='*tests*,*commands*,*migrations*,*admin*,*.jinja,*dashboard*,*settings*,*wsgi*,*questions*,*documents*' -m pytest -v --tb=native --junitxml=test-reports/junit.xml --disable-pytest-warnings tests/unit
-             ls -al
        - store_test_results:
           path: test-reports
        - store_artifacts:
@@ -97,8 +90,12 @@
        - run: 
            name: run integration tests
            command: |
-             coverage run --source=taiga --omit='*tests*,*commands*,*migrations*,*admin*,*.jinja,*dashboard*,*settings*,*wsgi*,*questions*,*documents*' -m pytest -v --tb=native --disable-pytest-warnings tests/integration
-   
+             mkdir test-reports
+             coverage run --source=taiga --omit='*tests*,*commands*,*migrations*,*admin*,*.jinja,*dashboard*,*settings*,*wsgi*,*questions*,*documents*' -m pytest -v --tb=native --junitxml=test-reports/junit.xml --disable-pytest-warnings tests/integration
+       - store_test_results:
+          path: test-reports
+       - store_artifacts:
+          path: test-reports
    deploy:
      executor: production-environment
      steps:
