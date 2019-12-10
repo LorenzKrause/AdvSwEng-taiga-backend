@@ -1,4 +1,5 @@
- version: 2.1
+ version: 2.1 
+ 
  executors:
    test-environment:  
      docker:
@@ -22,15 +23,10 @@
            command: |
              sudo chown -R circleci:circleci /usr/local/bin
              sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
-       - run:
-           command: |
-             #python3.6 -m venv venv
-             sudo apt-get update
-             sudo apt-get install -y postgresql-client-9.6
-             psql -d $TEST_DATABASE_URL -c 'create database taiga;' -U root
        - restore_cache:
            key: taiga-back-{{ checksum "requirements.txt" }}
        - run: 
+           name: install required python dependencies
            command: |
              pip install -r requirements.txt
        - save_cache:
@@ -38,6 +34,34 @@
            paths:
              - "/usr/local/lib/python3.6/site-packages"
              - "/usr/local/bin"
+   smoke-test:
+     executor: test-environment
+     steps:
+        - checkout 
+        - run:
+           command: |
+             sudo chown -R circleci:circleci /usr/local/bin
+             sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+        - restore_cache:
+           key: taiga-back-{{ checksum "requirements.txt" }}
+        - run:
+           name: install required os packages
+           command: |
+             sudo apt-get update
+             sudo apt-get install -y postgresql-client-9.6
+             sudo apt-get install -y build-essential binutils-doc autoconf flex bison libjpeg-dev
+             sudo apt-get install -y libfreetype6-dev zlib1g-dev libzmq3-dev libgdbm-dev libncurses5-dev
+             sudo apt-get install -y automake libtool libffi-dev libssl-dev curl git tmux gettext
+        - run: 
+           name: populate database with models 
+           command: |
+             psql -d $TEST_DATABASE_URL -c 'create database taiga;' -U root
+             python manage.py migrate --noinput --settings=settings.testing
+             python manage.py loaddata initial_user --settings=settings.testing
+             python manage.py loaddata initial_project_templates --settings=settings.testing
+             python manage.py compilemessages --settings=settings.testing
+             python manage.py collectstatic --noinput --settings=settings.testing
+             python manage.py sample_data --settings=settings.testing
    code-quality:
      executor: test-environment
      steps:
@@ -52,17 +76,12 @@
            name: run unit tests
            command: |
              pip install flake8
-             mkdir test-results
-             mkdir test-results/junit
-             mkdir test-results/jest
-             mkdir test-results/mocha
-             mkdir test-results/rspec
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/junit/reseult.xml
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/jest/reseult.xml
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/mocha/reseult.xml
-             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/rspec/reseult.xml
+             mkdir -p test-results
+             flake8 --config setup.cfg --format junit-xml --tee --output-file=test-results/junit.xml
        - store_test_results:
            path: test-results
+       - store_artifacts:
+          path: test-reports
    unit-test:
      executor: test-environment
      steps:
@@ -78,7 +97,6 @@
            command: |
              mkdir test-reports
              coverage run --source=taiga --omit='*tests*,*commands*,*migrations*,*admin*,*.jinja,*dashboard*,*settings*,*wsgi*,*questions*,*documents*' -m pytest -v --tb=native --junitxml=test-reports/junit.xml --disable-pytest-warnings tests/unit
-             ls -al
        - store_test_results:
           path: test-reports
        - store_artifacts:
@@ -96,8 +114,12 @@
        - run: 
            name: run integration tests
            command: |
-             coverage run --source=taiga --omit='*tests*,*commands*,*migrations*,*admin*,*.jinja,*dashboard*,*settings*,*wsgi*,*questions*,*documents*' -m pytest -v --tb=native --disable-pytest-warnings tests/integration
-   
+             mkdir test-reports
+             coverage run --source=taiga --omit='*tests*,*commands*,*migrations*,*admin*,*.jinja,*dashboard*,*settings*,*wsgi*,*questions*,*documents*' -m pytest -v --tb=native --junitxml=test-reports/junit.xml --disable-pytest-warnings tests/integration
+       - store_test_results:
+          path: test-reports
+       - store_artifacts:
+          path: test-reports
    deploy:
      executor: production-environment
      steps:
@@ -106,15 +128,26 @@
            name: deploy to master
            command: |
              git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
+   deploy-check:
+    executor: production-environment
+    steps:
+      - run:
+          name: check weather deployment is working correctly
+          command: |
+            sudo apt-get install -y curl jq
+            curl https://$HEROKU_APP_NAME.herokuapp.com/api/v1/ | jq
 
  workflows:
    version: 2.1
    build-deploy:
      jobs:
        - prepare-environment
-       - code-quality:
+       - smoke-test:
            requires:
              - prepare-environment
+       - code-quality:
+           requires:
+             - smoke-test
        - unit-test:
            requires:
              - code-quality
