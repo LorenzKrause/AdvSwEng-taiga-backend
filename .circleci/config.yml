@@ -24,31 +24,42 @@
              sudo chown -R circleci:circleci /usr/local/bin
              sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
        - run:
+           name: install required os packages
            command: |
              sudo apt-get update
              sudo apt-get install -y postgresql-client-9.6
-             psql -d $TEST_DATABASE_URL -c 'create database taiga;' -U root
-       - restore_cache:
-           key: taiga-back-{{ checksum "requirements.txt" }}
-       - run: 
-           command: |
-             pip install -r requirements.txt
              sudo apt-get install -y build-essential binutils-doc autoconf flex bison libjpeg-dev
              sudo apt-get install -y libfreetype6-dev zlib1g-dev libzmq3-dev libgdbm-dev libncurses5-dev
              sudo apt-get install -y automake libtool libffi-dev libssl-dev curl git tmux gettext
-             #python manage.py runserver --settings=settings.testing
+       - restore_cache:
+           key: taiga-back-{{ checksum "requirements.txt" }}
+       - run: 
+           name: install required python dependencies
+           command: |
+             pip install -r requirements.txt
+       - save_cache:
+           key: taiga-back-{{ checksum "requirements.txt" }}
+           paths:
+             - "/usr/local/lib/python3.6/site-packages"
+             - "/usr/local/bin"
+   smoke-test:
+        - checkout 
+        - run:
+           command: |
+             sudo chown -R circleci:circleci /usr/local/bin
+             sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+        - restore_cache:
+           key: taiga-back-{{ checksum "requirements.txt" }}
+        - run: 
+           name: populate database with models 
+           command: |
+             psql -d $TEST_DATABASE_URL -c 'create database taiga;' -U root
              python manage.py migrate --noinput --settings=settings.testing
              python manage.py loaddata initial_user --settings=settings.testing
              python manage.py loaddata initial_project_templates --settings=settings.testing
              python manage.py compilemessages --settings=settings.testing
              python manage.py collectstatic --noinput --settings=settings.testing
              python manage.py sample_data --settings=settings.testing
-       - save_cache:
-           key: taiga-back-{{ checksum "requirements.txt" }}
-           paths:
-             - "/usr/local/lib/python3.6/site-packages"
-             - "/usr/local/bin"
-#    smoke-test:
    code-quality:
      executor: test-environment
      steps:
@@ -121,9 +132,12 @@
    build-deploy:
      jobs:
        - prepare-environment
-       - code-quality:
+       - smoke-test:
            requires:
              - prepare-environment
+       - code-quality:
+           requires:
+             - smoke-test
        - unit-test:
            requires:
              - code-quality
